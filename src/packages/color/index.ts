@@ -5,6 +5,7 @@ export type {
   ColorPalette,
   CustomColorId,
   CustomPalette,
+  PaletteShade,
   PresetColorId,
   ResolvedPalette,
 } from './types';
@@ -40,6 +41,11 @@ export {
 } from './colorUtils';
 
 export { generatePaletteFromBase } from './generatePalette';
+
+export {
+  buildSwatchBackground,
+  normalizeShades,
+} from './buildSwatchBackground';
 
 export {
   migrateHexToColorId,

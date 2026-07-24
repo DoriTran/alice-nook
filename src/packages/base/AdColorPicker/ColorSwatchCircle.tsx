@@ -1,14 +1,15 @@
 import type { CSSProperties, FC } from 'react';
 
-import type { ColorId, ColorPalette } from '@/packages/color';
+import type { ColorId, ColorPalette, PaletteShade } from '@/packages/color';
 
-import { useResolvedPalette } from '@/packages/color';
+import { buildSwatchBackground, useResolvedPalette } from '@/packages/color';
 
 import styles from './ColorSwatchCircle.module.css';
 
 export type ColorSwatchCircleProps = {
   colorId?: ColorId;
   palette?: ColorPalette;
+  shades?: PaletteShade[];
   size?: number;
   selected?: boolean;
   className?: string;
@@ -17,6 +18,7 @@ export type ColorSwatchCircleProps = {
 const ColorSwatchCircle: FC<ColorSwatchCircleProps> = ({
   colorId,
   palette: paletteProp,
+  shades,
   size = 32,
   selected,
   className,
@@ -33,9 +35,7 @@ const ColorSwatchCircle: FC<ColorSwatchCircleProps> = ({
         {
           width: size,
           height: size,
-          '--swatch-soft': palette.soft,
-          '--swatch-main': palette.main,
-          '--swatch-strong': palette.strong,
+          background: buildSwatchBackground(palette, shades),
         } as CSSProperties
       }
       aria-hidden

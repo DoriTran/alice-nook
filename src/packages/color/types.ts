@@ -4,6 +4,8 @@ export type ColorPalette = {
   strong: string;
 };
 
+export type PaletteShade = keyof ColorPalette;
+
 export type ColorCategory = 'warm' | 'nature' | 'ocean' | 'dreamy' | 'neutral';
 
 export type PresetColorId =

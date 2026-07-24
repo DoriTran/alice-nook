@@ -2,11 +2,6 @@
   display: inline-flex;
   flex-shrink: 0;
   border-radius: 999px;
-  background: conic-gradient(
-    var(--swatch-soft) 0deg 120deg,
-    var(--swatch-main) 120deg 240deg,
-    var(--swatch-strong) 240deg 360deg
-  );
   box-shadow:
     0 0 0 2px var(--surface),
     inset 0 0 0 1px rgb(0 0 0 / 6%);
