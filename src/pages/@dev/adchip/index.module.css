@@ -1,0 +1,143 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.controlsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #5c3d4a;
+}
+
+.field input[type='text'],
+.field input[type='number'],
+.field select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(255, 105, 180, 0.35);
+  border-radius: 6px;
+  font: inherit;
+  min-width: 5rem;
+  background: #fff;
+}
+
+.field input[type='range'] {
+  width: 10rem;
+}
+
+.rangeValue {
+  font-size: 0.75rem;
+  color: #7a5a66;
+}
+
+.checkboxField {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #5c3d4a;
+  padding-bottom: 0.35rem;
+}
+
+.checkboxField input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-width: 22rem;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch[data-active] {
+  border-color: #5c3d4a;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.previewBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.previewLabel {
+  font-size: 0.8rem;
+  color: #7a5a66;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.previewStage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, #f6ebe3 80%, #fff);
+  border: 1px solid rgba(92, 61, 74, 0.08);
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.log {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7a5a66;
+  font-family: ui-monospace, monospace;
+}
+
+.propsDump {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(92, 61, 74, 0.1);
+  font-size: 0.75rem;
+  color: #5c3d4a;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}

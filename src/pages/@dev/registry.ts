@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 
+import AdChipDev from './adchip';
 import BrushHighlightDev from './brushhighlight';
 import DragDropSortableDev from './dragdropsortable';
 import TicketShapeDev from './ticketshape';
@@ -31,6 +32,11 @@ export const devTests: readonly DevTestEntry[] = [
     key: 'ticketshape2',
     displayName: 'Ticket Shape 2 (ShapePath DSL)',
     component: TicketShape2Dev,
+  },
+  {
+    key: 'adchip',
+    displayName: 'AdChip',
+    component: AdChipDev,
   },
 ] as const;
 
