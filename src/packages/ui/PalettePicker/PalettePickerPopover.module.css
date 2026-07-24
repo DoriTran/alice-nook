@@ -65,6 +65,24 @@
   border-left: 1px solid var(--border-soft);
 }
 
+.createPanelStacked {
+  flex: 0 1 auto;
+  width: fit-content;
+  min-width: min(24rem, calc(100vw - 2rem));
+  max-width: min(
+    calc(
+      var(--palette-create-inner-width) + 2 * var(--palette-panel-padding-x)
+    ),
+    calc(100vw - 2rem)
+  );
+  min-height: 0;
+  max-height: min(34rem, 80vh);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .layout[data-view='create'] .createPanel {
   flex: 0 1 auto;
   width: fit-content;
@@ -92,4 +110,13 @@
   .layout[data-view='browse'] .createPanel {
     display: flex;
   }
+}
+
+/* Force narrow/stacked layout regardless of viewport */
+.layout[data-stacked][data-view='browse'] .createPanel {
+  display: none;
+}
+
+.layout[data-stacked][data-view='create'] .createPanel {
+  display: flex;
 }

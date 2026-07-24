@@ -1,6 +1,6 @@
 import { useState, type FC } from 'react';
 
-import type { ColorId } from '@/packages/color';
+import type { ColorId, PaletteShade } from '@/packages/color';
 
 import { AdPopover, type AdPopoverProps } from '@/packages/base';
 import { ColorSwatchCircle } from '@/packages/base/AdColorPicker';
@@ -17,9 +17,19 @@ export type PalettePickerProps = {
   label?: string;
   variant?: 'popover' | 'compact';
   offset?: AdPopoverProps['offset'];
+  /** Which palette shades to show in swatches. Empty/omitted = all three. */
+  shades?: PaletteShade[];
+  /** Force narrow layout: create panel hidden until "Create new". */
+  stacked?: boolean;
+  /** Controlled open state. */
+  opened?: boolean;
+  onOpenChange?: (opened: boolean) => void;
+  /** Swatch diameter in px. Defaults: compact 26, popover 28. */
+  swatchSize?: number;
 };
 
 const COMPACT_SWATCH_SIZE = 26;
+const DEFAULT_SWATCH_SIZE = 28;
 
 const PalettePicker: FC<PalettePickerProps> = ({
   value,
@@ -27,18 +37,29 @@ const PalettePicker: FC<PalettePickerProps> = ({
   label = 'Color',
   variant = 'popover',
   offset,
+  shades,
+  stacked = false,
+  opened,
+  onOpenChange,
+  swatchSize,
 }) => {
   const customPalettes = useDiaryStore('customPalettes');
   const addRecentColor = useAppStore('addRecentColor');
-  const [opened, setOpened] = useState(false);
+  const [uncontrolledOpened, setUncontrolledOpened] = useState(false);
+
+  const isControlled = opened !== undefined;
+  const isOpen = isControlled ? opened : uncontrolledOpened;
+  const setIsOpen = onOpenChange ?? setUncontrolledOpened;
 
   const displayName = getColorName(value, customPalettes);
   const isCompact = variant === 'compact';
+  const resolvedSwatchSize =
+    swatchSize ?? (isCompact ? COMPACT_SWATCH_SIZE : DEFAULT_SWATCH_SIZE);
 
   const handleChange = (next: ColorId) => {
     onChange(next);
     addRecentColor(next);
-    setOpened(false);
+    setIsOpen(false);
   };
 
   const handleValueChange = (next: ColorId) => {
@@ -50,26 +71,36 @@ const PalettePicker: FC<PalettePickerProps> = ({
       type="button"
       className={pickerTriggerClassNames({
         variant,
-        opened,
+        opened: isOpen,
       })}
+      style={
+        swatchSize != null
+          ? {
+              width: resolvedSwatchSize + 4,
+              height: resolvedSwatchSize + 4,
+            }
+          : undefined
+      }
       aria-label={`Selected color: ${displayName}`}
-      aria-expanded={opened}
-      onClick={() => setOpened((current) => !current)}
+      aria-expanded={isOpen}
+      onClick={() => setIsOpen(!isOpen)}
     >
       <ColorSwatchCircle
         colorId={value}
-        size={isCompact ? COMPACT_SWATCH_SIZE : 28}
+        size={resolvedSwatchSize}
+        shades={shades}
       />
     </button>
   );
 
   return (
-    <div className={fieldStyles.field}>
+    <div className={fieldStyles.field} data-palette-picker>
       {label ? <span className={fieldStyles.label}>{label}</span> : null}
       <AdPopover
-        opened={opened}
-        onChange={setOpened}
+        opened={isOpen}
+        onChange={setIsOpen}
         position="bottom-start"
+        preventPositionChangeWhenVisible
         offset={offset}
         width="max-content"
         shadow="md"
@@ -87,7 +118,9 @@ const PalettePicker: FC<PalettePickerProps> = ({
           value={value}
           onChange={handleChange}
           onValueChange={handleValueChange}
-          onClose={() => setOpened(false)}
+          onClose={() => setIsOpen(false)}
+          shades={shades}
+          stacked={stacked}
         />
       </AdPopover>
     </div>

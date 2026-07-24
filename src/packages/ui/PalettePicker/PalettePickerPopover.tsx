@@ -1,7 +1,7 @@
 import { useMediaQuery } from '@mantine/hooks';
 import { useCallback, useState, type FC } from 'react';
 
-import type { ColorId } from '@/packages/color';
+import type { ColorId, PaletteShade } from '@/packages/color';
 
 import CreatePalettePanel from './CreatePalettePanel';
 import styles from './PalettePickerPopover.module.css';
@@ -12,6 +12,9 @@ export type PalettePickerPopoverProps = {
   onChange: (value: ColorId) => void;
   onValueChange: (value: ColorId) => void;
   onClose: () => void;
+  shades?: PaletteShade[];
+  /** Force narrow layout: create panel hidden until "Create new". */
+  stacked?: boolean;
 };
 
 type PopoverView = 'browse' | 'create';
@@ -21,10 +24,12 @@ const PalettePickerPopover: FC<PalettePickerPopoverProps> = ({
   onChange,
   onValueChange,
   onClose,
+  shades,
+  stacked = false,
 }) => {
   const [view, setView] = useState<PopoverView>('browse');
   const isWide = useMediaQuery('(min-width: 56rem)');
-  const hideCreateNew = isWide || view === 'create';
+  const hideCreateNew = stacked || !isWide ? view === 'create' : true;
 
   const handleSelect = useCallback(
     (colorId: ColorId) => {
@@ -42,6 +47,45 @@ const PalettePickerPopover: FC<PalettePickerPopoverProps> = ({
     [onChange, onClose],
   );
 
+  const openCreate = useCallback(() => {
+    setView('create');
+  }, []);
+
+  const openBrowse = useCallback(() => {
+    setView('browse');
+  }, []);
+
+  // Stacked: mount one panel at a time so "Create new" doesn't hide all
+  // popover content (CSS dual-panel toggle can close the AdPopover).
+  if (stacked) {
+    return (
+      <div className={styles.root} data-stacked>
+        {view === 'browse' ? (
+          <div className={styles.selectionPanel}>
+            <PaletteSelectionPanel
+              value={value}
+              onSelect={handleSelect}
+              onValueChange={onValueChange}
+              onClose={onClose}
+              onCreateNew={openCreate}
+              hideCreateNew={false}
+              shades={shades}
+            />
+          </div>
+        ) : (
+          <div className={styles.createPanelStacked}>
+            <CreatePalettePanel
+              onCancel={openBrowse}
+              onSaved={handleSaved}
+              showBack
+              shades={shades}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.root}>
       <div className={styles.layout} data-view={view}>
@@ -51,15 +95,17 @@ const PalettePickerPopover: FC<PalettePickerPopoverProps> = ({
             onSelect={handleSelect}
             onValueChange={onValueChange}
             onClose={onClose}
-            onCreateNew={() => setView('create')}
+            onCreateNew={openCreate}
             hideCreateNew={hideCreateNew}
+            shades={shades}
           />
         </div>
         <div className={styles.createPanel}>
           <CreatePalettePanel
-            onCancel={() => setView('browse')}
+            onCancel={openBrowse}
             onSaved={handleSaved}
             showBack={view === 'create'}
+            shades={shades}
           />
         </div>
       </div>

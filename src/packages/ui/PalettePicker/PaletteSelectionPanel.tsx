@@ -6,7 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useMemo, type FC, type MouseEvent } from 'react';
 
-import type { ColorId } from '@/packages/color';
+import type { ColorId, PaletteShade } from '@/packages/color';
 
 import { AdIcon } from '@/packages/base';
 import {
@@ -32,6 +32,7 @@ export type PaletteSelectionPanelProps = {
   onClose: () => void;
   onCreateNew: () => void;
   hideCreateNew?: boolean;
+  shades?: PaletteShade[];
 };
 
 const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
@@ -41,6 +42,7 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
   onClose,
   onCreateNew,
   hideCreateNew = false,
+  shades,
 }) => {
   const customPalettes = useDiaryStore('customPalettes');
   const deleteCustomPalette = useDiaryStore('deleteCustomPalette');
@@ -125,7 +127,11 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
                           <AdIcon icon={faCheck} size={8} />
                         </span>
                       ) : null}
-                      <ColorSwatchCircle colorId={colorId} size={32} />
+                      <ColorSwatchCircle
+                        colorId={colorId}
+                        size={32}
+                        shades={shades}
+                      />
                       <span className={styles.recentName}>{name}</span>
                     </button>
                   </div>
@@ -144,6 +150,7 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
                   colorId={colorId}
                   selected={value === colorId}
                   onSelect={onSelect}
+                  shades={shades}
                 />
               </div>
             ))}
@@ -161,6 +168,10 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
                   <button
                     type="button"
                     className={styles.createCard}
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
                     onClick={onCreateNew}
                   >
                     <AdIcon icon={faPlus} size={14} />
@@ -199,7 +210,11 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
                           aria-pressed={selected}
                           onClick={() => onSelect(colorId)}
                         >
-                          <ColorSwatchCircle colorId={colorId} size={32} />
+                          <ColorSwatchCircle
+                            colorId={colorId}
+                            size={32}
+                            shades={shades}
+                          />
                           <span className={styles.customName}>
                             {palette.name}
                           </span>

@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { AdColorPicker, AdIcon, AdInput, AdTextarea } from '@/packages/base';
 import {
   generatePaletteFromBase,
+  normalizeShades,
   type ColorId,
   type ColorPalette,
+  type PaletteShade,
 } from '@/packages/color';
 import { useAppStore, useDiaryStore } from '@/store';
 
@@ -22,14 +24,15 @@ export type CreatePalettePanelProps = {
   onCancel: () => void;
   onSaved: (colorId: ColorId) => void;
   showBack?: boolean;
+  /** Which shade inputs to show, in order. Empty/omitted = all three (default order). */
+  shades?: PaletteShade[];
 };
-
-const SHADES = ['soft', 'main', 'strong'] as const;
 
 const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
   onCancel,
   onSaved,
   showBack = false,
+  shades,
 }) => {
   const createCustomPalette = useDiaryStore('createCustomPalette');
   const addRecentColor = useAppStore('addRecentColor');
@@ -107,6 +110,7 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
   };
 
   const canSave = paletteName.trim().length > 0;
+  const visibleShades = useMemo(() => normalizeShades(shades), [shades]);
 
   return (
     <div className={styles.root}>
@@ -116,6 +120,10 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
             type="button"
             className={styles.backBtn}
             aria-label="Back to palette list"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
             onClick={onCancel}
           >
             <AdIcon icon={faArrowLeft} size={12} />
@@ -173,8 +181,13 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
           </div>
         </div>
 
-        <div className={styles.shades}>
-          {SHADES.map((shade) => (
+        <div
+          className={styles.shades}
+          style={{
+            gridTemplateColumns: `repeat(${visibleShades.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {visibleShades.map((shade) => (
             <AdColorPicker
               key={shade}
               label={shade.charAt(0).toUpperCase() + shade.slice(1)}
@@ -202,6 +215,10 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
           <button
             type="button"
             className={styles.secondaryBtn}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
             onClick={onCancel}
           >
             Cancel
