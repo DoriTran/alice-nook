@@ -13,7 +13,7 @@ import {
 } from '@/packages/base';
 import { DEFAULT_COLOR_ID } from '@/packages/color';
 import { DEFAULT_ICON_ID, normalizeIconId } from '@/packages/icon';
-import { PalettePicker } from '@/packages/ui';
+import { PalettePicker, TagSelect } from '@/packages/ui';
 import { useAppStore, useDiaryStore } from '@/store';
 
 import { resolveCreateIconId } from './create.constants';
@@ -34,10 +34,8 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
   const createChatbox = useDiaryStore('createChatbox');
   const updateChatbox = useDiaryStore('updateChatbox');
   const moveChatboxToGroup = useDiaryStore('moveChatboxToGroup');
-  const createTag = useDiaryStore('createTag');
   const selectChatbox = useAppStore('selectChatbox');
   const groups = useDiaryStore('groups');
-  const tags = useDiaryStore('tags');
   const chatboxes = useDiaryStore('chatboxes');
   const rootOrders = useDiaryStore('orders').rootOrders;
 
@@ -62,16 +60,6 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
   const [groupId, setGroupId] = useState(existing?.groupId ?? '');
   const [tagIds, setTagIds] = useState<string[]>(
     existing?.tags.map((stat) => stat.tagId) ?? [],
-  );
-
-  const tagOptions = useMemo(
-    () =>
-      Object.values(tags).map((tag) => ({
-        value: tag.id,
-        label: tag.label,
-        colorId: tag.colorId,
-      })),
-    [tags],
   );
 
   const groupSelectOptions = useMemo(
@@ -176,31 +164,13 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
         />
       </AdField>
 
-      <AdSelect
-        multiple
+      <TagSelect
         label="Tags (optional)"
         placeholder="Search or create tags..."
-        data={tagOptions}
+        emptyLabel="No tags found"
         value={tagIds}
         onChange={setTagIds}
-        searchable
-        create
-        emptyLabel="No tags found"
-        onCreate={(label) => {
-          const existingTag = Object.values(tags).find(
-            (tag) => tag.label.toLowerCase() === label.toLowerCase(),
-          );
-
-          if (existingTag) {
-            setTagIds((prev) =>
-              prev.includes(existingTag.id) ? prev : [...prev, existingTag.id],
-            );
-            return;
-          }
-
-          const id = createTag({ label, colorId: DEFAULT_COLOR_ID });
-          setTagIds((prev) => [...prev, id]);
-        }}
+        withinPortal
       />
 
       <AdSelect

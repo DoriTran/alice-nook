@@ -11,5 +11,7 @@ export { default as NotchedCard } from './NotchedCard/NotchedCard';
 export {
   default as PalettePicker,
   type PalettePickerProps,
+  type PaletteShade,
 } from './PalettePicker';
+export { default as TagSelect, type TagSelectProps } from './TagSelect';
 export { default as ThemeSelection } from './ThemeSelection/ThemeSelection';

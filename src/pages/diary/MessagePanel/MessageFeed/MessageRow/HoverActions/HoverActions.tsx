@@ -1,5 +1,5 @@
 import { faReply, faSmile, faTags } from '@fortawesome/free-solid-svg-icons';
-import { useMemo, useState, type FC } from 'react';
+import { useState, type FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
@@ -8,10 +8,8 @@ import {
   AdEmojiPickerPanel,
   AdPopover,
   AdQuickReactionBar,
-  AdSelect,
 } from '@/packages/base';
-import { DEFAULT_COLOR_ID } from '@/packages/color';
-import { useDiaryStore } from '@/store';
+import { TagSelect } from '@/packages/ui';
 
 import type { MessageActionsAPI } from '../../../.hooks/useMessageActions';
 
@@ -34,23 +32,11 @@ const HoverActions: FC<HoverActionsProps> = ({
   side,
   className,
 }) => {
-  const tags = useDiaryStore('tags');
-  const createTag = useDiaryStore('createTag');
   const [reactionOpen, setReactionOpen] = useState(false);
   const [fullPickerOpen, setFullPickerOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const popupOpen = reactionOpen || tagOpen || menuOpen;
-
-  const tagOptions = useMemo(
-    () =>
-      Object.values(tags).map((tag) => ({
-        value: tag.id,
-        label: tag.label,
-        colorId: tag.colorId,
-      })),
-    [tags],
-  );
 
   const handleReactionSelect = (emoji: string) => {
     actions.toggleReaction(message.id, emoji);
@@ -84,7 +70,7 @@ const HoverActions: FC<HoverActionsProps> = ({
         opened={tagOpen}
         onChange={setTagOpen}
         position="top"
-        width={260}
+        width={450}
         classNames={{ dropdown: styles.tagDropdown }}
         anchor={
           <AdActionButton
@@ -97,35 +83,13 @@ const HoverActions: FC<HoverActionsProps> = ({
         }
       >
         <div className={styles.tagPopover}>
-          <AdSelect
-            multiple
+          <TagSelect
             placeholder="Search or create tags..."
-            data={tagOptions}
-            value={message.tagIds}
-            searchable
-            create
             emptyLabel="No tags found"
+            value={message.tagIds}
+            stackedPalette
             onChange={(tagIds) => {
               actions.setTags(message.id, tagIds);
-            }}
-            onCreate={(label) => {
-              const existingTag = Object.values(tags).find(
-                (tag) => tag.label.toLowerCase() === label.toLowerCase(),
-              );
-
-              if (existingTag) {
-                if (!message.tagIds.includes(existingTag.id)) {
-                  actions.setTags(message.id, [
-                    ...message.tagIds,
-                    existingTag.id,
-                  ]);
-                }
-
-                return;
-              }
-
-              const id = createTag({ label, colorId: DEFAULT_COLOR_ID });
-              actions.setTags(message.id, [...message.tagIds, id]);
             }}
           />
         </div>

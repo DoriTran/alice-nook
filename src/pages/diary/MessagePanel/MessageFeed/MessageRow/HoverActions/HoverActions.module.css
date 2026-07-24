@@ -6,7 +6,7 @@
 }
 
 .tagPopover {
-  min-width: 14rem;
+  min-width: 450px;
 }
 
 /* Strip Mantine dropdown chrome so only the field / pill / picker card show */
