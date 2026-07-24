@@ -68,13 +68,6 @@ const MessageBubble: FC<MessageBubbleProps> = ({
     />
   ) : null;
 
-  const attachments = hasAttachments ? (
-    <AttachmentList
-      attachments={message.attachments}
-      align={isAssistant ? 'start' : 'end'}
-    />
-  ) : null;
-
   let body: ReactNode = null;
 
   if (hasDecorators) {
@@ -107,15 +100,39 @@ const MessageBubble: FC<MessageBubbleProps> = ({
     />
   ) : null;
 
+  /** Prefer the text bubble; fall back to attachments so action-only rows don't leave a gap. */
+  const actionsBesideAttachments = Boolean(hoverActions) && !body && hasAttachments;
+
+  const withHoverActions = (slot: ReactNode) => (
+    <div className={styles.bubbleRow}>
+      {!isAssistant ? hoverActions : null}
+      {slot ? <div className={styles.bubbleSlot}>{slot}</div> : null}
+      {isAssistant ? hoverActions : null}
+    </div>
+  );
+
+  const attachments = hasAttachments ? (
+    actionsBesideAttachments ? (
+      withHoverActions(
+        <AttachmentList
+          attachments={message.attachments}
+          align={isAssistant ? 'start' : 'end'}
+        />,
+      )
+    ) : (
+      <AttachmentList
+        attachments={message.attachments}
+        align={isAssistant ? 'start' : 'end'}
+      />
+    )
+  ) : null;
+
   /** Actions sit beside the bubble only so reply / reaction hang don't shift them. */
-  const bubbleRow =
-    body || hoverActions ? (
-      <div className={styles.bubbleRow}>
-        {!isAssistant ? hoverActions : null}
-        {body ? <div className={styles.bubbleSlot}>{body}</div> : null}
-        {isAssistant ? hoverActions : null}
-      </div>
-    ) : null;
+  const bubbleRow = body
+    ? withHoverActions(body)
+    : hoverActions && !hasAttachments
+      ? withHoverActions(null)
+      : null;
 
   const bodyStack =
     bubbleRow || hasReactions ? (
