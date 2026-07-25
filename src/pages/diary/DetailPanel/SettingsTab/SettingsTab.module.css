@@ -1,0 +1,40 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: var(--font-bold);
+  color: var(--text);
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid
+    color-mix(in srgb, var(--danger, #e53935) 35%, var(--border-soft));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--danger, #e53935) 8%, var(--surface));
+  color: var(--danger, #e53935);
+  font-size: var(--font-xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.deleteButton:hover {
+  background: color-mix(in srgb, var(--danger, #e53935) 14%, var(--surface));
+}

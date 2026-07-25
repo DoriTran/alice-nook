@@ -7,7 +7,7 @@ import styles from './Tabs.module.css';
 const TAB_ITEMS: { id: DetailPanelTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'media', label: 'Media' },
-  { id: 'category', label: 'Category' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 export type TabsProps = {

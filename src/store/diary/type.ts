@@ -56,6 +56,7 @@ export type DiaryStoreActions = {
   createTag: (data?: Partial<Tag>) => string;
   updateTag: (tagId: string, data: Partial<Tag>) => void;
   deleteTag: (tagId: string) => void;
+  removeTagFromChatbox: (chatboxId: string, tagId: string) => void;
 
   // #endregion
 

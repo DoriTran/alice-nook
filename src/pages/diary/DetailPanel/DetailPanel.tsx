@@ -5,11 +5,11 @@ import { useDiaryStore } from '@/store';
 
 import type { DetailPanelTab } from '../types';
 
-import CategoryTab from './CategoryTab/CategoryTab';
 import styles from './DetailPanel.module.css';
 import Header from './Header/Header';
 import MediaTab from './MediaTab/MediaTab';
 import OverviewTab from './OverviewTab/OverviewTab';
+import SettingsTab from './SettingsTab/SettingsTab';
 import Tabs from './Tabs/Tabs';
 import { useDetailPanelData } from './useDetailPanelData';
 
@@ -19,6 +19,7 @@ export type DetailPanelProps = {
   onJumpToMessage: (messageId: string) => void;
   onFocusTimelineSearch: () => void;
   onEditChatbox: (chatboxId: string) => void;
+  onDeleteChatbox: (chatboxId: string) => void;
 };
 
 const DetailPanel: FC<DetailPanelProps> = ({
@@ -27,20 +28,15 @@ const DetailPanel: FC<DetailPanelProps> = ({
   onJumpToMessage,
   onFocusTimelineSearch,
   onEditChatbox,
+  onDeleteChatbox,
 }) => {
   const updateChatbox = useDiaryStore('updateChatbox');
   const data = useDetailPanelData(chatboxId);
 
   const [activeTab, setActiveTab] = useState<DetailPanelTab>('overview');
-  const [pinnedExpanded, setPinnedExpanded] = useState(true);
-  const [archivedExpanded, setArchivedExpanded] = useState(false);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   useEffect(() => {
     setActiveTab('overview');
-    setPinnedExpanded(true);
-    setArchivedExpanded(false);
-    setSelectedTagIds([]);
   }, [chatboxId]);
 
   const handleToggleNotification = useCallback(() => {
@@ -52,29 +48,6 @@ const DetailPanel: FC<DetailPanelProps> = ({
       notificationEnabled: !data.identity.notificationEnabled,
     });
   }, [chatboxId, data.identity, updateChatbox]);
-
-  const handlePinnedBarClick = useCallback(() => {
-    setActiveTab('category');
-    setPinnedExpanded(true);
-  }, []);
-
-  const handleArchivedBarClick = useCallback(() => {
-    setActiveTab('category');
-    setArchivedExpanded(true);
-  }, []);
-
-  const handleTopTagClick = useCallback((tagId: string) => {
-    setActiveTab('category');
-    setSelectedTagIds([tagId]);
-  }, []);
-
-  const handleToggleTag = useCallback((tagId: string) => {
-    setSelectedTagIds((current) =>
-      current.includes(tagId)
-        ? current.filter((id) => id !== tagId)
-        : [...current, tagId],
-    );
-  }, []);
 
   if (!data.identity || !data.stats) {
     return null;
@@ -98,11 +71,13 @@ const DetailPanel: FC<DetailPanelProps> = ({
       <div className={styles.scroll}>
         {activeTab === 'overview' ? (
           <OverviewTab
+            chatboxId={chatboxId}
             stats={data.stats}
-            topTags={data.topTags}
-            onPinnedClick={handlePinnedBarClick}
-            onArchivedClick={handleArchivedBarClick}
-            onTagClick={handleTopTagClick}
+            tags={data.tags}
+            pinnedMessages={data.pinnedMessages}
+            archivedMessages={data.archivedMessages}
+            allMessages={data.allMessages}
+            onJumpToMessage={onJumpToMessage}
           />
         ) : null}
         {activeTab === 'media' ? (
@@ -111,19 +86,10 @@ const DetailPanel: FC<DetailPanelProps> = ({
             onJumpToMessage={onJumpToMessage}
           />
         ) : null}
-        {activeTab === 'category' ? (
-          <CategoryTab
-            pinnedMessages={data.pinnedMessages}
-            archivedMessages={data.archivedMessages}
-            allMessages={data.allMessages}
-            tags={data.tags}
-            pinnedExpanded={pinnedExpanded}
-            archivedExpanded={archivedExpanded}
-            selectedTagIds={selectedTagIds}
-            onPinnedExpandedChange={setPinnedExpanded}
-            onArchivedExpandedChange={setArchivedExpanded}
-            onToggleTag={handleToggleTag}
-            onJumpToMessage={onJumpToMessage}
+        {activeTab === 'settings' ? (
+          <SettingsTab
+            chatboxName={data.identity.name}
+            onDeleteChatbox={() => onDeleteChatbox(chatboxId)}
           />
         ) : null}
       </div>

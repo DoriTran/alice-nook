@@ -734,6 +734,46 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
 
           return nextState;
         }),
+      removeTagFromChatbox: (chatboxId, tagId) =>
+        set((state) => {
+          if (!state.chatboxes[chatboxId] || !state.tags[tagId]) {
+            return state;
+          }
+
+          const messageIds = state.orders.chatboxMessageOrders[chatboxId] ?? [];
+          let changed = false;
+
+          const messages = {
+            ...state.messages,
+          };
+
+          messageIds.forEach((messageId) => {
+            const message = messages[messageId];
+
+            if (!message || !message.tagIds.includes(tagId)) {
+              return;
+            }
+
+            changed = true;
+            messages[messageId] = {
+              ...message,
+              tagIds: message.tagIds.filter((id) => id !== tagId),
+              updatedAt: nowIso(),
+            };
+          });
+
+          if (!changed) {
+            return state;
+          }
+
+          return recalculateChatboxTags(
+            {
+              ...state,
+              messages,
+            },
+            chatboxId,
+          );
+        }),
 
       // #endregion
 

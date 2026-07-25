@@ -17,6 +17,9 @@ const Diary: FC = () => {
   const diaryPage = useAppStore('diaryPage');
   const selectChatbox = useAppStore('selectChatbox');
   const messages = useDiaryStore('messages');
+  const chatboxes = useDiaryStore('chatboxes');
+  const orders = useDiaryStore('orders');
+  const deleteChatbox = useDiaryStore('deleteChatbox');
   const selectedChatboxId = diaryPage.selectedChatboxId;
   const [detailPanelCollapsed, setDetailPanelCollapsed] = useState(false);
   const [formModal, setFormModal] = useState<DiaryFormModalState>(null);
@@ -44,26 +47,42 @@ const Diary: FC = () => {
     setForceVisibleMessageIds([]);
   }, [selectedChatboxId]);
 
+  // Keep archived jump targets visible for the rest of this chat session
+  // (cleared only when selectedChatboxId changes above).
+  useEffect(() => {
+    if (!pendingScrollMessageId || !selectedChatboxId) {
+      return;
+    }
+
+    const message = messages[pendingScrollMessageId];
+
+    if (
+      !message?.archived ||
+      message.chatboxId !== selectedChatboxId
+    ) {
+      return;
+    }
+
+    setForceVisibleMessageIds((current) =>
+      current.includes(pendingScrollMessageId)
+        ? current
+        : [...current, pendingScrollMessageId],
+    );
+  }, [messages, pendingScrollMessageId, selectedChatboxId]);
+
   const handleJumpToMessage = useCallback(
     (messageId: string) => {
-      const message = messages[messageId];
-
-      if (message?.archived) {
-        setForceVisibleMessageIds([messageId]);
-      }
-
       setPendingScrollMessageId(messageId);
 
       if (detailPanelCollapsed) {
         setDetailPanelCollapsed(false);
       }
     },
-    [detailPanelCollapsed, messages],
+    [detailPanelCollapsed],
   );
 
   const handlePendingScrollHandled = useCallback(() => {
     setPendingScrollMessageId(null);
-    setForceVisibleMessageIds([]);
   }, []);
 
   const handleFocusTimelineSearch = useCallback(() => {
@@ -77,6 +96,21 @@ const Diary: FC = () => {
       searchInputRef.current?.focus();
     });
   }, [detailPanelCollapsed]);
+
+  const handleDeleteChatbox = useCallback(
+    (chatboxId: string) => {
+      const nextId =
+        orders.rootOrders.find(
+          (id) => id !== chatboxId && Boolean(chatboxes[id]),
+        ) ??
+        Object.keys(chatboxes).find((id) => id !== chatboxId) ??
+        null;
+
+      deleteChatbox(chatboxId);
+      selectChatbox(nextId);
+    },
+    [chatboxes, deleteChatbox, orders.rootOrders, selectChatbox],
+  );
 
   return (
     <div className={styles.rootPage}>
@@ -99,12 +133,6 @@ const Diary: FC = () => {
           pendingScrollMessageId={pendingScrollMessageId}
           onPendingScrollHandled={handlePendingScrollHandled}
           onNavigateToChatbox={(targetChatboxId, messageId) => {
-            const message = messages[messageId];
-
-            if (message?.archived) {
-              setForceVisibleMessageIds([messageId]);
-            }
-
             setPendingScrollMessageId(messageId);
             selectChatbox(targetChatboxId);
           }}
@@ -124,6 +152,7 @@ const Diary: FC = () => {
         onEditChatbox={(id) =>
           setFormModal({ action: 'edit', entity: 'chatbox', id })
         }
+        onDeleteChatbox={handleDeleteChatbox}
       />
       <DiaryFormModal state={formModal} onClose={() => setFormModal(null)} />
     </div>

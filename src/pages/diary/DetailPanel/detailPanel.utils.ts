@@ -225,6 +225,49 @@ export const filterMediaItems = (
   return items.filter((item) => item.attachment.type === targetType);
 };
 
+export type MediaMonthGroup = {
+  monthKey: string;
+  label: string;
+  items: DetailPanelMediaItem[];
+};
+
+const monthLabelFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'long',
+  year: 'numeric',
+});
+
+export const groupMediaByMonth = (
+  items: DetailPanelMediaItem[],
+): MediaMonthGroup[] => {
+  const groups = new Map<string, MediaMonthGroup>();
+
+  for (const item of items) {
+    const date = new Date(item.createdAt);
+
+    if (Number.isNaN(date.getTime())) {
+      continue;
+    }
+
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const existing = groups.get(monthKey);
+
+    if (existing) {
+      existing.items.push(item);
+      continue;
+    }
+
+    groups.set(monthKey, {
+      monthKey,
+      label: monthLabelFormatter.format(date),
+      items: [item],
+    });
+  }
+
+  return Array.from(groups.values()).sort((a, b) =>
+    b.monthKey.localeCompare(a.monthKey),
+  );
+};
+
 export const getPinnedMessages = (messages: Message[]): Message[] =>
   messages.filter((message) => message.pinned);
 

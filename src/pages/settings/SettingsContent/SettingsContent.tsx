@@ -9,6 +9,7 @@ import {
   DataSyncSection,
   LibrarySection,
   MessagesSection,
+  TagsSection,
 } from '../sections';
 import SearchResults from './SearchResults';
 import styles from './SettingsContent.module.css';
@@ -24,6 +25,7 @@ const SECTION_BY_CATEGORY: Record<SettingsCategoryId, FC> = {
   appearance: AppearanceSection,
   composer: ComposerSection,
   messages: MessagesSection,
+  tags: TagsSection,
   library: LibrarySection,
   data: DataSyncSection,
   about: AboutSection,

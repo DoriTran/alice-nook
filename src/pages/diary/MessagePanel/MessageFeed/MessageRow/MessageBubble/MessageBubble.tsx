@@ -1,6 +1,10 @@
 import type { CSSProperties, FC, ReactNode } from 'react';
 
-import { faCheck, faThumbtack } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBoxArchive,
+  faCheck,
+  faThumbtack,
+} from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 
 import type { Message } from '@/store/diary/type';
@@ -47,12 +51,26 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const surfaceBg = isAssistant ? 'var(--chat-text-bg)' : 'var(--chat-user-bg)';
   const reactionAlign = isAssistant ? 'start' : 'end';
 
-  const pinnedBadge = message.pinned ? (
-    <span className={styles.pinned}>
-      <AdIcon icon={faThumbtack} size={9} />
-      Pinned
-    </span>
-  ) : null;
+  const statusBadge =
+    message.archived || message.pinned ? (
+      <span className={styles.pinned}>
+        {message.archived ? (
+          <span className={styles.statusItem}>
+            <AdIcon icon={faBoxArchive} size={9} />
+            Archived
+          </span>
+        ) : null}
+        {message.archived && message.pinned ? (
+          <span className={styles.statusSep}>•</span>
+        ) : null}
+        {message.pinned ? (
+          <span className={styles.statusItem}>
+            <AdIcon icon={faThumbtack} size={9} />
+            Pinned
+          </span>
+        ) : null}
+      </span>
+    ) : null;
 
   const reply = message.replyToMessageId ? (
     <ReplyPreview
@@ -151,7 +169,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         } as CSSProperties
       }
     >
-      {pinnedBadge}
+      {statusBadge}
       {reply}
       {forward}
       {attachments}

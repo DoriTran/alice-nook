@@ -1,125 +1,233 @@
-import type { FC } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 
-import {
-  faComment,
-  faFile,
-  faImage,
-  faPaperclip,
-  faVideo,
-} from '@fortawesome/free-solid-svg-icons';
+import type { ColorId } from '@/packages/color';
+import type { Message } from '@/store/diary/type';
 
-import { AdIcon } from '@/packages/base';
+import { AdConfirmDialog } from '@/packages/base';
+import { useDiaryStore } from '@/store';
 
 import type { DetailPanelStats, DetailPanelTag } from '../detailPanel.utils';
 
-import InfoCallout from '../components/InfoCallout';
+import MessageListDialog from '../components/MessageListDialog';
 import ProgressBarRow from '../components/ProgressBarRow';
-import StatCard from '../components/StatCard';
+import { filterMessagesByTags } from '../detailPanel.utils';
+import CollapsibleSection from './CollapsibleSection';
 import styles from './OverviewTab.module.css';
-import TagFill from './TagFill';
+import StatisticsSection from './StatisticsSection';
+import TagFormRow from './TagFormRow';
+import TagPillRow from './TagPillRow';
+
+type MessageDialogState =
+  | { kind: 'pinned' }
+  | { kind: 'archived' }
+  | { kind: 'tag'; tagId: string; label: string }
+  | null;
 
 export type OverviewTabProps = {
+  chatboxId: string;
   stats: DetailPanelStats;
-  topTags: DetailPanelTag[];
-  onPinnedClick: () => void;
-  onArchivedClick: () => void;
-  onTagClick: (tagId: string) => void;
+  tags: DetailPanelTag[];
+  pinnedMessages: Message[];
+  archivedMessages: Message[];
+  allMessages: Message[];
+  onJumpToMessage: (messageId: string) => void;
 };
 
 const OverviewTab: FC<OverviewTabProps> = ({
+  chatboxId,
   stats,
-  topTags,
-  onPinnedClick,
-  onArchivedClick,
-  onTagClick,
+  tags,
+  pinnedMessages,
+  archivedMessages,
+  allMessages,
+  onJumpToMessage,
 }) => {
-  const maxTagCount = topTags[0]?.count ?? 1;
+  const storeTags = useDiaryStore('tags');
+  const removeTagFromChatbox = useDiaryStore('removeTagFromChatbox');
+
+  const [messageDialog, setMessageDialog] = useState<MessageDialogState>(null);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
+  const [createdTagIds, setCreatedTagIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setCreatedTagIds([]);
+    setEditingTagId(null);
+  }, [chatboxId]);
+
+  const displayTags = useMemo(() => {
+    const usedIds = new Set(tags.map((tag) => tag.tagId));
+    const extras: DetailPanelTag[] = [];
+
+    for (const tagId of createdTagIds) {
+      if (usedIds.has(tagId)) {
+        continue;
+      }
+
+      const tag = storeTags[tagId];
+
+      if (!tag) {
+        continue;
+      }
+
+      extras.push({
+        tagId: tag.id,
+        label: tag.label,
+        count: 0,
+        colorId: tag.colorId,
+      });
+    }
+
+    return [...extras, ...tags];
+  }, [createdTagIds, storeTags, tags]);
+
+  const deletingTag = useMemo(
+    () => displayTags.find((tag) => tag.tagId === deletingTagId) ?? null,
+    [deletingTagId, displayTags],
+  );
+
+  const dialogMessages = useMemo(() => {
+    if (!messageDialog) {
+      return [];
+    }
+
+    if (messageDialog.kind === 'pinned') {
+      return pinnedMessages;
+    }
+
+    if (messageDialog.kind === 'archived') {
+      return archivedMessages;
+    }
+
+    return filterMessagesByTags(allMessages, [messageDialog.tagId]);
+  }, [allMessages, archivedMessages, messageDialog, pinnedMessages]);
+
+  const dialogTitle = useMemo(() => {
+    if (!messageDialog) {
+      return '';
+    }
+
+    if (messageDialog.kind === 'pinned') {
+      return 'Pinned messages';
+    }
+
+    if (messageDialog.kind === 'archived') {
+      return 'Archived messages';
+    }
+
+    return `#${messageDialog.label}`;
+  }, [messageDialog]);
+
+  const handleDeleteTag = useCallback(() => {
+    if (!deletingTagId) {
+      return;
+    }
+
+    removeTagFromChatbox(chatboxId, deletingTagId);
+    setCreatedTagIds((current) =>
+      current.filter((tagId) => tagId !== deletingTagId),
+    );
+    setEditingTagId((current) =>
+      current === deletingTagId ? null : current,
+    );
+    setDeletingTagId(null);
+  }, [chatboxId, deletingTagId, removeTagFromChatbox]);
+
+  const handleTagCreated = useCallback(
+    (tag: { tagId: string; label: string; colorId: ColorId }) => {
+      setCreatedTagIds((current) =>
+        current.includes(tag.tagId) ? current : [tag.tagId, ...current],
+      );
+    },
+    [],
+  );
 
   return (
     <div className={styles.root}>
-      <section className={styles.section}>
-        <h3 className={styles.heading}>Statistics</h3>
-        <div className={styles.statGrid}>
-          <StatCard
-            label="Messages"
-            value={stats.totalMessages}
-            icon={<AdIcon icon={faComment} size={12} />}
-          />
-          <StatCard
-            label="Attachments"
-            value={stats.totalAttachments}
-            icon={<AdIcon icon={faPaperclip} size={12} />}
-          />
-          <StatCard
-            label="Images"
-            value={stats.imageCount}
-            icon={<AdIcon icon={faImage} size={12} />}
-          />
-          <StatCard
-            label="Videos"
-            value={stats.videoCount}
-            icon={<AdIcon icon={faVideo} size={12} />}
-          />
-          <StatCard
-            label="Files"
-            value={stats.fileCount}
-            icon={<AdIcon icon={faFile} size={12} />}
-          />
-          <StatCard label="Last updated" value={stats.updatedLabel} />
-        </div>
-      </section>
+      <CollapsibleSection title="Statistics">
+        <StatisticsSection stats={stats} />
+      </CollapsibleSection>
 
-      <section className={styles.section}>
-        <h3 className={styles.heading}>Message Status</h3>
+      <CollapsibleSection title="Messages">
         <div className={styles.progressList}>
           <ProgressBarRow
-            label="Pinned"
+            label="Pinned Message"
             count={stats.pinnedCount}
             total={stats.totalMessages}
-            onClick={onPinnedClick}
+            onClick={() => setMessageDialog({ kind: 'pinned' })}
           />
           <ProgressBarRow
-            label="Archived"
+            label="Archived Message"
             count={stats.archivedCount}
             total={stats.totalMessages}
             tone="blue"
-            onClick={onArchivedClick}
+            onClick={() => setMessageDialog({ kind: 'archived' })}
           />
         </div>
-        <InfoCallout>
-          Click a bar to open the Category tab with that section expanded.
-        </InfoCallout>
-      </section>
+      </CollapsibleSection>
 
-      {topTags.length > 0 ? (
-        <section className={styles.section}>
-          <h3 className={styles.heading}>Top Tags</h3>
-          <ul className={styles.tagList}>
-            {topTags.map((tag) => {
-              const percent = Math.round((tag.count / maxTagCount) * 100);
+      <CollapsibleSection title="Tags">
+        <ul className={styles.tagPillList}>
+          <TagFormRow mode="create" onCreated={handleTagCreated} />
+          {displayTags.map((tag) => (
+            <TagPillRow
+              key={tag.tagId}
+              tag={tag}
+              editing={editingTagId === tag.tagId}
+              onPillClick={(tagId) => {
+                const match = displayTags.find(
+                  (entry) => entry.tagId === tagId,
+                );
 
-              return (
-                <li key={tag.tagId}>
-                  <button
-                    type="button"
-                    className={styles.tagRow}
-                    onClick={() => onTagClick(tag.tagId)}
-                  >
-                    <span className={styles.tagLabel}>#{tag.label}</span>
-                    <span className={styles.tagTrack} aria-hidden>
-                      <TagFill colorId={tag.colorId} percent={percent} />
-                    </span>
-                    <span className={styles.tagCount}>{tag.count}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <InfoCallout>
-            Click a tag to filter messages in the Category tab.
-          </InfoCallout>
-        </section>
-      ) : null}
+                if (!match) {
+                  return;
+                }
+
+                setMessageDialog({
+                  kind: 'tag',
+                  tagId,
+                  label: match.label,
+                });
+              }}
+              onEdit={setEditingTagId}
+              onCancelEdit={() => setEditingTagId(null)}
+              onSaved={() => setEditingTagId(null)}
+              onDelete={setDeletingTagId}
+            />
+          ))}
+        </ul>
+        {displayTags.length === 0 ? (
+          <p className={styles.emptyTags}>No tags in this chat yet.</p>
+        ) : null}
+      </CollapsibleSection>
+
+      <MessageListDialog
+        opened={messageDialog !== null}
+        onClose={() => setMessageDialog(null)}
+        title={dialogTitle}
+        messages={dialogMessages}
+        showPin={messageDialog?.kind === 'pinned'}
+        emptyLabel={
+          messageDialog?.kind === 'tag'
+            ? 'No messages with this tag'
+            : 'No messages'
+        }
+        onJumpToMessage={onJumpToMessage}
+      />
+
+      <AdConfirmDialog
+        opened={deletingTag !== null}
+        onClose={() => setDeletingTagId(null)}
+        onConfirm={handleDeleteTag}
+        title="Remove tag from this chat?"
+        message={
+          deletingTag
+            ? `“#${deletingTag.label}” will be removed from all messages in this chat. The tag itself stays available elsewhere.`
+            : undefined
+        }
+        confirmLabel="Remove"
+        destructive
+      />
     </div>
   );
 };

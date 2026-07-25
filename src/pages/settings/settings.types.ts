@@ -4,6 +4,7 @@ export type SettingsCategoryId =
   | 'appearance'
   | 'composer'
   | 'messages'
+  | 'tags'
   | 'library'
   | 'data'
   | 'about';

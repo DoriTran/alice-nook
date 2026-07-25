@@ -196,10 +196,21 @@ const TagSelect: FC<TagSelectProps> = ({
     [tagList],
   );
 
+  const clearEditState = useCallback(() => {
+    setEditingTagId(null);
+    setEditDraft(null);
+    setEditError(null);
+    setEditPaletteOpen(false);
+  }, []);
+
   const handleSelect = useCallback(
     (tagId: string) => {
-      if (editingTagId) {
+      if (editingTagId === tagId) {
         return;
+      }
+
+      if (editingTagId) {
+        clearEditState();
       }
 
       if (!value.includes(tagId)) {
@@ -208,7 +219,7 @@ const TagSelect: FC<TagSelectProps> = ({
 
       setSearchValue('');
     },
-    [editingTagId, onChange, value],
+    [clearEditState, editingTagId, onChange, value],
   );
 
   const handleRemove = useCallback(
@@ -230,22 +241,19 @@ const TagSelect: FC<TagSelectProps> = ({
     [combobox],
   );
 
-  const cancelEdit = useCallback((event?: MouseEvent) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-    setEditingTagId(null);
-    setEditDraft(null);
-    setEditError(null);
-    setEditPaletteOpen(false);
-  }, []);
+  const cancelEdit = useCallback(
+    (event?: MouseEvent) => {
+      event?.preventDefault();
+      event?.stopPropagation();
+      clearEditState();
+    },
+    [clearEditState],
+  );
 
   const exitEditOnMainFocus = useCallback(() => {
     combobox.openDropdown();
-    setEditingTagId(null);
-    setEditDraft(null);
-    setEditError(null);
-    setEditPaletteOpen(false);
-  }, [combobox]);
+    clearEditState();
+  }, [clearEditState, combobox]);
 
   const saveEdit = useCallback(
     (event?: MouseEvent) => {
@@ -271,12 +279,9 @@ const TagSelect: FC<TagSelectProps> = ({
         label: nextLabel,
         colorId: editDraft.colorId,
       });
-      setEditingTagId(null);
-      setEditDraft(null);
-      setEditError(null);
-      setEditPaletteOpen(false);
+      clearEditState();
     },
-    [editDraft, editingTagId, isDuplicateLabel, updateTag],
+    [clearEditState, editDraft, editingTagId, isDuplicateLabel, updateTag],
   );
 
   const saveCreate = useCallback(
@@ -402,6 +407,9 @@ const TagSelect: FC<TagSelectProps> = ({
         withinPortal={withinPortal}
         offset={4}
         disabled={disabled}
+        onOptionSubmit={(tagId) => {
+          handleSelect(tagId);
+        }}
       >
         <Combobox.DropdownTarget>
           <div
@@ -452,7 +460,7 @@ const TagSelect: FC<TagSelectProps> = ({
         </Combobox.DropdownTarget>
 
         <Combobox.Dropdown className={styles.dropdown}>
-          <div className={styles.list}>
+          <Combobox.Options className={styles.list}>
             {filteredTags.map((tag) => {
               if (editingTagId === tag.id && editDraft) {
                 return (
@@ -528,19 +536,10 @@ const TagSelect: FC<TagSelectProps> = ({
               }
 
               return (
-                <div
+                <Combobox.Option
                   key={tag.id}
+                  value={tag.id}
                   className={styles.row}
-                  role="option"
-                  tabIndex={0}
-                  aria-selected={false}
-                  onClick={() => handleSelect(tag.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleSelect(tag.id);
-                    }
-                  }}
                 >
                   <span className={styles.rowChip}>
                     <AdChip
@@ -560,14 +559,14 @@ const TagSelect: FC<TagSelectProps> = ({
                       <AdIcon icon={faPen} size={11} />
                     </button>
                   </span>
-                </div>
+                </Combobox.Option>
               );
             })}
 
             {shouldShowCreate ? (
               <div>
                 <div
-                  className={clsx(styles.formRow, styles.createRow)}
+                  className={clsx(styles.formRow, styles.createRow, styles.row)}
                   onMouseDown={handleCreateRowMouseDown}
                 >
                   <div
@@ -624,9 +623,11 @@ const TagSelect: FC<TagSelectProps> = ({
             ) : null}
 
             {showEmpty ? (
-              <div className={styles.empty}>{emptyMessage}</div>
+              <Combobox.Empty className={styles.empty}>
+                {emptyMessage}
+              </Combobox.Empty>
             ) : null}
-          </div>
+          </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
     </div>

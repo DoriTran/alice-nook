@@ -97,4 +97,4 @@ export type ChatboxDetailData = {
 
 export type MediaFilter = 'all' | 'images' | 'videos' | 'links' | 'files';
 
-export type DetailPanelTab = 'overview' | 'media' | 'category';
+export type DetailPanelTab = 'overview' | 'media' | 'settings';

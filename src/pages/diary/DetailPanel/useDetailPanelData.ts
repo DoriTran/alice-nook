@@ -20,14 +20,11 @@ export type DetailPanelData = {
   identity: DetailPanelIdentity | null;
   stats: DetailPanelStats | null;
   tags: DetailPanelTag[];
-  topTags: DetailPanelTag[];
   mediaItems: DetailPanelMediaItem[];
   pinnedMessages: ReturnType<typeof getPinnedMessages>;
   archivedMessages: ReturnType<typeof getArchivedMessages>;
   allMessages: ReturnType<typeof getChatboxMessages>;
 };
-
-const TOP_TAG_LIMIT = 5;
 
 export const useDetailPanelData = (chatboxId: string): DetailPanelData => {
   const mode = useSettingsStore('mode');
@@ -47,7 +44,6 @@ export const useDetailPanelData = (chatboxId: string): DetailPanelData => {
         identity: null,
         stats: null,
         tags: [],
-        topTags: [],
         mediaItems: [],
         pinnedMessages: [],
         archivedMessages: [],
@@ -62,7 +58,6 @@ export const useDetailPanelData = (chatboxId: string): DetailPanelData => {
       identity: resolveChatboxIdentity(chatbox, mode, customPalettes),
       stats: computeDetailPanelStats(chatbox, allMessages),
       tags: resolvedTags,
-      topTags: resolvedTags.slice(0, TOP_TAG_LIMIT),
       mediaItems: collectDetailPanelMedia(allMessages),
       pinnedMessages: getPinnedMessages(allMessages),
       archivedMessages: getArchivedMessages(allMessages),

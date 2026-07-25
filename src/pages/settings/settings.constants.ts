@@ -5,6 +5,7 @@ import {
   faInfoCircle,
   faKeyboard,
   faPalette,
+  faTags,
 } from '@fortawesome/free-solid-svg-icons';
 
 import type {
@@ -42,6 +43,13 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
     description: 'General message and feed preferences.',
     icon: faComments,
     subSections: [{ id: 'general', label: 'General' }],
+  },
+  {
+    id: 'tags',
+    label: 'Tags',
+    description: 'Create and manage tags used across your diary.',
+    icon: faTags,
+    subSections: [{ id: 'manage', label: 'Manage Tags' }],
   },
   {
     id: 'library',
@@ -235,6 +243,21 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     subSection: 'general',
     title: 'Link Previews',
     description: 'Show rich previews for links.',
+  },
+  // Tags
+  {
+    category: 'tags',
+    subSection: 'manage',
+    title: 'Manage Tags',
+    description: 'Create, edit, and delete diary tags.',
+    keywords: ['tag', 'label', 'hashtag', 'color'],
+  },
+  {
+    category: 'tags',
+    subSection: 'manage',
+    title: 'Create Tag',
+    description: 'Add a new tag to the global library.',
+    keywords: ['create', 'new tag'],
   },
   // Library
   {
