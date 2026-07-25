@@ -28,8 +28,7 @@ const AdChipDev: FC = () => {
   const [reorderable, setReorderable] = useState(false);
   const [lastEvent, setLastEvent] = useState<string>('—');
 
-  const size: AdChipSize =
-    sizeMode === 'custom' ? customSize : sizeMode;
+  const size: AdChipSize = sizeMode === 'custom' ? customSize : sizeMode;
 
   const chipProps = {
     label,

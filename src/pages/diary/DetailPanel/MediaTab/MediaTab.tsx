@@ -1,18 +1,16 @@
-import {
-  faFile,
-  faImage,
-  faLink,
-  faPlay,
-} from '@fortawesome/free-solid-svg-icons';
+import { faImage, faPlay } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
-import { useMemo, useState, type FC } from 'react';
+import { useEffect, useMemo, useState, type FC } from 'react';
 
 import { resolveAttachmentThumbnail } from '@/api';
 import { AdIcon } from '@/packages/base';
+import {
+  getAttachmentKind,
+  isFileBucketAttachment,
+} from '@/store/diary/attachment.registry';
 
 import type { MediaFilter } from '../../types';
 
-import InfoCallout from '../components/InfoCallout';
 import {
   filterMediaItems,
   formatVideoDuration,
@@ -25,20 +23,30 @@ const FILTERS: { id: MediaFilter; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'images', label: 'Images' },
   { id: 'videos', label: 'Videos' },
-  { id: 'links', label: 'Links' },
   { id: 'files', label: 'Files' },
+  { id: 'links', label: 'Links' },
 ];
 
 const PREVIEW_LIMIT = 12;
 
 export type MediaTabProps = {
   mediaItems: DetailPanelMediaItem[];
+  filter: MediaFilter;
+  onFilterChange: (filter: MediaFilter) => void;
   onJumpToMessage: (messageId: string) => void;
 };
 
-const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
-  const [filter, setFilter] = useState<MediaFilter>('all');
+const MediaTab: FC<MediaTabProps> = ({
+  mediaItems,
+  filter,
+  onFilterChange,
+  onJumpToMessage,
+}) => {
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [filter]);
 
   const filteredItems = useMemo(
     () => filterMediaItems(mediaItems, filter),
@@ -72,7 +80,9 @@ const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
     const { attachment } = item;
     const label = getAttachmentLabel(item);
 
-    if (attachment.type === 'file' || attachment.type === 'link') {
+    if (isFileBucketAttachment(attachment) || attachment.type === 'link') {
+      const kindIcon = getAttachmentKind(attachment.type).lucideIcon;
+
       return (
         <button
           key={item.id}
@@ -82,8 +92,10 @@ const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
           aria-label={`Jump to message with ${label}`}
         >
           <AdIcon
-            icon={attachment.type === 'link' ? faLink : faFile}
+            icon={kindIcon}
+            source="lucide"
             size={18}
+            strokeWidth={1.75}
           />
           <span className={styles.fileLabel}>{label}</span>
           <span className={styles.meta}>{item.timeLabel}</span>
@@ -101,9 +113,7 @@ const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
         key={item.id}
         type="button"
         className={styles.cell}
-        style={
-          thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined
-        }
+        style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}
         onClick={() => onJumpToMessage(item.messageId)}
         aria-label={`Jump to message with ${label}`}
       >
@@ -137,10 +147,7 @@ const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
             type="button"
             className={styles.filterChip}
             data-active={filter === item.id || undefined}
-            onClick={() => {
-              setFilter(item.id);
-              setExpanded(false);
-            }}
+            onClick={() => onFilterChange(item.id)}
           >
             {item.label}
           </button>
@@ -169,10 +176,6 @@ const MediaTab: FC<MediaTabProps> = ({ mediaItems, onJumpToMessage }) => {
           View all media ({filteredItems.length})
         </button>
       ) : null}
-
-      <InfoCallout>
-        Click any media item to jump to its message in the timeline.
-      </InfoCallout>
     </div>
   );
 };

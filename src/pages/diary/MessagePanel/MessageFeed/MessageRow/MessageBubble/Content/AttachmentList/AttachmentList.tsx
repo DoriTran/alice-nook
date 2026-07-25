@@ -21,6 +21,8 @@ export type AttachmentListProps = {
   compact?: boolean;
   /** Which side the message bubble hugs — mirrors the sender's alignment. */
   align?: AttachmentListAlign;
+  /** Jump-to / pin highlight target when this list is the message surface. */
+  messageSurface?: boolean;
 };
 
 const renderGroup = (
@@ -51,6 +53,7 @@ const AttachmentList: FC<AttachmentListProps> = ({
   attachments,
   compact = false,
   align = 'end',
+  messageSurface = false,
 }) => {
   if (attachments.length === 0) {
     return null;
@@ -65,6 +68,7 @@ const AttachmentList: FC<AttachmentListProps> = ({
         align === 'start' ? styles.alignStart : styles.alignEnd,
         compact && styles.compact,
       )}
+      data-message-surface={messageSurface || undefined}
     >
       {groups.map((group) => (
         <div key={group[0].id}>{renderGroup(group, compact, align)}</div>

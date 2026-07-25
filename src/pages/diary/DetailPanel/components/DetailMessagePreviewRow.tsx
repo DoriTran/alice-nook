@@ -1,17 +1,10 @@
 import type { FC } from 'react';
 
-import { faThumbtack } from '@fortawesome/free-solid-svg-icons';
-
-import type { Message } from '@/store/diary/type';
+import type { Message, PreviewTile } from '@/store/diary/type';
 
 import { AdEmojiText, AdIcon } from '@/packages/base';
+import { resolveMessagePreview } from '@/store/diary/messagePreview.utils';
 
-import {
-  formatChatboxTime,
-  getMessagePreview,
-} from '../../ChatboxSidebar/Chatbox/chatbox.utils';
-import { getMessagePreviewText } from '../../MessagePanel/messagePanel.utils';
-import { getMessageThumbnail } from '../detailPanel.utils';
 import styles from './DetailMessagePreviewRow.module.css';
 
 export type DetailMessagePreviewRowProps = {
@@ -21,49 +14,100 @@ export type DetailMessagePreviewRowProps = {
   onClick?: () => void;
 };
 
+const PreviewTileView: FC<{ tile: PreviewTile }> = ({ tile }) => {
+  if (tile.kind === 'media') {
+    return (
+      <span
+        className={styles.previewMedia}
+        style={{ backgroundImage: `url(${tile.thumbnailUrl})` }}
+        aria-hidden
+      />
+    );
+  }
+
+  if (tile.kind === 'link') {
+    if (tile.previewUrl) {
+      return (
+        <span
+          className={styles.previewMedia}
+          style={{ backgroundImage: `url(${tile.previewUrl})` }}
+          aria-hidden
+        />
+      );
+    }
+
+    return (
+      <span className={styles.previewLink} aria-hidden>
+        <span className={styles.previewLinkHost}>{tile.hostname}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className={styles.previewFile} aria-hidden>
+      <span className={styles.previewFileExt}>{tile.extension}</span>
+    </span>
+  );
+};
+
 const DetailMessagePreviewRow: FC<DetailMessagePreviewRowProps> = ({
   message,
   showPin = false,
   tagLabels = [],
   onClick,
 }) => {
-  const title = getMessagePreview(message) || getMessagePreviewText(message);
-  const snippet = getMessagePreviewText(message);
-  const thumbnail = getMessageThumbnail(message);
-  const timeLabel = formatChatboxTime(message.createdAt);
+  const preview = resolveMessagePreview(message);
 
   return (
     <button type="button" className={styles.root} onClick={onClick}>
-      {thumbnail ? (
-        <span
-          className={styles.thumb}
-          style={{ backgroundImage: `url(${thumbnail})` }}
-          aria-hidden
+      <span
+        className={styles.iconTile}
+        style={{
+          background: preview.iconBg,
+          color: preview.iconColor,
+        }}
+        aria-hidden
+      >
+        <AdIcon
+          icon={preview.icon}
+          source="lucide"
+          size={18}
+          strokeWidth={1.75}
+          color={preview.iconColor}
         />
-      ) : (
-        <span className={styles.thumbPlaceholder} aria-hidden />
-      )}
+      </span>
+
       <span className={styles.body}>
         <span className={styles.titleRow}>
-          <span className={styles.title}>
-            <AdEmojiText text={title} />
+          <span className={styles.titleText}>
+            <AdEmojiText text={preview.title} />
           </span>
           {showPin ? (
-            <span className={styles.pinIcon}>
-              <AdIcon icon={faThumbtack} size={10} />
+            <span className={styles.pinIcon} aria-hidden>
+              <AdIcon
+                icon="Pin"
+                source="lucide"
+                size="0.85em"
+                strokeWidth={2.25}
+                color="currentColor"
+              />
             </span>
           ) : null}
         </span>
-        {snippet !== title ? (
-          <span className={styles.snippet}>
-            <AdEmojiText text={snippet} />
-          </span>
-        ) : null}
         {tagLabels.length > 0 ? (
           <span className={styles.tags}>{tagLabels.join(' · ')}</span>
         ) : null}
-        <time className={styles.time}>{timeLabel}</time>
+        <time className={styles.time}>{preview.timeLabel}</time>
       </span>
+
+      {preview.preview ? (
+        <span className={styles.previewWrap}>
+          <PreviewTileView tile={preview.preview} />
+          {preview.attachmentCount > 0 ? (
+            <span className={styles.badge}>{preview.attachmentCount}</span>
+          ) : null}
+        </span>
+      ) : null}
     </button>
   );
 };

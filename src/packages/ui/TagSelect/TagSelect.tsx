@@ -1,4 +1,9 @@
-import { faCheck, faPen, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCheck,
+  faPen,
+  faPlus,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
 import { Combobox, useCombobox } from '@mantine/core';
 import clsx from 'clsx';
 import {
@@ -61,8 +66,8 @@ const handleFormRowMouseDown = (event: MouseEvent) => {
 const isInsideTagSelectUi = (node: Element | null) =>
   Boolean(
     node?.closest('[data-tag-select-root]') ||
-      node?.closest('.mantine-Combobox-dropdown') ||
-      node?.closest('.mantine-Popover-dropdown'),
+    node?.closest('.mantine-Combobox-dropdown') ||
+    node?.closest('.mantine-Popover-dropdown'),
   );
 
 const TagSelect: FC<TagSelectProps> = ({
@@ -88,6 +93,7 @@ const TagSelect: FC<TagSelectProps> = ({
   const [editPaletteOpen, setEditPaletteOpen] = useState(false);
   const [createPaletteOpen, setCreatePaletteOpen] = useState(false);
   const suppressCreateClickRef = useRef(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const combobox = useCombobox({
     onDropdownClose: () => {
@@ -104,6 +110,15 @@ const TagSelect: FC<TagSelectProps> = ({
 
   const trimmedSearch = searchValue.trim();
 
+  useEffect(() => {
+    if (!editingTagId) {
+      return;
+    }
+
+    editInputRef.current?.focus();
+    editInputRef.current?.select();
+  }, [editingTagId]);
+
   const closeIfFocusLeft = useCallback(() => {
     window.setTimeout(() => {
       if (isInsideTagSelectUi(document.activeElement)) {
@@ -114,7 +129,7 @@ const TagSelect: FC<TagSelectProps> = ({
     }, 0);
   }, [combobox]);
 
-  const tagList = useMemo(() => Object.values(tags) as Tag[], [tags]);
+  const tagList = useMemo(() => Object.values(tags), [tags]);
 
   const tagsById = useMemo(() => {
     const map = new Map<string, Tag>();
@@ -354,14 +369,7 @@ const TagSelect: FC<TagSelectProps> = ({
         saveCreate();
       }
     },
-    [
-      editingTagId,
-      onChange,
-      saveCreate,
-      searchValue,
-      shouldShowCreate,
-      value,
-    ],
+    [editingTagId, onChange, saveCreate, searchValue, shouldShowCreate, value],
   );
 
   const handleEditInputKeyDown = useCallback(
@@ -489,6 +497,7 @@ const TagSelect: FC<TagSelectProps> = ({
                         />
                       </div>
                       <AdInput
+                        ref={editInputRef}
                         className={clsx(
                           styles.labelInput,
                           editError && styles.labelInputInvalid,
@@ -505,7 +514,6 @@ const TagSelect: FC<TagSelectProps> = ({
                         }}
                         onKeyDown={handleEditInputKeyDown}
                         aria-label="Tag name"
-                        autoFocus
                       />
                       <div className={styles.actions}>
                         <button
@@ -568,11 +576,13 @@ const TagSelect: FC<TagSelectProps> = ({
                 <div
                   className={clsx(styles.formRow, styles.createRow, styles.row)}
                   onMouseDown={handleCreateRowMouseDown}
+                  role="presentation"
                 >
                   <div
                     className={styles.pickerSlot}
                     onMouseDown={(event) => event.stopPropagation()}
                     onClick={(event) => event.stopPropagation()}
+                    role="presentation"
                   >
                     <PalettePicker
                       value={createColorId}

@@ -12,6 +12,8 @@ export type MessageDecoratorShellProps = {
   messageId: string;
   decorators: MessageDecorator[];
   attached?: boolean;
+  /** When false, jump-to highlight targets attachments instead of an empty shell. */
+  messageSurface?: boolean;
   children: ReactNode;
 };
 
@@ -19,6 +21,7 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
   messageId,
   decorators,
   attached = false,
+  messageSurface = true,
   children,
 }) => {
   const patchMessage = useDiaryStore('patchMessage');
@@ -55,6 +58,7 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
       draft={{ ...input.createInitialDraft(), decorators }}
       composing={false}
       attached={attached}
+      messageSurface={messageSurface}
       updateDecorator={updateDecorator}
       updateDraft={updateDraft}
     >

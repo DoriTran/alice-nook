@@ -94,6 +94,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         messageId={message.id}
         decorators={message.decorators}
         attached={hasAttachments}
+        messageSurface={showBody}
       >
         {showBody ? <ContentRenderer message={message} /> : null}
       </MessageDecoratorShell>
@@ -119,7 +120,8 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   ) : null;
 
   /** Prefer the text bubble; fall back to attachments so action-only rows don't leave a gap. */
-  const actionsBesideAttachments = Boolean(hoverActions) && !body && hasAttachments;
+  const actionsBesideAttachments =
+    Boolean(hoverActions) && !body && hasAttachments;
 
   const withHoverActions = (slot: ReactNode) => (
     <div className={styles.bubbleRow}>
@@ -135,12 +137,14 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         <AttachmentList
           attachments={message.attachments}
           align={isAssistant ? 'start' : 'end'}
+          messageSurface={!showBody}
         />,
       )
     ) : (
       <AttachmentList
         attachments={message.attachments}
         align={isAssistant ? 'start' : 'end'}
+        messageSurface={!showBody}
       />
     )
   ) : null;

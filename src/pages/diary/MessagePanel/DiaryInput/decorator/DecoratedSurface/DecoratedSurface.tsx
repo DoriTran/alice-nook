@@ -21,6 +21,8 @@ export type DecoratedSurfaceProps = {
   borderless?: boolean;
   /** Feed: shrink top-right radius when attachments sit above the body. */
   attached?: boolean;
+  /** Feed: participate in jump-to highlight (off for attachment-only shells). */
+  messageSurface?: boolean;
   children: ReactNode;
   updateDecorator: (index: number, decoration: MessageDecorator) => void;
   updateDraft: (updater: (draft: ComposerDraft) => ComposerDraft) => void;
@@ -48,6 +50,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
   composing,
   borderless = false,
   attached = false,
+  messageSurface = true,
   children,
   updateDecorator,
   updateDraft,
@@ -76,7 +79,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
     <div
       className={surfaceClass}
       data-decorated-surface-card
-      data-message-surface={!composing || undefined}
+      data-message-surface={!composing && messageSurface ? true : undefined}
     >
       <ComposerSurface pipeline={pipeline} ctx={ctx} borderless={borderless}>
         {children}

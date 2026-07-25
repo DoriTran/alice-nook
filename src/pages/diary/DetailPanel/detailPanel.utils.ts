@@ -11,14 +11,20 @@ import type {
 import { resolveAttachmentThumbnail } from '@/api';
 import { resolvePalette } from '@/packages/color';
 import { normalizeIconId, type IconId } from '@/packages/icon';
+import { getAttachmentMediaBucket } from '@/store/diary/attachment.registry';
+import {
+  collectMessageAttachments,
+  formatMessagePreviewTime,
+} from '@/store/diary/messagePreview.utils';
 
 import type { MediaFilter } from '../types';
 
 import {
   formatChatboxTime,
-  formatHeaderUpdatedAt,
   type ResolvedChatboxTag,
 } from '../ChatboxSidebar/Chatbox/chatbox.utils';
+
+export { collectMessageAttachments } from '@/store/diary/messagePreview.utils';
 
 export type DetailPanelStats = {
   totalMessages: number;
@@ -54,18 +60,6 @@ export type DetailPanelIdentity = {
   paletteStrong: string;
   iconBg: string;
   notificationEnabled: boolean;
-};
-
-const collectMessageAttachments = (message: Message): Attachment[] => {
-  const attachments = [...message.attachments];
-
-  if (message.variant === 'todo') {
-    for (const item of message.content.items) {
-      attachments.push(...item.attachments);
-    }
-  }
-
-  return attachments;
 };
 
 export const getChatboxMessages = (
@@ -124,7 +118,7 @@ export const computeDetailPanelStats = (
     for (const attachment of collectMessageAttachments(message)) {
       totalAttachments += 1;
 
-      switch (attachment.type) {
+      switch (getAttachmentMediaBucket(attachment.type)) {
         case 'image':
           imageCount += 1;
           break;
@@ -153,7 +147,7 @@ export const computeDetailPanelStats = (
     videoCount,
     fileCount,
     linkCount,
-    updatedLabel: formatHeaderUpdatedAt(activityAt),
+    updatedLabel: formatMessagePreviewTime(activityAt),
     pinnedCount,
     archivedCount,
   };
@@ -213,16 +207,21 @@ export const filterMediaItems = (
     return items;
   }
 
-  const typeMap: Record<Exclude<MediaFilter, 'all'>, Attachment['type']> = {
+  const bucketMap: Record<
+    Exclude<MediaFilter, 'all'>,
+    ReturnType<typeof getAttachmentMediaBucket>
+  > = {
     images: 'image',
     videos: 'video',
     links: 'link',
     files: 'file',
   };
 
-  const targetType = typeMap[filter];
+  const targetBucket = bucketMap[filter];
 
-  return items.filter((item) => item.attachment.type === targetType);
+  return items.filter(
+    (item) => getAttachmentMediaBucket(item.attachment.type) === targetBucket,
+  );
 };
 
 export type MediaMonthGroup = {

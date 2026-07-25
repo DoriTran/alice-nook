@@ -1,6 +1,7 @@
 // #region Store
 
 import type { ColorId, CustomPalette } from '@/packages/color';
+import type { IconId } from '@/packages/icon';
 
 export type DiaryStore = {
   groups: Record<string, Group>;
@@ -189,12 +190,26 @@ export type RichTextContent = {
 export type Attachment =
   | ImageAttachment
   | VideoAttachment
+  | AudioAttachment
+  | DocumentAttachment
+  | NoteAttachment
+  | ArchiveAttachment
+  | CodeAttachment
   | FileAttachment
   | LinkAttachment;
+
+export type AttachmentType = Attachment['type'];
 
 export type AttachmentBase = {
   id: string;
   name?: string;
+};
+
+/** Shared shape for non-media binary attachments (audio/document/note/archive/code/file). */
+export type BinaryAttachmentBase = AttachmentBase & {
+  url: string;
+  mimeType: string;
+  size?: number;
 };
 
 export type ImageAttachment = AttachmentBase & {
@@ -211,17 +226,47 @@ export type VideoAttachment = AttachmentBase & {
   duration?: number;
 };
 
-export type FileAttachment = AttachmentBase & {
+export type AudioAttachment = BinaryAttachmentBase & {
+  type: 'audio';
+  duration?: number;
+};
+
+export type DocumentAttachment = BinaryAttachmentBase & {
+  type: 'document';
+};
+
+export type NoteAttachment = BinaryAttachmentBase & {
+  type: 'note';
+};
+
+export type ArchiveAttachment = BinaryAttachmentBase & {
+  type: 'archive';
+};
+
+export type CodeAttachment = BinaryAttachmentBase & {
+  type: 'code';
+};
+
+/** Catch-all binary attachment when no more specific kind matches. */
+export type FileAttachment = BinaryAttachmentBase & {
   type: 'file';
-  url: string;
-  mimeType: string;
-  size?: number;
 };
 
 export type LinkAttachment = AttachmentBase & {
   type: 'link';
   url: string;
+  /** Optional Open Graph / page preview image when metadata is available. */
+  previewUrl?: string;
+  previewTitle?: string;
 };
+
+export type BinaryAttachment =
+  | AudioAttachment
+  | DocumentAttachment
+  | NoteAttachment
+  | ArchiveAttachment
+  | CodeAttachment
+  | FileAttachment;
 
 // #endregion
 
@@ -337,5 +382,55 @@ export type MessagePatchData = Partial<
     | 'content'
   >
 >;
+
+// #endregion
+
+// #region Message Preview
+
+export type PreviewSource =
+  | 'variant'
+  | 'decorator'
+  | 'attachment'
+  | 'reply'
+  | 'normal';
+
+export type PreviewTile =
+  | {
+      kind: 'media';
+      thumbnailUrl: string;
+      mediaType: 'image' | 'video';
+    }
+  | {
+      kind: 'link';
+      url: string;
+      hostname: string;
+      previewUrl?: string;
+      previewTitle?: string;
+    }
+  | {
+      kind: 'file';
+      extension: string;
+      name?: string;
+    };
+
+export type MessagePreviewStyle = {
+  /** PascalCase Lucide IconId */
+  icon: IconId;
+  iconBg: string;
+  iconColor: string;
+};
+
+export type MessagePreviewResolution = {
+  source: PreviewSource;
+  icon: IconId;
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  timeLabel: string;
+  preview: PreviewTile | null;
+  attachmentCount: number;
+  /** Winning attachment type when source is attachment (for debugging / tests). */
+  attachmentType?: AttachmentType;
+};
 
 // #endregion

@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import AdChipDev from './adchip';
 import BrushHighlightDev from './brushhighlight';
 import DragDropSortableDev from './dragdropsortable';
+import MessagePreviewDev from './messagepreview';
 import TicketShapeDev from './ticketshape';
 import TicketShape2Dev from './ticketshape2';
 
@@ -37,6 +38,11 @@ export const devTests: readonly DevTestEntry[] = [
     key: 'adchip',
     displayName: 'AdChip',
     component: AdChipDev,
+  },
+  {
+    key: 'messagepreview',
+    displayName: 'Message Preview Cards',
+    component: MessagePreviewDev,
   },
 ] as const;
 

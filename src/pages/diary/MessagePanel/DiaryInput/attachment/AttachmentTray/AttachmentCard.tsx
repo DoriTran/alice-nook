@@ -1,11 +1,15 @@
 import type { FC } from 'react';
 
-import { faFile, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import type { Attachment } from '@/store/diary/type';
 
 import { resolveAttachmentUrl } from '@/api';
 import { AdIcon } from '@/packages/base';
+import {
+  getAttachmentKind,
+  isBinaryAttachment,
+} from '@/store/diary/attachment.registry';
 
 import { formatFileSize } from '../../input/composer.utils';
 import styles from './AttachmentTray.module.css';
@@ -31,9 +35,13 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
   onRemove,
 }) => {
   const name = attachment.name ?? attachment.url.split('/').pop() ?? 'file';
-  const size =
-    attachment.type === 'file' ? formatFileSize(attachment.size) : '';
+  const size = isBinaryAttachment(attachment)
+    ? formatFileSize(attachment.size)
+    : '';
   const isMedia = attachment.type === 'image' || attachment.type === 'video';
+  const binaryIcon = isBinaryAttachment(attachment)
+    ? getAttachmentKind(attachment.type).lucideIcon
+    : 'File';
 
   if (variant === 'tray' && isMedia) {
     return (
@@ -65,13 +73,18 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
     );
   }
 
-  if (variant === 'tray' && attachment.type === 'file') {
+  if (variant === 'tray' && isBinaryAttachment(attachment)) {
     return (
       <div
         className={`${styles.trayFileCard} ${dense ? styles.trayCardDense : ''}`}
       >
         <div className={styles.trayFileIcon}>
-          <AdIcon icon={faFile} size={dense ? 12 : 14} />
+          <AdIcon
+            icon={binaryIcon}
+            source="lucide"
+            size={dense ? 12 : 14}
+            strokeWidth={1.75}
+          />
         </div>
         {!hideName ? (
           <>
@@ -105,7 +118,12 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
         ) : attachment.type === 'video' ? (
           <VideoAttachment attachment={attachment} variant="thumb" />
         ) : (
-          <AdIcon icon={faFile} size={compact ? 10 : 12} />
+          <AdIcon
+            icon={binaryIcon}
+            source="lucide"
+            size={compact ? 10 : 12}
+            strokeWidth={1.75}
+          />
         )}
       </div>
       <div className={styles.meta}>

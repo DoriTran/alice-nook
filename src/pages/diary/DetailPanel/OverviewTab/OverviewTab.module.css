@@ -1,7 +1,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 0.35rem;
 }
 
 .section {
@@ -37,7 +37,7 @@
 }
 
 .sectionHeader[data-expanded] .sectionCaret {
-  transform: rotate(180deg);
+  transform: rotate(90deg);
 }
 
 .sectionBody {
@@ -52,11 +52,21 @@
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
+  width: 100%;
   padding: 0.9rem 0.95rem;
   border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border-soft));
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  box-shadow: var(--shadow-sm);
   text-align: center;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.totalCard:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .totalLabel {
@@ -92,7 +102,16 @@
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
   text-align: center;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.categoryCard:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .categoryIcon {

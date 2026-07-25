@@ -2,50 +2,59 @@ import type { FC } from 'react';
 
 import { AdIcon } from '@/packages/base';
 
+import type { MediaFilter } from '../../types';
 import type { DetailPanelStats } from '../detailPanel.utils';
 
-import InfoCallout from '../components/InfoCallout';
 import styles from './OverviewTab.module.css';
 
 export type StatisticsSectionProps = {
   stats: DetailPanelStats;
+  onOpenMedia: (filter: MediaFilter) => void;
 };
 
 const CATEGORIES = [
   {
-    id: 'images',
+    id: 'images' as const,
     label: 'Images',
     icon: 'Image',
     tone: 'green',
     getValue: (stats: DetailPanelStats) => stats.imageCount,
   },
   {
-    id: 'videos',
+    id: 'videos' as const,
     label: 'Videos',
     icon: 'Video',
     tone: 'yellow',
     getValue: (stats: DetailPanelStats) => stats.videoCount,
   },
   {
-    id: 'files',
+    id: 'files' as const,
     label: 'Files',
     icon: 'File',
     tone: 'purple',
     getValue: (stats: DetailPanelStats) => stats.fileCount,
   },
   {
-    id: 'links',
+    id: 'links' as const,
     label: 'Links',
     icon: 'Link',
     tone: 'blue',
     getValue: (stats: DetailPanelStats) => stats.linkCount,
   },
-] as const;
+];
 
-const StatisticsSection: FC<StatisticsSectionProps> = ({ stats }) => {
+const StatisticsSection: FC<StatisticsSectionProps> = ({
+  stats,
+  onOpenMedia,
+}) => {
   return (
     <>
-      <article className={styles.totalCard}>
+      <button
+        type="button"
+        className={styles.totalCard}
+        onClick={() => onOpenMedia('all')}
+        aria-label="Open all media"
+      >
         <span className={styles.totalLabel}>Total</span>
         <span className={styles.totalLine}>
           <strong>{stats.totalMessages}</strong> Messages
@@ -53,14 +62,17 @@ const StatisticsSection: FC<StatisticsSectionProps> = ({ stats }) => {
         <span className={styles.totalLine}>
           <strong>{stats.totalAttachments}</strong> Attachments
         </span>
-      </article>
+      </button>
 
       <div className={styles.categoryGrid}>
         {CATEGORIES.map((category) => (
-          <article
+          <button
             key={category.id}
+            type="button"
             className={styles.categoryCard}
             data-tone={category.tone}
+            onClick={() => onOpenMedia(category.id)}
+            aria-label={`Open ${category.label.toLowerCase()} media`}
           >
             <span className={styles.categoryIcon} aria-hidden>
               <AdIcon
@@ -74,7 +86,7 @@ const StatisticsSection: FC<StatisticsSectionProps> = ({ stats }) => {
               {category.getValue(stats)}
             </span>
             <span className={styles.categoryLabel}>{category.label}</span>
-          </article>
+          </button>
         ))}
       </div>
 
@@ -82,10 +94,6 @@ const StatisticsSection: FC<StatisticsSectionProps> = ({ stats }) => {
         <span className={styles.updatedLabel}>Updated at</span>
         <span className={styles.updatedValue}>{stats.updatedLabel}</span>
       </div>
-
-      <InfoCallout>
-        Counts are based on all messages in this chatbox.
-      </InfoCallout>
     </>
   );
 };

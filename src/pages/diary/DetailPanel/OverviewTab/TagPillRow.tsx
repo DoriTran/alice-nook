@@ -1,8 +1,8 @@
 import type { FC, MouseEvent } from 'react';
 
-import type { DetailPanelTag } from '../detailPanel.utils';
-
 import { AdChip, AdIcon } from '@/packages/base';
+
+import type { DetailPanelTag } from '../detailPanel.utils';
 
 import styles from './OverviewTab.module.css';
 import TagFormRow from './TagFormRow';

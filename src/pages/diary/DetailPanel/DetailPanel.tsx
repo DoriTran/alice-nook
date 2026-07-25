@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState, type FC } from 'react';
 import LayoutCard from '@/packages/ui/LayoutCard/LayoutCard';
 import { useDiaryStore } from '@/store';
 
-import type { DetailPanelTab } from '../types';
+import type { DetailPanelTab, MediaFilter } from '../types';
 
 import styles from './DetailPanel.module.css';
 import Header from './Header/Header';
@@ -34,9 +34,11 @@ const DetailPanel: FC<DetailPanelProps> = ({
   const data = useDetailPanelData(chatboxId);
 
   const [activeTab, setActiveTab] = useState<DetailPanelTab>('overview');
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>('all');
 
   useEffect(() => {
     setActiveTab('overview');
+    setMediaFilter('all');
   }, [chatboxId]);
 
   const handleToggleNotification = useCallback(() => {
@@ -48,6 +50,11 @@ const DetailPanel: FC<DetailPanelProps> = ({
       notificationEnabled: !data.identity.notificationEnabled,
     });
   }, [chatboxId, data.identity, updateChatbox]);
+
+  const handleOpenMedia = useCallback((filter: MediaFilter) => {
+    setMediaFilter(filter);
+    setActiveTab('media');
+  }, []);
 
   if (!data.identity || !data.stats) {
     return null;
@@ -78,11 +85,14 @@ const DetailPanel: FC<DetailPanelProps> = ({
             archivedMessages={data.archivedMessages}
             allMessages={data.allMessages}
             onJumpToMessage={onJumpToMessage}
+            onOpenMedia={handleOpenMedia}
           />
         ) : null}
         {activeTab === 'media' ? (
           <MediaTab
             mediaItems={data.mediaItems}
+            filter={mediaFilter}
+            onFilterChange={setMediaFilter}
             onJumpToMessage={onJumpToMessage}
           />
         ) : null}

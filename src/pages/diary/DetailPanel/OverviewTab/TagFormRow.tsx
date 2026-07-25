@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   type FC,
   type FormEvent,
@@ -50,6 +51,7 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingLabel, setPendingLabel] = useState<string | null>(null);
+  const labelInputRef = useRef<HTMLInputElement>(null);
 
   const editTagId = isEdit ? props.tagId : null;
   const editInitialLabel = isEdit ? props.initialLabel : '';
@@ -67,6 +69,15 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
     setConfirmOpen(false);
     setPendingLabel(null);
   }, [editInitialColorId, editInitialLabel, editTagId]);
+
+  useEffect(() => {
+    if (!editTagId) {
+      return;
+    }
+
+    labelInputRef.current?.focus();
+    labelInputRef.current?.select();
+  }, [editTagId]);
 
   const applyEdit = (nextLabel: string, nextColorId: ColorId) => {
     if (!isEdit) {
@@ -169,6 +180,7 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
           swatchSize={16}
         />
         <AdInput
+          ref={labelInputRef}
           className={styles.tagFormInput}
           value={label}
           onChange={(event) => {
@@ -178,7 +190,6 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
           onKeyDown={handleKeyDown}
           placeholder={isEdit ? 'Tag name' : 'New tag'}
           aria-label={isEdit ? 'Edit tag name' : 'New tag name'}
-          autoFocus={isEdit}
         />
         {isEdit ? (
           <div className={styles.tagActions}>

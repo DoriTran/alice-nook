@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import type {
-  Attachment,
-  MessageDecorator,
-  MessageVariant,
-} from '@/store/diary/type';
+import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
 import { generateAiResponse, uploadAttachment } from '@/api';
 import { useDiaryStore } from '@/store';
@@ -23,6 +19,7 @@ import {
   buildDraftFromMessage,
   buildMessagePayload,
   convertDraftToVariant,
+  createTempAttachment,
   createTimerDecorator,
   createTicketDecorator,
   draftHasVariantContent,
@@ -198,30 +195,12 @@ export const useComposerDraft = (
         const blobUrl = URL.createObjectURL(file);
         const attachmentType = fileToAttachmentType(file, kind);
         const tempId = `att:${uuidv4()}`;
-
-        const tempAttachment: Attachment =
-          attachmentType === 'image'
-            ? {
-                id: tempId,
-                type: 'image',
-                url: blobUrl,
-                name: file.name,
-              }
-            : attachmentType === 'video'
-              ? {
-                  id: tempId,
-                  type: 'video',
-                  url: blobUrl,
-                  name: file.name,
-                }
-              : {
-                  id: tempId,
-                  type: 'file',
-                  url: blobUrl,
-                  name: file.name,
-                  mimeType: file.type || 'application/octet-stream',
-                  size: file.size,
-                };
+        const tempAttachment = createTempAttachment(
+          file,
+          attachmentType,
+          tempId,
+          blobUrl,
+        );
 
         setDraft((current) => ({
           ...current,
@@ -236,25 +215,19 @@ export const useComposerDraft = (
             ...current,
             attachments: current.attachments.map((attachment) =>
               attachment.id === tempId
-                ? attachment.type === 'image'
+                ? attachment.type === 'image' || attachment.type === 'video'
                   ? {
                       ...attachment,
                       url: result.url,
                       name: result.name,
                     }
-                  : attachment.type === 'video'
-                    ? {
-                        ...attachment,
-                        url: result.url,
-                        name: result.name,
-                      }
-                    : {
-                        ...attachment,
-                        url: result.url,
-                        name: result.name,
-                        mimeType: result.mimeType,
-                        size: result.size,
-                      }
+                  : {
+                      ...attachment,
+                      url: result.url,
+                      name: result.name,
+                      mimeType: result.mimeType,
+                      size: result.size,
+                    }
                 : attachment,
             ),
           }));
@@ -336,26 +309,14 @@ export const useComposerDraft = (
 
       for (const file of fileList) {
         const blobUrl = URL.createObjectURL(file);
-        const attachmentType = file.type.startsWith('image/')
-          ? 'image'
-          : file.type.startsWith('video/')
-            ? 'video'
-            : 'file';
+        const attachmentType = fileToAttachmentType(file, 'file');
         const tempId = `att:${uuidv4()}`;
-
-        const tempAttachment: Attachment =
-          attachmentType === 'image'
-            ? { id: tempId, type: 'image', url: blobUrl, name: file.name }
-            : attachmentType === 'video'
-              ? { id: tempId, type: 'video', url: blobUrl, name: file.name }
-              : {
-                  id: tempId,
-                  type: 'file',
-                  url: blobUrl,
-                  name: file.name,
-                  mimeType: file.type || 'application/octet-stream',
-                  size: file.size,
-                };
+        const tempAttachment = createTempAttachment(
+          file,
+          attachmentType,
+          tempId,
+          blobUrl,
+        );
 
         setDraft((current) => ({
           ...current,
@@ -381,7 +342,20 @@ export const useComposerDraft = (
                     ...item,
                     attachments: item.attachments.map((attachment) =>
                       attachment.id === tempId
-                        ? { ...attachment, url: result.url, name: result.name }
+                        ? attachment.type === 'image' ||
+                          attachment.type === 'video'
+                          ? {
+                              ...attachment,
+                              url: result.url,
+                              name: result.name,
+                            }
+                          : {
+                              ...attachment,
+                              url: result.url,
+                              name: result.name,
+                              mimeType: result.mimeType,
+                              size: result.size,
+                            }
                         : attachment,
                     ),
                   }

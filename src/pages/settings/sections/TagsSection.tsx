@@ -6,7 +6,7 @@ import {
   faTrash,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
-import { useMemo, useState, type FC } from 'react';
+import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 
 import type { ColorId } from '@/packages/color';
 import type { Tag } from '@/store/diary/type';
@@ -14,8 +14,8 @@ import type { Tag } from '@/store/diary/type';
 import { AdChip, AdConfirmDialog, AdIcon, AdInput } from '@/packages/base';
 import { DEFAULT_COLOR_ID } from '@/packages/color';
 import PalettePicker from '@/packages/ui/PalettePicker/PalettePicker';
-import { computeTagStatistics } from '@/store/diary/tag.utils';
 import { useDiaryStore } from '@/store';
+import { computeTagStatistics } from '@/store/diary/tag.utils';
 
 import { ActionButton, SettingCard, SettingRow } from '../components';
 import styles from './TagsSection.module.css';
@@ -44,6 +44,16 @@ const TagsSection: FC = () => {
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [editPaletteOpen, setEditPaletteOpen] = useState(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!editingTagId) {
+      return;
+    }
+
+    editInputRef.current?.focus();
+    editInputRef.current?.select();
+  }, [editingTagId]);
 
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
@@ -54,14 +64,14 @@ const TagsSection: FC = () => {
 
   const tagList = useMemo(
     () =>
-      (Object.values(tags) as Tag[]).sort((a, b) =>
+      Object.values(tags).sort((a, b) =>
         a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }),
       ),
     [tags],
   );
 
   const pendingDeleteTag = pendingDeleteId
-    ? tags[pendingDeleteId] ?? null
+    ? (tags[pendingDeleteId] ?? null)
     : null;
 
   const isDuplicateLabel = (label: string, excludeId?: string) => {
@@ -69,8 +79,7 @@ const TagsSection: FC = () => {
 
     return Object.values(tags).some(
       (tag) =>
-        tag.id !== excludeId &&
-        tag.label.trim().toLowerCase() === normalized,
+        tag.id !== excludeId && tag.label.trim().toLowerCase() === normalized,
     );
   };
 
@@ -214,6 +223,7 @@ const TagsSection: FC = () => {
                         swatchSize={18}
                       />
                       <AdInput
+                        ref={editInputRef}
                         value={editDraft.label}
                         onChange={(event) => {
                           const nextLabel = event.currentTarget.value;
@@ -225,7 +235,6 @@ const TagsSection: FC = () => {
                           );
                         }}
                         aria-label="Tag name"
-                        autoFocus
                       />
                       <button
                         type="button"

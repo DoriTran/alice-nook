@@ -3,8 +3,10 @@ import { useMemo } from 'react';
 import { resolvePalette } from '@/packages/color';
 import { normalizeIconId, type IconId } from '@/packages/icon';
 import { useDiaryStore, useSettingsStore } from '@/store';
-
-import { formatHeaderActivityAt } from '../../ChatboxSidebar/Chatbox/chatbox.utils';
+import {
+  collectMessageAttachments,
+  formatMessagePreviewTime,
+} from '@/store/diary/messagePreview.utils';
 
 export type MessageHeaderData = {
   id: string;
@@ -18,6 +20,7 @@ export type MessageHeaderData = {
   pinned: boolean;
   groupName: string | null;
   totalMessage: number;
+  totalAttachments: number;
   updatedLabel: string;
   updatedAt: string | null;
 };
@@ -26,11 +29,9 @@ export const useMessageHeaderData = (
   chatboxId: string,
 ): MessageHeaderData | null => {
   const mode = useSettingsStore('mode');
-  const { chatboxes, groups, customPalettes } = useDiaryStore([
-    'chatboxes',
-    'groups',
-    'customPalettes',
-  ]);
+  const { chatboxes, groups, customPalettes, messages, orders } = useDiaryStore(
+    ['chatboxes', 'groups', 'customPalettes', 'messages', 'orders'],
+  );
 
   return useMemo(() => {
     const chatbox = chatboxes[chatboxId];
@@ -46,6 +47,19 @@ export const useMessageHeaderData = (
       ? (chatbox.updatedAt ?? chatbox.lastMessageAt)
       : chatbox.createdAt;
 
+    const messageIds = orders.chatboxMessageOrders[chatboxId] ?? [];
+    let totalAttachments = 0;
+
+    for (const messageId of messageIds) {
+      const message = messages[messageId];
+
+      if (!message) {
+        continue;
+      }
+
+      totalAttachments += collectMessageAttachments(message).length;
+    }
+
     return {
       id: chatbox.id,
       name: chatbox.name,
@@ -58,11 +72,9 @@ export const useMessageHeaderData = (
       pinned: chatbox.pinned,
       groupName: group?.name ?? null,
       totalMessage: chatbox.totalMessage,
-      updatedLabel: formatHeaderActivityAt(
-        activityAt,
-        hasMessages ? 'updated' : 'created',
-      ),
+      totalAttachments,
+      updatedLabel: formatMessagePreviewTime(activityAt),
       updatedAt: activityAt,
     };
-  }, [chatboxId, chatboxes, customPalettes, groups, mode]);
+  }, [chatboxId, chatboxes, customPalettes, groups, messages, mode, orders]);
 };

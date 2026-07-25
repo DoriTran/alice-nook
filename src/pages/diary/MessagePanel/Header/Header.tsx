@@ -4,6 +4,7 @@ import {
   faComment,
   faFolder,
   faMagnifyingGlass,
+  faPaperclip,
   faRectangleList,
   faThumbtack,
   faXmark,
@@ -55,6 +56,7 @@ const Header: FC<HeaderProps> = ({
     pinned,
     groupName,
     totalMessage,
+    totalAttachments,
     updatedLabel,
     updatedAt,
   } = data;
@@ -63,6 +65,11 @@ const Header: FC<HeaderProps> = ({
     totalMessage === 1
       ? '1 message'
       : `${formatTotalMessages(totalMessage)} messages`;
+
+  const attachmentLabel =
+    totalAttachments === 1
+      ? '1 attachment'
+      : `${formatTotalMessages(totalAttachments)} attachments`;
 
   const metaItems = [
     groupName
@@ -83,6 +90,17 @@ const Header: FC<HeaderProps> = ({
             <span className={styles.metaItem}>
               <AdIcon icon={faComment} size={10} />
               {messageLabel}
+            </span>
+          ),
+        }
+      : null,
+    totalAttachments > 0
+      ? {
+          key: 'attachments',
+          node: (
+            <span className={styles.metaItem}>
+              <AdIcon icon={faPaperclip} size={10} />
+              {attachmentLabel}
             </span>
           ),
         }

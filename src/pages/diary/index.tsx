@@ -56,10 +56,7 @@ const Diary: FC = () => {
 
     const message = messages[pendingScrollMessageId];
 
-    if (
-      !message?.archived ||
-      message.chatboxId !== selectedChatboxId
-    ) {
+    if (!message?.archived || message.chatboxId !== selectedChatboxId) {
       return;
     }
 

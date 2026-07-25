@@ -1,10 +1,14 @@
 import type {
   Attachment,
+  AttachmentType,
+  BinaryAttachment,
   Message,
   MessageDecorator,
   MessageVariant,
   TodoItem,
 } from '@/store/diary/type';
+
+import { classifyAttachmentType } from '@/store/diary/attachment.registry';
 
 import { createDefaultTimerDecorator } from '../decorator/timer/timer.utils';
 import { createEmptyTodoItem, type ComposerDraft } from './composer.types';
@@ -181,7 +185,7 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
 export const fileToAttachmentType = (
   file: File,
   kind: 'file' | 'image' | 'video',
-): Attachment['type'] => {
+): Exclude<AttachmentType, 'link'> => {
   if (kind === 'image') {
     return 'image';
   }
@@ -190,15 +194,41 @@ export const fileToAttachmentType = (
     return 'video';
   }
 
-  if (file.type.startsWith('image/')) {
-    return 'image';
+  return classifyAttachmentType(file.type, file.name);
+};
+
+export const createTempAttachment = (
+  file: File,
+  attachmentType: Exclude<AttachmentType, 'link'>,
+  tempId: string,
+  blobUrl: string,
+): Attachment => {
+  if (attachmentType === 'image') {
+    return {
+      id: tempId,
+      type: 'image',
+      url: blobUrl,
+      name: file.name,
+    };
   }
 
-  if (file.type.startsWith('video/')) {
-    return 'video';
+  if (attachmentType === 'video') {
+    return {
+      id: tempId,
+      type: 'video',
+      url: blobUrl,
+      name: file.name,
+    };
   }
 
-  return 'file';
+  return {
+    id: tempId,
+    type: attachmentType,
+    url: blobUrl,
+    name: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    size: file.size,
+  } as BinaryAttachment;
 };
 
 export const formatFileSize = (bytes?: number): string => {

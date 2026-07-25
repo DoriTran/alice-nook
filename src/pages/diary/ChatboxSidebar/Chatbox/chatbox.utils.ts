@@ -153,7 +153,12 @@ export const getMessagePreview = (
       }
 
       if (
-        message.attachments.some((attachment) => attachment.type === 'file')
+        message.attachments.some(
+          (attachment) =>
+            attachment.type !== 'image' &&
+            attachment.type !== 'video' &&
+            attachment.type !== 'link',
+        )
       ) {
         return 'File';
       }

@@ -27,7 +27,7 @@ const MessageListDialog: FC<MessageListDialogProps> = ({
   onJumpToMessage,
 }) => {
   return (
-    <AdModal opened={opened} onClose={onClose} title={title} size="md">
+    <AdModal opened={opened} onClose={onClose} title={title} size="lg">
       <div className={styles.list}>
         {messages.length > 0 ? (
           messages.map((message) => (

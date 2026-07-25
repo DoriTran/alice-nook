@@ -6,9 +6,7 @@ import type { ColorPalette, PaletteShade } from './types';
  */
 const DEFAULT_SHADES: PaletteShade[] = ['strong', 'main', 'soft'];
 
-export const normalizeShades = (
-  shades?: PaletteShade[],
-): PaletteShade[] => {
+export const normalizeShades = (shades?: PaletteShade[]): PaletteShade[] => {
   if (!shades || shades.length === 0) {
     return DEFAULT_SHADES;
   }

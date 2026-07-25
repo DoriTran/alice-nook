@@ -1,4 +1,11 @@
-import type { DiaryStore } from './type';
+import type { DiaryStore, MessagePreviewStyle } from './type';
+
+import {
+  ATTACHMENT_KINDS,
+  getAttachmentPreviewStyle,
+} from './attachment.registry';
+
+export { ATTACHMENT_TYPE_PRIORITY } from './attachment.registry';
 
 // #region Initial State
 
@@ -109,10 +116,10 @@ export const diaryDummyState: DiaryStore = {
       hasUnread: true,
       notificationEnabled: true,
       tags: [
-        { tagId: 'tag:japanese', count: 3 },
+        { tagId: 'tag:japanese', count: 6 },
         { tagId: 'tag:vocabulary', count: 1 },
       ],
-      totalMessage: 4,
+      totalMessage: 7,
       lastMessageId: 'ms:study-last',
       lastMessageAt: '2026-06-09T10:30:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -241,20 +248,48 @@ export const diaryDummyState: DiaryStore = {
       sender: 'user',
       variant: 'text',
       content: {
-        text: '',
+        text: 'Mountain photos from our trip ...',
       },
       attachments: [
         {
-          id: 'att:study-image',
+          id: 'att:study-image-1',
           type: 'image',
-          url: '/dummy/study.png',
+          url: '/dummy/mountain-1.png',
+          width: 1280,
+          height: 720,
+        },
+        {
+          id: 'att:study-image-2',
+          type: 'image',
+          url: '/dummy/mountain-2.png',
+          width: 1280,
+          height: 720,
+        },
+        {
+          id: 'att:study-image-3',
+          type: 'image',
+          url: '/dummy/mountain-3.png',
+          width: 1280,
+          height: 720,
+        },
+        {
+          id: 'att:study-image-4',
+          type: 'image',
+          url: '/dummy/mountain-4.png',
+          width: 1280,
+          height: 720,
+        },
+        {
+          id: 'att:study-image-5',
+          type: 'image',
+          url: '/dummy/mountain-5.png',
           width: 1280,
           height: 720,
         },
       ],
       decorators: [],
       tagIds: [],
-      pinned: false,
+      pinned: true,
       archived: false,
       replyToMessageId: null,
       sourceMessageId: null,
@@ -266,6 +301,115 @@ export const diaryDummyState: DiaryStore = {
       ],
       edited: false,
       createdAt: '2026-01-05T10:30:00.000Z',
+      updatedAt: null,
+    },
+    'ms:study-file': {
+      id: 'ms:study-file',
+      chatboxId: 'cb:study',
+      sender: 'user',
+      variant: 'text',
+      content: {
+        text: 'Important Grammar Notes ...',
+      },
+      attachments: [
+        {
+          id: 'att:study-file-1',
+          type: 'document',
+          url: '/dummy/grammar-notes.pdf',
+          name: 'grammar-notes.pdf',
+          mimeType: 'application/pdf',
+        },
+        {
+          id: 'att:study-file-2',
+          type: 'document',
+          url: '/dummy/particles.pdf',
+          name: 'particles.pdf',
+          mimeType: 'application/pdf',
+        },
+        {
+          id: 'att:study-file-3',
+          type: 'document',
+          url: '/dummy/verbs.pdf',
+          name: 'verbs.pdf',
+          mimeType: 'application/pdf',
+        },
+      ],
+      decorators: [],
+      tagIds: ['tag:japanese'],
+      pinned: true,
+      archived: false,
+      replyToMessageId: null,
+      sourceMessageId: null,
+      reactions: [],
+      edited: false,
+      createdAt: '2026-01-06T11:00:00.000Z',
+      updatedAt: null,
+    },
+    'ms:study-link': {
+      id: 'ms:study-link',
+      chatboxId: 'cb:study',
+      sender: 'user',
+      variant: 'text',
+      content: {
+        text: 'Useful Japanese Learning Resources',
+      },
+      attachments: [
+        {
+          id: 'att:study-link-1',
+          type: 'link',
+          url: 'https://www.jlpt.jp/e/',
+          name: 'https://www.jlpt.jp/e/',
+          previewUrl: 'https://picsum.photos/seed/jlpt-link/640/480',
+          previewTitle: 'JLPT Official',
+        },
+        {
+          id: 'att:study-link-2',
+          type: 'link',
+          url: 'https://jisho.org/',
+          name: 'https://jisho.org/',
+        },
+      ],
+      decorators: [],
+      tagIds: ['tag:japanese'],
+      pinned: true,
+      archived: false,
+      replyToMessageId: null,
+      sourceMessageId: null,
+      reactions: [],
+      edited: false,
+      createdAt: '2026-01-07T14:20:00.000Z',
+      updatedAt: null,
+    },
+    'ms:study-timer': {
+      id: 'ms:study-timer',
+      chatboxId: 'cb:study',
+      sender: 'user',
+      variant: 'text',
+      content: {
+        text: 'JLPT N5 Study Countdown',
+      },
+      attachments: [],
+      decorators: [
+        {
+          type: 'timer',
+          mode: 'timer',
+          pause: true,
+          running: false,
+          durationMs: 12 * 60 * 60 * 1000 + 30 * 60 * 1000 + 45 * 1000,
+          initialDurationMs: 12 * 60 * 60 * 1000 + 30 * 60 * 1000 + 45 * 1000,
+          startedAt: null,
+          targetDate: '2026-07-01T00:00:00.000Z',
+          deadlineAt: null,
+        },
+      ],
+      tagIds: ['tag:japanese'],
+      pinned: true,
+      archived: false,
+      replyToMessageId: null,
+      sourceMessageId: null,
+      reactions: [],
+      edited: false,
+      createdAt: '2026-01-04T10:24:00.000Z',
       updatedAt: null,
     },
     'ms:study-last': {
@@ -280,7 +424,7 @@ export const diaryDummyState: DiaryStore = {
       decorators: [],
       tagIds: ['tag:japanese', 'tag:vocabulary'],
       pinned: false,
-      archived: false,
+      archived: true,
       replyToMessageId: null,
       sourceMessageId: null,
       reactions: [],
@@ -399,7 +543,10 @@ export const diaryDummyState: DiaryStore = {
       'cb:study': [
         'ms:study-text',
         'ms:study-todo',
+        'ms:study-timer',
         'ms:study-image',
+        'ms:study-file',
+        'ms:study-link',
         'ms:study-last',
       ],
       'cb:diary': ['ms:diary-1'],
@@ -410,5 +557,64 @@ export const diaryDummyState: DiaryStore = {
 
   // #endregion
 };
+
+// #endregion
+
+// #region Message Preview
+
+const softPreviewBg = (token: string) =>
+  `color-mix(in srgb, ${token} 28%, var(--surface))`;
+
+export const PREVIEW_STYLES = {
+  todo: {
+    icon: 'ListTodo',
+    iconBg: softPreviewBg('var(--secondary)'),
+    iconColor: 'var(--secondary-dark)',
+  },
+  ai: {
+    icon: 'Sparkles',
+    iconBg: softPreviewBg('var(--accent-purple)'),
+    iconColor: 'var(--accent-purple)',
+  },
+  timer: {
+    icon: 'TimerReset',
+    iconBg: softPreviewBg('var(--accent-yellow)'),
+    iconColor: 'var(--primary-dark)',
+  },
+  ticket: {
+    icon: 'Ticket',
+    iconBg: softPreviewBg('var(--primary)'),
+    iconColor: 'var(--primary-dark)',
+  },
+  image: getAttachmentPreviewStyle('image'),
+  video: getAttachmentPreviewStyle('video'),
+  audio: getAttachmentPreviewStyle('audio'),
+  document: getAttachmentPreviewStyle('document'),
+  note: getAttachmentPreviewStyle('note'),
+  archive: getAttachmentPreviewStyle('archive'),
+  code: getAttachmentPreviewStyle('code'),
+  file: getAttachmentPreviewStyle('file'),
+  link: getAttachmentPreviewStyle('link'),
+  reply: {
+    icon: 'MessageSquareReply',
+    iconBg: softPreviewBg('var(--primary)'),
+    iconColor: 'var(--primary-dark)',
+  },
+  normal: {
+    icon: 'MessageCircleMore',
+    iconBg: softPreviewBg('var(--cancel)'),
+    iconColor: 'var(--cancel)',
+  },
+} as const satisfies Record<string, MessagePreviewStyle>;
+
+export type PreviewStyleKey = keyof typeof PREVIEW_STYLES;
+
+export const ATTACHMENT_TYPE_STYLE = Object.fromEntries(
+  (Object.keys(ATTACHMENT_KINDS) as Array<keyof typeof ATTACHMENT_KINDS>).map(
+    (type) => [type, getAttachmentPreviewStyle(type)],
+  ),
+) as Record<keyof typeof ATTACHMENT_KINDS, MessagePreviewStyle>;
+
+export const getStyleIcon = (key: PreviewStyleKey) => PREVIEW_STYLES[key].icon;
 
 // #endregion

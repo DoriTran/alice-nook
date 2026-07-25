@@ -6,6 +6,7 @@ import type { Message } from '@/store/diary/type';
 import { AdConfirmDialog } from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
+import type { MediaFilter } from '../../types';
 import type { DetailPanelStats, DetailPanelTag } from '../detailPanel.utils';
 
 import MessageListDialog from '../components/MessageListDialog';
@@ -31,6 +32,7 @@ export type OverviewTabProps = {
   archivedMessages: Message[];
   allMessages: Message[];
   onJumpToMessage: (messageId: string) => void;
+  onOpenMedia: (filter: MediaFilter) => void;
 };
 
 const OverviewTab: FC<OverviewTabProps> = ({
@@ -41,6 +43,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
   archivedMessages,
   allMessages,
   onJumpToMessage,
+  onOpenMedia,
 }) => {
   const storeTags = useDiaryStore('tags');
   const removeTagFromChatbox = useDiaryStore('removeTagFromChatbox');
@@ -127,9 +130,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
     setCreatedTagIds((current) =>
       current.filter((tagId) => tagId !== deletingTagId),
     );
-    setEditingTagId((current) =>
-      current === deletingTagId ? null : current,
-    );
+    setEditingTagId((current) => (current === deletingTagId ? null : current));
     setDeletingTagId(null);
   }, [chatboxId, deletingTagId, removeTagFromChatbox]);
 
@@ -145,7 +146,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
   return (
     <div className={styles.root}>
       <CollapsibleSection title="Statistics">
-        <StatisticsSection stats={stats} />
+        <StatisticsSection stats={stats} onOpenMedia={onOpenMedia} />
       </CollapsibleSection>
 
       <CollapsibleSection title="Messages">

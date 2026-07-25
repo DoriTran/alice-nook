@@ -1,4 +1,4 @@
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { useState, type FC, type ReactNode } from 'react';
 
 import { AdIcon } from '@/packages/base';
@@ -29,7 +29,7 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
       >
         <h3 className={styles.heading}>{title}</h3>
         <span className={styles.sectionCaret} aria-hidden>
-          <AdIcon icon={faChevronDown} size={11} />
+          <AdIcon icon={faChevronRight} size={11} />
         </span>
       </button>
       {expanded ? <div className={styles.sectionBody}>{children}</div> : null}

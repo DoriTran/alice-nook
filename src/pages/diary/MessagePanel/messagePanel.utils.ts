@@ -1,33 +1,9 @@
 import type { Message } from '@/store/diary/type';
 
+import { truncatePreviewTitle } from '@/store/diary/messagePreview.utils';
+
 /** Soft max for composer reply preview; finishes the word that crosses the limit. */
-export const truncateReplyPreviewText = (
-  text: string,
-  maxChars = 50,
-): string => {
-  const normalized = text.replace(/\s+/g, ' ').trim();
-
-  if (normalized.length <= maxChars) {
-    return normalized;
-  }
-
-  let end = maxChars;
-  const cutsMidWord =
-    normalized[maxChars] !== ' ' && normalized[maxChars - 1] !== ' ';
-
-  if (cutsMidWord) {
-    const nextSpace = normalized.indexOf(' ', maxChars);
-    end = nextSpace === -1 ? normalized.length : nextSpace;
-  }
-
-  const slice = normalized.slice(0, end).trimEnd();
-
-  if (slice.length >= normalized.length) {
-    return normalized;
-  }
-
-  return `${slice}...`;
-};
+export const truncateReplyPreviewText = truncatePreviewTitle;
 
 export const getMessagePreviewText = (message: Message | undefined): string => {
   if (!message) {
