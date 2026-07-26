@@ -17,9 +17,9 @@
     box-shadow var(--transition-fast);
 }
 
-.iconSearchInput:focus {
+.iconSearchInput:focus-visible {
   border-color: var(--field-border-focus);
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .iconSearchInput::placeholder {

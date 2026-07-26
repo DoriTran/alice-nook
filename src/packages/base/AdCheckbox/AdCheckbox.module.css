@@ -37,7 +37,7 @@
 
 .input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: var(--focus-ring);
 }
 
 /* Beat Mantine's .input:checked { background: var(--checkbox-color) } when

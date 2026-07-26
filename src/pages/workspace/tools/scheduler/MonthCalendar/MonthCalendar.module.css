@@ -143,6 +143,12 @@
   outline-offset: 1px;
 }
 
+.event:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: none;
+}
+
 .eventDot {
   width: 0.45rem;
   height: 0.45rem;

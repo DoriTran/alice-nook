@@ -22,11 +22,17 @@
     color var(--transition-fast);
 }
 
-.cell:hover,
-.cell:focus-visible {
+.cell:hover {
   border-color: var(--field-border-hover);
   background: var(--field-bg-hover);
   color: var(--primary);
+}
+
+.cell:focus-visible {
+  border-color: var(--field-border-focus);
+  background: var(--field-bg-hover);
+  color: var(--primary);
+  box-shadow: var(--focus-ring);
 }
 
 .cell[data-selected] {

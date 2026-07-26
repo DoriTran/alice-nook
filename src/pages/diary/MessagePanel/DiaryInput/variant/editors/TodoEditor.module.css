@@ -81,7 +81,8 @@
 }
 
 .field:focus-within {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--border-soft));
+  border-color: var(--field-border-focus);
+  box-shadow: var(--focus-ring);
 }
 
 .input {
@@ -101,6 +102,10 @@
   outline: none;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+.input:focus-visible {
+  box-shadow: none;
 }
 
 .inputDone {

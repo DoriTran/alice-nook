@@ -22,6 +22,10 @@
   vertical-align: top;
 }
 
+.input:focus-visible {
+  box-shadow: none;
+}
+
 .inputGrow {
   min-height: calc(1.25rem + 1rem);
   padding: 0.5rem 0.85rem;

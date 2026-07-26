@@ -81,7 +81,7 @@
 
 .search:focus-within {
   border-color: color-mix(in srgb, var(--primary) 45%, var(--field-border));
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .searchInput {
@@ -93,6 +93,10 @@
   font: inherit;
   font-size: var(--font-sm);
   outline: none;
+}
+
+.searchInput:focus-visible {
+  box-shadow: none;
 }
 
 .searchInput::placeholder {

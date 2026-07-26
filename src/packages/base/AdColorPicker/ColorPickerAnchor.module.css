@@ -38,6 +38,11 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
+.swatchBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .swatchBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

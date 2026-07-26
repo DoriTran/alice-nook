@@ -45,9 +45,9 @@
   font-size: var(--font-sm);
 }
 
-.search:focus {
+.search:focus-visible {
   border-color: var(--field-border-focus);
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .dropdown {
@@ -122,6 +122,10 @@
   font: inherit;
   font-size: var(--font-sm);
   outline: none;
+}
+
+.multiInput:focus-visible {
+  box-shadow: none;
 }
 
 .multiInput::placeholder {

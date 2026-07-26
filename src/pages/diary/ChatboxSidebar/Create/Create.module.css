@@ -41,9 +41,7 @@
 
 .root:focus-visible {
   outline: none;
-  box-shadow:
-    var(--shadow-md),
-    0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: var(--shadow-md), var(--focus-ring);
 }
 
 .icon {

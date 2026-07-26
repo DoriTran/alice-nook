@@ -160,10 +160,11 @@
   background-color: transparent;
 }
 
-.field:focus {
+.field:focus-visible {
   background: var(--field-bg-selected);
   color: var(--primary-dark);
-  outline: 0;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .dropdown {

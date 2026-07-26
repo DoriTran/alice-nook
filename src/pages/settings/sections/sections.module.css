@@ -28,9 +28,20 @@
   border-color: color-mix(in srgb, var(--swatch) 45%, var(--border-soft));
 }
 
+.themeSwatch:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .themeSwatch[data-active] {
   border-color: var(--swatch);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--swatch) 22%, transparent);
+}
+
+.themeSwatch[data-active]:focus-visible {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--swatch) 22%, transparent),
+    var(--focus-ring);
 }
 
 .themeSwatchIcon {

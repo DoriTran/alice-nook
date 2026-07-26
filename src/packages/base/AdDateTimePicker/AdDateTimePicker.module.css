@@ -74,8 +74,9 @@
 }
 
 .dropdown :global(.mantine-focus-auto:focus-visible) {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: none;
 }
 
 .day[data-selected],
@@ -101,10 +102,11 @@
   }
 }
 
-.timeField:focus {
+.timeField:focus-visible {
   background: var(--field-bg-selected);
   color: var(--primary-dark);
-  outline: 0;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .timeField::selection {
@@ -114,7 +116,7 @@
 .timePickerInput:focus-within {
   --input-bd: var(--field-border-focus);
   --input-bd-focus: var(--field-border-focus);
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .submitButton {
@@ -132,8 +134,8 @@
 
 .submitButton:focus-visible {
   --ai-bd: 1px solid var(--field-border-focus);
-  box-shadow: var(--field-ring);
-  outline: 0;
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .compact .input {

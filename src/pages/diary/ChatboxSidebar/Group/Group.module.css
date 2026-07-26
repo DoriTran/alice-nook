@@ -72,9 +72,10 @@
 }
 
 .caretBtn:focus-visible {
-  outline: none;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
   border-radius: var(--radius-xs);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 45%, transparent);
+  box-shadow: none;
 }
 
 .brush {
@@ -212,6 +213,12 @@
 
 .menuBtn:hover {
   background: var(--surface-muted);
+}
+
+.menuBtn:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: none;
 }
 
 .listShell {

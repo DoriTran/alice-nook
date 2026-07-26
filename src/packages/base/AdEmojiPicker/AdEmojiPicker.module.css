@@ -45,6 +45,14 @@
   border: 1px solid var(--border-soft);
   border-radius: 999px;
   background: var(--surface-soft);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.searchField:focus-within {
+  border-color: var(--field-border-focus);
+  box-shadow: var(--focus-ring);
 }
 
 .searchIcon {
@@ -61,6 +69,10 @@
   font-family: inherit;
   font-size: var(--font-sm);
   color: var(--text);
+}
+
+.searchInput:focus-visible {
+  box-shadow: none;
 }
 
 .searchInput::placeholder {

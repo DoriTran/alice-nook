@@ -31,12 +31,12 @@
   background: var(--field-bg-hover);
 }
 
-.control:focus,
+.control:focus-visible,
 .controlMulti:focus-within,
 .pickerTrigger:focus-visible,
 .pickerTriggerOpen {
   border-color: var(--field-border-focus);
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .control {

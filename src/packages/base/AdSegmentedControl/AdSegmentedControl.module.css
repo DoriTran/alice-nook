@@ -61,7 +61,7 @@
 
 .option:focus-visible {
   outline: none;
-  box-shadow: var(--field-ring);
+  box-shadow: var(--focus-ring);
 }
 
 .optionLabel {
