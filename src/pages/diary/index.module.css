@@ -2,15 +2,23 @@
   display: flex;
   flex: 1;
   align-items: stretch;
-  gap: 12px;
+  min-width: 0;
   min-height: calc(100vh - 24px);
   min-height: 0;
   padding: 12px 12px 12px 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .messageColumn {
   display: flex;
   flex: 1;
   min-width: 0;
+}
+
+@media (max-width: 1400px) {
+  .rootPage {
+    --diary-chatbox-width: 300px;
+    --detail-panel-width: 280px;
+  }
 }
