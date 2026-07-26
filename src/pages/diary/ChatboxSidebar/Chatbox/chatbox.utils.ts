@@ -195,20 +195,38 @@ export const sortTagsByCount = (
   tags: ResolvedChatboxTag[],
 ): ResolvedChatboxTag[] => [...tags].sort((a, b) => b.count - a.count);
 
-export const getVisibleTags = (
-  tags: ResolvedChatboxTag[],
-  maxVisible = 3,
-): { visible: ResolvedChatboxTag[]; overflowCount: number } => {
-  if (tags.length <= maxVisible) {
-    return { visible: tags, overflowCount: 0 };
-  }
+/** Content-box width: clientWidth includes padding, but chips lay out in the content box. */
+export const getContentBoxWidth = (element: HTMLElement): number => {
+  const style = getComputedStyle(element);
+  const paddingLeft = Number.parseFloat(style.paddingLeft) || 0;
+  const paddingRight = Number.parseFloat(style.paddingRight) || 0;
 
-  return {
-    visible: tags.slice(0, maxVisible),
-    overflowCount: tags.length - maxVisible,
-  };
+  return element.clientWidth - paddingLeft - paddingRight;
 };
 
+export const getFlexGapPx = (element: HTMLElement): number => {
+  const style = getComputedStyle(element);
+  const gap = Number.parseFloat(style.columnGap || style.gap);
+
+  return Number.isFinite(gap) ? gap : 0;
+};
+
+/**
+ * Conservative overflow probe label sized to the max digit width of `total`.
+ * e.g. under 10 → "+9", under 100 → "+99", under 1000 → "+999".
+ */
+export const getOverflowProbeLabel = (total: number): string => {
+  if (total <= 0) {
+    return '+9';
+  }
+
+  return `+${'9'.repeat(String(total).length)}`;
+};
+
+/**
+ * Width-based tag fit. When not all tags fit, `overflowChipWidth` (e.g. measured
+ * `+9` / `+99` / `+999`) is reserved so the trailing +N chip never clips.
+ */
 export const calculateFittingTagCount = (
   tagWidths: number[],
   containerWidth: number,
@@ -229,21 +247,18 @@ export const calculateFittingTagCount = (
   }
 
   for (let visible = total - 1; visible >= 1; visible -= 1) {
-    const overflow = total - visible;
     const tagsWidth =
       tagWidths.slice(0, visible).reduce((sum, width) => sum + width, 0) +
       gap * (visible - 1);
+    // One gap between the last visible tag and the +N chip.
     const needed = tagsWidth + gap + overflowChipWidth;
 
     if (needed <= containerWidth) {
-      return { visibleCount: visible, overflowCount: overflow };
+      return { visibleCount: visible, overflowCount: total - visible };
     }
   }
 
-  if (overflowChipWidth <= containerWidth) {
-    return { visibleCount: 0, overflowCount: total };
-  }
-
+  // Nothing fits with a leading tag — show only +N (may still clip if too narrow).
   return { visibleCount: 0, overflowCount: total };
 };
 

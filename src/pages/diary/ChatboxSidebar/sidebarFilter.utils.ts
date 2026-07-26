@@ -3,6 +3,13 @@ import type { SidebarRowView } from './useSidebarRowViews';
 
 const RECENT_DAYS = 7;
 
+type FilterableChatbox = {
+  pinned: boolean;
+  archived: boolean;
+  lastMessageAt: string | null;
+  createdAt: string;
+};
+
 const normalizeQuery = (query: string) => query.trim().toLowerCase();
 
 export const hasActiveSidebarQuery = (
@@ -23,7 +30,7 @@ export const matchesSearch = (chatbox: ChatboxData, query: string): boolean => {
 };
 
 export const matchesFilterTab = (
-  chatbox: ChatboxData,
+  chatbox: FilterableChatbox,
   filterTab: DiaryFilterTab,
 ): boolean => {
   if (filterTab === 'all') {
@@ -43,6 +50,33 @@ export const matchesFilterTab = (
   const cutoff = Date.now() - RECENT_DAYS * 24 * 60 * 60 * 1000;
 
   return activityTime >= cutoff;
+};
+
+export const countChatboxesByFilterTab = (
+  chatboxes: readonly FilterableChatbox[],
+): Record<DiaryFilterTab, number> => {
+  const counts: Record<DiaryFilterTab, number> = {
+    all: chatboxes.length,
+    pinned: 0,
+    recent: 0,
+    archived: 0,
+  };
+
+  for (const chatbox of chatboxes) {
+    if (matchesFilterTab(chatbox, 'pinned')) {
+      counts.pinned += 1;
+    }
+
+    if (matchesFilterTab(chatbox, 'recent')) {
+      counts.recent += 1;
+    }
+
+    if (matchesFilterTab(chatbox, 'archived')) {
+      counts.archived += 1;
+    }
+  }
+
+  return counts;
 };
 
 export const matchesSidebarQuery = (

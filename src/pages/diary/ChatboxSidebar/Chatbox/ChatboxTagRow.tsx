@@ -4,12 +4,13 @@ import { AdChip, type AdChipSize } from '@/packages/base';
 
 import {
   calculateFittingTagCount,
+  getContentBoxWidth,
+  getFlexGapPx,
+  getOverflowProbeLabel,
   sortTagsByCount,
   type ResolvedChatboxTag,
 } from './chatbox.utils';
 import styles from './ChatboxTagRow.module.css';
-
-const TAG_GAP_PX = 4.8;
 
 type TagLayout = {
   visibleCount: number;
@@ -77,9 +78,9 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
     }
 
     const measure = () => {
-      const containerWidth = container.clientWidth;
+      const availableWidth = getContentBoxWidth(container);
 
-      if (containerWidth <= 0) {
+      if (availableWidth <= 0) {
         return;
       }
 
@@ -88,19 +89,22 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
       );
       const tagWidths = tagElements.map((element) => element.offsetWidth);
       const overflowChipWidth = overflowMeasure.offsetWidth;
+      const gap = getFlexGapPx(measureRow);
 
       setTagLayout((prev) =>
         applyTagLayout(
           prev,
           calculateFittingTagCount(
             tagWidths,
-            containerWidth,
-            TAG_GAP_PX,
+            availableWidth,
+            gap,
             overflowChipWidth,
           ),
         ),
       );
     };
+
+    measure();
 
     const observer = new ResizeObserver(measure);
     observer.observe(container);
@@ -114,6 +118,7 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
 
   const visibleTags = sortedTags.slice(0, tagLayout.visibleCount);
   const overflowCount = tagLayout.overflowCount;
+  const overflowProbeLabel = getOverflowProbeLabel(sortedTags.length);
 
   const overflowStyle =
     typeof chipSize === 'number'
@@ -140,7 +145,7 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
       className={[styles.root, className].filter(Boolean).join(' ')}
       ref={tagsContainerRef}
     >
-      <div className={styles.measure} aria-hidden>
+      <div ref={tagMeasureRef} className={styles.measure} aria-hidden>
         {sortedTags.map((tag) => renderTagChip(tag, true))}
         <span
           ref={overflowMeasureRef}
@@ -150,7 +155,7 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
           style={overflowStyle}
           data-overflow-measure
         >
-          +{sortedTags.length}
+          {overflowProbeLabel}
         </span>
       </div>
 

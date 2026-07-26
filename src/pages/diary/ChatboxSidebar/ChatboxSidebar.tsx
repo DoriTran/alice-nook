@@ -7,10 +7,12 @@ import { useDiaryHydrated, useDiaryStore } from '@/store';
 import type { DiaryFilterTab } from '../types';
 
 import styles from './ChatboxSidebar.module.css';
-import Filter from './Filter/Filter';
 import Header from './Header/Header';
 import Search from './Search/Search';
-import { hasActiveSidebarQuery } from './sidebarFilter.utils';
+import {
+  countChatboxesByFilterTab,
+  hasActiveSidebarQuery,
+} from './sidebarFilter.utils';
 import SortableChatbox from './SortableChatbox';
 import SortableGroupBlock from './SortableGroupBlock';
 import { useFilteredSidebarRowViews } from './useFilteredSidebarRowViews';
@@ -33,12 +35,14 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
 }) => {
   const hydrated = useDiaryHydrated();
   const seedIfEmpty = useDiaryStore('seedIfEmpty');
+  const chatboxes = useDiaryStore('chatboxes');
   const { rows, swap, add, remove } = useSidebarDnD();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<DiaryFilterTab>('all');
   const isListLocked = hasActiveSidebarQuery(searchQuery, filterTab);
   const dndEnabled = !isListLocked;
   const rowViews = useFilteredSidebarRowViews(rows, searchQuery, filterTab);
+  const filterCounts = countChatboxesByFilterTab(Object.values(chatboxes));
   const scrollerRef = useRef<HTMLDivElement>(null);
   const scrollerOffset = useScrollOffset(scrollerRef);
 
@@ -59,10 +63,14 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
       <Header onOpenCreate={onOpenCreate} />
 
       <div className={styles.searchRow}>
-        <Search value={searchQuery} onChange={setSearchQuery} />
+        <Search
+          value={searchQuery}
+          onChange={setSearchQuery}
+          filterTab={filterTab}
+          onFilterChange={setFilterTab}
+          filterCounts={filterCounts}
+        />
       </div>
-
-      <Filter activeTab={filterTab} onTabChange={setFilterTab} />
 
       <AdDragDrop
         {...(dndEnabled
