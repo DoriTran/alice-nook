@@ -87,7 +87,18 @@ const ForwardModal: FC<ForwardModalProps> = ({
           marginTop: '1rem',
         }}
       >
-        <button type="button" onClick={handleClose}>
+        <button
+          type="button"
+          onClick={handleClose}
+          style={{
+            padding: '0.5rem 1rem',
+            border: '1px solid var(--border-soft)',
+            borderRadius: 'var(--radius-md)',
+            background: 'transparent',
+            cursor: 'pointer',
+            font: 'inherit',
+          }}
+        >
           Cancel
         </button>
         <button
@@ -96,6 +107,16 @@ const ForwardModal: FC<ForwardModalProps> = ({
           onClick={() => {
             onConfirm(targetChatboxId, caption);
             handleClose();
+          }}
+          style={{
+            padding: '0.5rem 1rem',
+            border: 'none',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--primary)',
+            color: 'var(--on-primary, #fff)',
+            cursor: targetChatboxId ? 'pointer' : 'not-allowed',
+            font: 'inherit',
+            opacity: targetChatboxId ? 1 : 0.6,
           }}
         >
           Forward
