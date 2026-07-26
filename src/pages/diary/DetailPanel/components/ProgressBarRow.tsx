@@ -28,14 +28,18 @@ const ProgressBarRow: FC<ProgressBarRowProps> = ({
       onClick={onClick}
       disabled={!onClick}
     >
-      <div className={styles.header}>
-        <span className={styles.label}>{label}</span>
-        <span className={styles.count}>
-          {count} / {total}
-        </span>
-      </div>
-      <div className={styles.track} aria-hidden>
-        <span className={styles.fill} style={{ width: `${percent}%` }} />
+      <div className={styles.track}>
+        <span
+          className={styles.fill}
+          style={{ width: `${percent}%` }}
+          aria-hidden
+        />
+        <div className={styles.content}>
+          <span className={styles.label}>{label}</span>
+          <span className={styles.count}>
+            {count} / {total}
+          </span>
+        </div>
       </div>
     </button>
   );

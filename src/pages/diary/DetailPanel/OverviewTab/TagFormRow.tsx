@@ -9,7 +9,7 @@ import {
 
 import type { ColorId } from '@/packages/color';
 
-import { AdConfirmDialog, AdIcon, AdInput } from '@/packages/base';
+import { AdIcon, AdInput } from '@/packages/base';
 import { DEFAULT_COLOR_ID } from '@/packages/color';
 import PalettePicker from '@/packages/ui/PalettePicker/PalettePicker';
 import { useDiaryStore } from '@/store';
@@ -18,79 +18,39 @@ import styles from './OverviewTab.module.css';
 
 const TAG_SHADES: Array<'strong' | 'soft'> = ['strong', 'soft'];
 
-export type TagFormRowProps =
-  | {
-      mode: 'create';
-      onCreated: (tag: {
-        tagId: string;
-        label: string;
-        colorId: ColorId;
-      }) => void;
-    }
-  | {
-      mode: 'edit';
-      tagId: string;
-      initialLabel: string;
-      initialColorId: ColorId;
-      onCancel: () => void;
-      onSaved: () => void;
-    };
+export type TagFormRowProps = {
+  onCreated: (tag: {
+    tagId: string;
+    label: string;
+    colorId: ColorId;
+  }) => void;
+};
 
-const TagFormRow: FC<TagFormRowProps> = (props) => {
+const TagFormRow: FC<TagFormRowProps> = ({ onCreated }) => {
   const tags = useDiaryStore('tags');
   const createTag = useDiaryStore('createTag');
-  const updateTag = useDiaryStore('updateTag');
 
-  const isEdit = props.mode === 'edit';
-
-  const [label, setLabel] = useState(isEdit ? props.initialLabel : '');
-  const [colorId, setColorId] = useState<ColorId>(
-    isEdit ? props.initialColorId : DEFAULT_COLOR_ID,
-  );
+  const [expanded, setExpanded] = useState(false);
+  const [label, setLabel] = useState('');
+  const [colorId, setColorId] = useState<ColorId>(DEFAULT_COLOR_ID);
   const [error, setError] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingLabel, setPendingLabel] = useState<string | null>(null);
   const labelInputRef = useRef<HTMLInputElement>(null);
 
-  const editTagId = isEdit ? props.tagId : null;
-  const editInitialLabel = isEdit ? props.initialLabel : '';
-  const editInitialColorId = isEdit ? props.initialColorId : DEFAULT_COLOR_ID;
-
   useEffect(() => {
-    if (!editTagId) {
-      return;
-    }
-
-    setLabel(editInitialLabel);
-    setColorId(editInitialColorId);
-    setError(null);
-    setPaletteOpen(false);
-    setConfirmOpen(false);
-    setPendingLabel(null);
-  }, [editInitialColorId, editInitialLabel, editTagId]);
-
-  useEffect(() => {
-    if (!editTagId) {
+    if (!expanded) {
       return;
     }
 
     labelInputRef.current?.focus();
-    labelInputRef.current?.select();
-  }, [editTagId]);
+  }, [expanded]);
 
-  const applyEdit = (nextLabel: string, nextColorId: ColorId) => {
-    if (!isEdit) {
-      return;
-    }
-
-    updateTag(props.tagId, {
-      label: nextLabel,
-      colorId: nextColorId,
-    });
-    setConfirmOpen(false);
-    setPendingLabel(null);
-    props.onSaved();
+  const reset = () => {
+    setLabel('');
+    setColorId(DEFAULT_COLOR_ID);
+    setError(null);
+    setPaletteOpen(false);
+    setExpanded(false);
   };
 
   const submit = () => {
@@ -101,30 +61,12 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
       return;
     }
 
-    const excludeId = isEdit ? props.tagId : undefined;
     const duplicate = Object.values(tags).some(
-      (tag) =>
-        tag.id !== excludeId &&
-        tag.label.trim().toLowerCase() === nextLabel.toLowerCase(),
+      (tag) => tag.label.trim().toLowerCase() === nextLabel.toLowerCase(),
     );
 
     if (duplicate) {
       setError('A tag with this name already exists');
-      return;
-    }
-
-    if (isEdit) {
-      const unchanged =
-        nextLabel === props.initialLabel.trim() &&
-        colorId === props.initialColorId;
-
-      if (unchanged) {
-        props.onSaved();
-        return;
-      }
-
-      setPendingLabel(nextLabel);
-      setConfirmOpen(true);
       return;
     }
 
@@ -133,16 +75,13 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
       colorId,
     });
 
-    props.onCreated({
+    onCreated({
       tagId,
       label: nextLabel,
       colorId,
     });
 
-    setLabel('');
-    setColorId(DEFAULT_COLOR_ID);
-    setError(null);
-    setPaletteOpen(false);
+    reset();
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -156,16 +95,28 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
       submit();
     }
 
-    if (event.key === 'Escape' && isEdit) {
+    if (event.key === 'Escape') {
       event.preventDefault();
-      props.onCancel();
+      reset();
     }
   };
 
-  const confirmLabel = pendingLabel ?? label.trim().replace(/^#/, '');
+  if (!expanded) {
+    return (
+      <li className={styles.tagFormItem}>
+        <button
+          type="button"
+          className={styles.newTagButton}
+          onClick={() => setExpanded(true)}
+        >
+          + New Tag
+        </button>
+      </li>
+    );
+  }
 
   return (
-    <li className={styles.tagRow}>
+    <li className={styles.tagFormItem}>
       <form className={styles.tagForm} onSubmit={handleSubmit}>
         <PalettePicker
           value={colorId}
@@ -188,53 +139,28 @@ const TagFormRow: FC<TagFormRowProps> = (props) => {
             setLabel(event.currentTarget.value);
           }}
           onKeyDown={handleKeyDown}
-          placeholder={isEdit ? 'Tag name' : 'New tag'}
-          aria-label={isEdit ? 'Edit tag name' : 'New tag name'}
+          placeholder="New tag"
+          aria-label="New tag name"
         />
-        {isEdit ? (
-          <div className={styles.tagActions}>
-            <button
-              type="submit"
-              className={styles.tagActionBtn}
-              aria-label="Save tag"
-            >
-              <AdIcon icon="Check" source="lucide" size={13} strokeWidth={2} />
-            </button>
-            <button
-              type="button"
-              className={styles.tagActionBtn}
-              aria-label="Cancel editing"
-              onClick={props.onCancel}
-            >
-              <AdIcon icon="X" source="lucide" size={13} strokeWidth={2} />
-            </button>
-          </div>
-        ) : (
+        <div className={styles.tagFormActions}>
           <button
             type="submit"
-            className={styles.tagActionBtn}
+            className={styles.tagFormActionBtn}
             aria-label="Create tag"
           >
-            <AdIcon icon="Plus" source="lucide" size={13} strokeWidth={2} />
+            <AdIcon icon="Check" source="lucide" size={13} strokeWidth={2} />
           </button>
-        )}
+          <button
+            type="button"
+            className={styles.tagFormActionBtn}
+            aria-label="Cancel creating tag"
+            onClick={reset}
+          >
+            <AdIcon icon="X" source="lucide" size={13} strokeWidth={2} />
+          </button>
+        </div>
       </form>
       {error ? <p className={styles.tagFormError}>{error}</p> : null}
-
-      {isEdit ? (
-        <AdConfirmDialog
-          opened={confirmOpen}
-          onClose={() => {
-            setConfirmOpen(false);
-            setPendingLabel(null);
-            props.onCancel();
-          }}
-          onConfirm={() => applyEdit(confirmLabel, colorId)}
-          title="Edit tag everywhere?"
-          message={`Changes to “#${confirmLabel}” will update this tag across the whole app — every chat and message that uses it.`}
-          confirmLabel="Save changes"
-        />
-      ) : null}
     </li>
   );
 };

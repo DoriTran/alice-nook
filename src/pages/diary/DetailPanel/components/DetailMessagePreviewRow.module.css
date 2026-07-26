@@ -1,8 +1,16 @@
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  width: 100%;
+}
+
 .root {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   border: none;
   border-radius: var(--radius-md);
@@ -15,6 +23,26 @@
 
 .root:hover {
   background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 5%, transparent);
+  transition: var(--transition-fast);
+}
+
+.removeBtn:hover {
+  color: var(--danger, #e53935);
+  background: color-mix(in srgb, var(--danger, #e53935) 10%, var(--surface));
 }
 
 .iconTile {

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import type { ColorId } from '@/packages/color';
 import type { Message } from '@/store/diary/type';
 
-import { AdConfirmDialog } from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
 import type { MediaFilter } from '../../types';
@@ -11,17 +10,18 @@ import type { DetailPanelStats, DetailPanelTag } from '../detailPanel.utils';
 
 import MessageListDialog from '../components/MessageListDialog';
 import ProgressBarRow from '../components/ProgressBarRow';
+import TagMessagesDialog from '../components/TagMessagesDialog';
 import { filterMessagesByTags } from '../detailPanel.utils';
 import CollapsibleSection from './CollapsibleSection';
 import styles from './OverviewTab.module.css';
 import StatisticsSection from './StatisticsSection';
 import TagFormRow from './TagFormRow';
-import TagPillRow from './TagPillRow';
+import TagRibbonRow from './TagRibbonRow';
 
 type MessageDialogState =
   | { kind: 'pinned' }
   | { kind: 'archived' }
-  | { kind: 'tag'; tagId: string; label: string }
+  | { kind: 'tag'; tagId: string; label: string; colorId: ColorId }
   | null;
 
 export type OverviewTabProps = {
@@ -46,16 +46,12 @@ const OverviewTab: FC<OverviewTabProps> = ({
   onOpenMedia,
 }) => {
   const storeTags = useDiaryStore('tags');
-  const removeTagFromChatbox = useDiaryStore('removeTagFromChatbox');
 
   const [messageDialog, setMessageDialog] = useState<MessageDialogState>(null);
-  const [editingTagId, setEditingTagId] = useState<string | null>(null);
-  const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
   const [createdTagIds, setCreatedTagIds] = useState<string[]>([]);
 
   useEffect(() => {
     setCreatedTagIds([]);
-    setEditingTagId(null);
   }, [chatboxId]);
 
   const displayTags = useMemo(() => {
@@ -83,11 +79,6 @@ const OverviewTab: FC<OverviewTabProps> = ({
 
     return [...extras, ...tags];
   }, [createdTagIds, storeTags, tags]);
-
-  const deletingTag = useMemo(
-    () => displayTags.find((tag) => tag.tagId === deletingTagId) ?? null,
-    [deletingTagId, displayTags],
-  );
 
   const dialogMessages = useMemo(() => {
     if (!messageDialog) {
@@ -121,19 +112,6 @@ const OverviewTab: FC<OverviewTabProps> = ({
     return `#${messageDialog.label}`;
   }, [messageDialog]);
 
-  const handleDeleteTag = useCallback(() => {
-    if (!deletingTagId) {
-      return;
-    }
-
-    removeTagFromChatbox(chatboxId, deletingTagId);
-    setCreatedTagIds((current) =>
-      current.filter((tagId) => tagId !== deletingTagId),
-    );
-    setEditingTagId((current) => (current === deletingTagId ? null : current));
-    setDeletingTagId(null);
-  }, [chatboxId, deletingTagId, removeTagFromChatbox]);
-
   const handleTagCreated = useCallback(
     (tag: { tagId: string; label: string; colorId: ColorId }) => {
       setCreatedTagIds((current) =>
@@ -142,6 +120,27 @@ const OverviewTab: FC<OverviewTabProps> = ({
     },
     [],
   );
+
+  const handleTagClick = useCallback(
+    (tagId: string) => {
+      const match = displayTags.find((entry) => entry.tagId === tagId);
+
+      if (!match) {
+        return;
+      }
+
+      setMessageDialog({
+        kind: 'tag',
+        tagId,
+        label: match.label,
+        colorId: match.colorId,
+      });
+    },
+    [displayTags],
+  );
+
+  const tagDialog =
+    messageDialog?.kind === 'tag' ? messageDialog : null;
 
   return (
     <div className={styles.root}>
@@ -152,13 +151,13 @@ const OverviewTab: FC<OverviewTabProps> = ({
       <CollapsibleSection title="Messages">
         <div className={styles.progressList}>
           <ProgressBarRow
-            label="Pinned Message"
+            label="Pinned"
             count={stats.pinnedCount}
             total={stats.totalMessages}
             onClick={() => setMessageDialog({ kind: 'pinned' })}
           />
           <ProgressBarRow
-            label="Archived Message"
+            label="Archived"
             count={stats.archivedCount}
             total={stats.totalMessages}
             tone="blue"
@@ -168,67 +167,43 @@ const OverviewTab: FC<OverviewTabProps> = ({
       </CollapsibleSection>
 
       <CollapsibleSection title="Tags">
-        <ul className={styles.tagPillList}>
-          <TagFormRow mode="create" onCreated={handleTagCreated} />
-          {displayTags.map((tag) => (
-            <TagPillRow
-              key={tag.tagId}
-              tag={tag}
-              editing={editingTagId === tag.tagId}
-              onPillClick={(tagId) => {
-                const match = displayTags.find(
-                  (entry) => entry.tagId === tagId,
-                );
-
-                if (!match) {
-                  return;
-                }
-
-                setMessageDialog({
-                  kind: 'tag',
-                  tagId,
-                  label: match.label,
-                });
-              }}
-              onEdit={setEditingTagId}
-              onCancelEdit={() => setEditingTagId(null)}
-              onSaved={() => setEditingTagId(null)}
-              onDelete={setDeletingTagId}
-            />
-          ))}
-        </ul>
         {displayTags.length === 0 ? (
           <p className={styles.emptyTags}>No tags in this chat yet.</p>
         ) : null}
+        <ul className={styles.tagRibbonList}>
+          {displayTags.map((tag) => (
+            <TagRibbonRow
+              key={tag.tagId}
+              tag={tag}
+              onClick={handleTagClick}
+            />
+          ))}
+          <TagFormRow onCreated={handleTagCreated} />
+        </ul>
       </CollapsibleSection>
 
-      <MessageListDialog
-        opened={messageDialog !== null}
-        onClose={() => setMessageDialog(null)}
-        title={dialogTitle}
-        messages={dialogMessages}
-        showPin={messageDialog?.kind === 'pinned'}
-        emptyLabel={
-          messageDialog?.kind === 'tag'
-            ? 'No messages with this tag'
-            : 'No messages'
-        }
-        onJumpToMessage={onJumpToMessage}
-      />
-
-      <AdConfirmDialog
-        opened={deletingTag !== null}
-        onClose={() => setDeletingTagId(null)}
-        onConfirm={handleDeleteTag}
-        title="Remove tag from this chat?"
-        message={
-          deletingTag
-            ? `“#${deletingTag.label}” will be removed from all messages in this chat. The tag itself stays available elsewhere.`
-            : undefined
-        }
-        confirmLabel="Remove"
-        destructive
-      />
+      {tagDialog ? (
+        <TagMessagesDialog
+          opened
+          onClose={() => setMessageDialog(null)}
+          chatboxId={chatboxId}
+          tagId={tagDialog.tagId}
+          label={tagDialog.label}
+          colorId={tagDialog.colorId}
+          messages={dialogMessages}
+          onJumpToMessage={onJumpToMessage}
+        />
+      ) : (
+        <MessageListDialog
+          opened={messageDialog !== null}
+          onClose={() => setMessageDialog(null)}
+          title={dialogTitle}
+          messages={dialogMessages}
+          showPin={messageDialog?.kind === 'pinned'}
+          emptyLabel="No messages"
+          onJumpToMessage={onJumpToMessage}
+        />
+      )}
     </div>
   );
 };

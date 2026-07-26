@@ -1,0 +1,114 @@
+.modalTitle {
+  flex: 1;
+  min-width: 0;
+  margin-right: 0.5rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.titleLeading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.titleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleForm {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleInput {
+  min-width: 0;
+  flex: 1;
+  height: 1.75rem !important;
+  padding: 0.15rem 0.5rem !important;
+  font-size: var(--font-sm) !important;
+}
+
+.titleEditBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.titleEditBtn:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.error {
+  margin: 0 0 0.5rem;
+  font-size: var(--font-2xs);
+  color: var(--danger, #e53935);
+}
+
+.clearAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--danger, #e53935) 35%, var(--border-soft));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--danger, #e53935);
+  font: inherit;
+  font-size: var(--font-2xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.clearAllBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger, #e53935) 10%, transparent);
+}
+
+.clearAllBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  max-height: min(65vh, 34rem);
+  overflow-y: auto;
+  margin: -0.25rem -0.15rem;
+  padding: 0.2rem 0.15rem 0.35rem;
+}
+
+.empty {
+  margin: 0.75rem 0.35rem;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-align: center;
+}

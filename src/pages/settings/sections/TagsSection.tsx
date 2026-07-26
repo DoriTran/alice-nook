@@ -265,7 +265,7 @@ const TagsSection: FC = () => {
                   <AdChip
                     label={tag.label}
                     colorId={tag.colorId}
-                    size="medium"
+                    size="large"
                   />
                   <span className={styles.stats}>
                     {chatCount} chat{chatCount === 1 ? '' : 's'} ·{' '}
