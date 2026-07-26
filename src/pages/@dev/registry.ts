@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import AdChipDev from './adchip';
 import BrushHighlightDev from './brushhighlight';
+import ChatboxTagsDev from './chatboxtags';
 import DragDropSortableDev from './dragdropsortable';
 import MessagePreviewDev from './messagepreview';
 import TicketShapeDev from './ticketshape';
@@ -43,6 +44,11 @@ export const devTests: readonly DevTestEntry[] = [
     key: 'messagepreview',
     displayName: 'Message Preview Cards',
     component: MessagePreviewDev,
+  },
+  {
+    key: 'chatboxtags',
+    displayName: 'Chatbox Tag Overflow',
+    component: ChatboxTagsDev,
   },
 ] as const;
 
