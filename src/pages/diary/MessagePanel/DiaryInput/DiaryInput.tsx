@@ -43,7 +43,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     isEditing,
     pendingVariantSwitch,
     setFocused,
-    setText,
+    setContent,
     clearAll,
     cancelEdit,
     requestVariantSwitch,
@@ -117,8 +117,8 @@ const DiaryInput: FC<DiaryInputProps> = ({
       return (
         <AIEditor
           editorRef={editorRef}
-          value={draft.text}
-          onChange={setText}
+          value={draft.content}
+          onChange={setContent}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onSubmit={handleSubmit}
@@ -130,9 +130,9 @@ const DiaryInput: FC<DiaryInputProps> = ({
     return (
       <TextEditor
         ref={editorRef}
-        value={draft.text}
+        value={draft.content}
         maxRows={8}
-        onChange={setText}
+        onChange={setContent}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onSubmit={handleSubmit}

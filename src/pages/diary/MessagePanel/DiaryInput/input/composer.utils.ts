@@ -1,3 +1,7 @@
+import {
+  isRichTextEmpty,
+  migratePlainTextToRichText,
+} from '@/packages/base/AdRichText/richtext';
 import type {
   Attachment,
   AttachmentType,
@@ -34,7 +38,7 @@ export const hasDraftContent = (draft: ComposerDraft): boolean => {
     );
   }
 
-  return draft.text.trim().length > 0;
+  return !isRichTextEmpty(draft.content);
 };
 
 export const draftHasVariantContent = (draft: ComposerDraft): boolean => {
@@ -42,23 +46,23 @@ export const draftHasVariantContent = (draft: ComposerDraft): boolean => {
     return draft.todoItems.some((item) => item.text.trim());
   }
 
-  return draft.text.trim().length > 0;
+  return !isRichTextEmpty(draft.content);
 };
 
 export const convertDraftToVariant = (
   draft: ComposerDraft,
   nextVariant: MessageVariant,
-): Pick<ComposerDraft, 'variant' | 'text' | 'todoItems'> => {
+): Pick<ComposerDraft, 'variant' | 'content' | 'todoItems'> => {
   if (draft.variant === nextVariant) {
     return {
       variant: draft.variant,
-      text: draft.text,
+      content: draft.content,
       todoItems: draft.todoItems,
     };
   }
 
   if (nextVariant === 'todo') {
-    const lines = draft.text
+    const lines = draft.content.preview
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
@@ -71,7 +75,11 @@ export const convertDraftToVariant = (
           }))
         : [createEmptyTodoItem()];
 
-    return { variant: 'todo', text: '', todoItems: items };
+    return {
+      variant: 'todo',
+      content: migratePlainTextToRichText(''),
+      todoItems: items,
+    };
   }
 
   if (draft.variant === 'todo') {
@@ -80,12 +88,16 @@ export const convertDraftToVariant = (
       .filter(Boolean)
       .join('\n');
 
-    return { variant: nextVariant, text, todoItems: [createEmptyTodoItem()] };
+    return {
+      variant: nextVariant,
+      content: migratePlainTextToRichText(text),
+      todoItems: [createEmptyTodoItem()],
+    };
   }
 
   return {
     variant: nextVariant,
-    text: draft.text,
+    content: draft.content,
     todoItems: [createEmptyTodoItem()],
   };
 };
@@ -118,7 +130,7 @@ export const buildMessagePayload = (
         (item): TodoItem => ({
           id: item.id,
           completed: item.completed,
-          content: { text: item.text.trim() },
+          content: migratePlainTextToRichText(item.text.trim()),
           attachments: item.attachments,
         }),
       );
@@ -138,14 +150,14 @@ export const buildMessagePayload = (
     return {
       ...base,
       variant: 'ai',
-      content: { text: draft.text.trim() },
+      content: draft.content,
     };
   }
 
   return {
     ...base,
     variant: 'text',
-    content: { text: draft.text.trim() },
+    content: draft.content,
   };
 };
 
@@ -154,7 +166,7 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     variant: message.variant,
     decorators: message.decorators,
     attachments: message.attachments,
-    text: '',
+    content: migratePlainTextToRichText(''),
     todoItems: [createEmptyTodoItem()],
     focused: false,
     replyToMessageId: message.replyToMessageId,
@@ -164,20 +176,20 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     const items = message.content.items.map((item) => ({
       id: item.id,
       completed: item.completed,
-      text: item.content.text,
+      text: item.content.preview,
       attachments: item.attachments,
     }));
 
     return {
       ...base,
-      text: '',
+      content: migratePlainTextToRichText(''),
       todoItems: items.length > 0 ? items : [createEmptyTodoItem()],
     };
   }
 
   return {
     ...base,
-    text: message.content.text,
+    content: message.content,
     todoItems: [createEmptyTodoItem()],
   };
 };

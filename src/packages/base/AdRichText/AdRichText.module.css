@@ -1,0 +1,85 @@
+.composer {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.85rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--font-sm);
+  line-height: 1.25rem;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: calc(1.25rem * 8 + 1rem);
+}
+
+.composerGrow {
+  min-height: calc(1.25rem + 1rem);
+  padding: 0.5rem 0.85rem;
+}
+
+.composer :global(.ad-richtext-prose),
+.composer :global(.tiptap),
+.composer :global(.ProseMirror) {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  min-height: 1.25rem;
+}
+
+.composer :global(.ad-richtext-prose:focus),
+.composer :global(.ad-richtext-prose:focus-visible),
+.composer :global(.ProseMirror-focused),
+.composer :global(.tiptap:focus),
+.composer :global(.tiptap:focus-visible) {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.composer:focus,
+.composer:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.composer :global(.ad-richtext-prose p) {
+  margin: 0;
+}
+
+.composer :global(.ad-richtext-prose p + p) {
+  margin-top: 0;
+}
+
+.composer :global(.is-editor-empty:first-child::before),
+.composer :global(.is-empty:first-child::before) {
+  color: var(--text-soft);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.viewer {
+  display: block;
+  font-size: var(--font-sm);
+  line-height: 1.55;
+  color: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.viewer :global(.ad-richtext-prose) {
+  outline: none;
+}
+
+.viewer :global(.ad-richtext-prose p) {
+  margin: 0;
+}
+
+.viewer :global(.ad-richtext-prose p + p) {
+  margin-top: 0.15em;
+}

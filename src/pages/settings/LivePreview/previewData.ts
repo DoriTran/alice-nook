@@ -1,3 +1,4 @@
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import type {
   Message,
   MessageBase,
@@ -32,16 +33,14 @@ export const PREVIEW_MESSAGES: Message[] = [
   {
     ...base('preview-1'),
     variant: 'text',
-    content: {
-      text: "Morning! Today I'll focus on studying Japanese grammar ✨",
-    },
+    content: migratePlainTextToRichText("Morning! Today I'll focus on studying Japanese grammar ✨"),
   },
   {
     ...base('preview-2', 'user', [
       { type: 'ticket', state: 'todo', ticked: false, placement: 'outside' },
     ]),
     variant: 'text',
-    content: { text: 'Finish grammar exercises' },
+    content: migratePlainTextToRichText('Finish grammar exercises'),
   },
   {
     ...base('preview-3', 'user', [
@@ -58,11 +57,11 @@ export const PREVIEW_MESSAGES: Message[] = [
       },
     ]),
     variant: 'text',
-    content: { text: 'Focus session' },
+    content: migratePlainTextToRichText('Focus session'),
   },
   {
     ...base('preview-4', 'assistant'),
     variant: 'ai',
-    content: { text: 'Great progress today! Keep it up 🌱' },
+    content: migratePlainTextToRichText('Great progress today! Keep it up 🌱'),
   },
 ];

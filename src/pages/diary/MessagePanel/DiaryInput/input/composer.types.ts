@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
+import { createEmptyRichTextContent } from '@/packages/base/AdRichText/richtext';
+import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type {
   Attachment,
   MessageDecorator,
@@ -17,7 +19,8 @@ export type ComposerDraft = {
   variant: MessageVariant;
   decorators: MessageDecorator[];
   attachments: Attachment[];
-  text: string;
+  /** TipTap content for text / AI variants. */
+  content: RichTextContent;
   todoItems: DraftTodoItem[];
   focused: boolean;
   replyToMessageId: string | null;
@@ -39,7 +42,7 @@ export const createInitialDraft = (): ComposerDraft => ({
   variant: 'text',
   decorators: [],
   attachments: [],
-  text: '',
+  content: createEmptyRichTextContent(),
   todoItems: [createEmptyTodoItem()],
   focused: false,
   replyToMessageId: null,

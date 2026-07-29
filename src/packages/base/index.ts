@@ -85,6 +85,21 @@ export {
   type AdEmojiTextProps,
 } from './AdEmojiPicker';
 export {
+  AdRichText,
+  AdRichTextViewer,
+  createEmptyRichTextContent,
+  createRichTextContent,
+  extractPlainText,
+  isRichTextEmpty,
+  migratePlainTextToRichText,
+  plainTextToDoc,
+  EMPTY_DOC,
+  type AdRichTextHandle,
+  type AdRichTextProps,
+  type AdRichTextViewerProps,
+  type RichTextContent,
+} from './AdRichText';
+export {
   default as AdVirtualList,
   type AdVirtualListProps,
   type AdVirtualListHandle,

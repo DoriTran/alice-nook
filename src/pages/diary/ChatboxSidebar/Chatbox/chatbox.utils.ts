@@ -134,7 +134,7 @@ export const getMessagePreview = (
   switch (message.variant) {
     case 'text':
     case 'ai': {
-      const text = message.content.text.trim();
+      const text = message.content.preview.trim();
 
       if (text) {
         return text;
@@ -184,7 +184,7 @@ export const getMessagePreview = (
     case 'todo': {
       const first = message.content.items[0];
 
-      return first ? `Todo: ${first.content.text}` : 'Todo list';
+      return first ? `Todo: ${first.content.preview}` : 'Todo list';
     }
     default:
       return '';

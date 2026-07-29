@@ -20,9 +20,12 @@ import type {
   Tag,
 } from './type';
 
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
+
 import { idbStorage, nowIso } from '../helper';
 import { migrateDiaryPersistedState } from '../migrateColorId';
 import { migrateDiaryIconState } from '../migrateIconId';
+import { migrateDiaryRichTextState } from '../migrateRichText';
 import shallow from '../shallow';
 import { diaryDummyState, diaryInitialState } from './constants';
 
@@ -646,7 +649,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           chatboxId: targetChatboxId,
           sender: 'user',
           variant: 'text',
-          content: { text: caption?.trim() ?? '' },
+          content: migratePlainTextToRichText(caption?.trim() ?? ''),
           sourceMessageId: rootSourceId,
           tagIds: [],
           attachments: [],
@@ -946,7 +949,9 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           },
         };
 
-        return migrateDiaryIconState(migrateDiaryPersistedState(merged));
+        return migrateDiaryRichTextState(
+          migrateDiaryIconState(migrateDiaryPersistedState(merged)),
+        );
       },
     },
   ),

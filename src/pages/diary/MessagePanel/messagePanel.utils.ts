@@ -20,12 +20,12 @@ export const getMessagePreviewText = (message: Message | undefined): string => {
     const count = message.content.items.length;
 
     return count > 1
-      ? `${firstItem.content.text} (+${count - 1})`
-      : firstItem.content.text;
+      ? `${firstItem.content.preview} (+${count - 1})`
+      : firstItem.content.preview;
   }
 
-  if (message.content.text.trim()) {
-    return message.content.text.trim();
+  if (message.content.preview.trim()) {
+    return message.content.preview.trim();
   }
 
   if (message.attachments.length > 0) {
@@ -82,9 +82,9 @@ export const messageMatchesSearch = (
 
   if (message.variant === 'todo') {
     return message.content.items.some((item) =>
-      item.content.text.toLowerCase().includes(normalized),
+      item.content.preview.toLowerCase().includes(normalized),
     );
   }
 
-  return message.content.text.toLowerCase().includes(normalized);
+  return message.content.preview.toLowerCase().includes(normalized);
 };

@@ -1,0 +1,15 @@
+.wrap {
+  display: inline-flex;
+  vertical-align: text-bottom;
+  line-height: 1;
+  user-select: none;
+}
+
+.glyph {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0 0.05em;
+  vertical-align: -0.15em;
+  object-fit: contain;
+}

@@ -72,6 +72,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
 
   const surfaceClass = clsx(
     composing ? styles.surfaceCard : styles.surfaceFeed,
+    composing && borderless && styles.surfaceCardBorderless,
     !composing && attached && styles.surfaceFeedAttached,
   );
 

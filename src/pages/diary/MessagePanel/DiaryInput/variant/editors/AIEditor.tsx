@@ -2,13 +2,15 @@ import type { FC, RefObject } from 'react';
 
 import type { EnterKeyBehavior } from '@/store/settings/type';
 
+import type { RichTextContent } from '@/packages/base/AdRichText/types';
+
 import type { ComposerEditorRef } from '../../input/composer.types';
 
 import TextEditor from './TextEditor';
 
 export type AIEditorProps = {
-  value: string;
-  onChange: (value: string) => void;
+  value: RichTextContent;
+  onChange: (value: RichTextContent) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   onSubmit?: () => void;

@@ -40,7 +40,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const styles = isAssistant ? assistantStyles : userStyles;
   const time = formatMessageTime(message.createdAt);
   const captionText =
-    message.variant === 'todo' ? '' : message.content.text.trim();
+    message.variant === 'todo' ? '' : message.content.preview.trim();
   // Only render a body bubble when there is real content (not attachment-only empties).
   const showBody = message.variant === 'todo' || captionText.length > 0;
   const hasAttachments =

@@ -1,7 +1,10 @@
 // #region Store
 
+import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type { ColorId, CustomPalette } from '@/packages/color';
 import type { IconId } from '@/packages/icon';
+
+export type { RichTextContent };
 
 export type DiaryStore = {
   groups: Record<string, Group>;
@@ -179,9 +182,7 @@ export type Tag = {
 
 // #region Shared
 
-export type RichTextContent = {
-  text: string;
-};
+// RichTextContent is defined in @/packages/base (TipTap JSON + preview cache).
 
 // #endregion
 

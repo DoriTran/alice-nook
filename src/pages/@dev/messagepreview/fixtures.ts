@@ -1,3 +1,4 @@
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import type { Message } from '@/store/diary/type';
 
 const base = {
@@ -36,13 +37,13 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
         items: [
           {
             id: 'todo:1',
-            content: { text: 'N5 Vocabulary' },
+            content: migratePlainTextToRichText('N5 Vocabulary'),
             completed: false,
             attachments: [],
           },
           {
             id: 'todo:2',
-            content: { text: 'N5 Grammar' },
+            content: migratePlainTextToRichText('N5 Grammar'),
             completed: false,
             attachments: [],
           },
@@ -62,9 +63,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:ai',
       variant: 'ai',
-      content: {
-        text: 'Here is a study plan for JLPT N5 this week.',
-      },
+      content: migratePlainTextToRichText('Here is a study plan for JLPT N5 this week.'),
       attachments: [],
       decorators: [],
       createdAt: '2026-01-04T11:00:00.000Z',
@@ -79,7 +78,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:timer',
       variant: 'text',
-      content: { text: 'JLPT N5 Study Countdown' },
+      content: migratePlainTextToRichText('JLPT N5 Study Countdown'),
       attachments: [],
       decorators: [
         {
@@ -106,7 +105,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:ticket',
       variant: 'text',
-      content: { text: 'Review particle usage worksheet' },
+      content: migratePlainTextToRichText('Review particle usage worksheet'),
       attachments: [],
       decorators: [
         {
@@ -128,7 +127,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:images',
       variant: 'text',
-      content: { text: 'Mountain photos from our trip ...' },
+      content: migratePlainTextToRichText('Mountain photos from our trip ...'),
       attachments: [
         {
           id: 'att:img-1',
@@ -179,7 +178,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:video',
       variant: 'text',
-      content: { text: 'Listening practice clip' },
+      content: migratePlainTextToRichText('Listening practice clip'),
       attachments: [
         {
           id: 'att:video-1',
@@ -202,7 +201,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:audio',
       variant: 'text',
-      content: { text: 'Pronunciation drill recording' },
+      content: migratePlainTextToRichText('Pronunciation drill recording'),
       attachments: [
         {
           id: 'att:audio-1',
@@ -226,7 +225,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:document',
       variant: 'text',
-      content: { text: 'Important Grammar Notes ...' },
+      content: migratePlainTextToRichText('Important Grammar Notes ...'),
       attachments: [
         {
           id: 'att:doc-1',
@@ -263,7 +262,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:note',
       variant: 'text',
-      content: { text: 'Quick vocab dump' },
+      content: migratePlainTextToRichText('Quick vocab dump'),
       attachments: [
         {
           id: 'att:note-1',
@@ -286,7 +285,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:archive',
       variant: 'text',
-      content: { text: 'Backup of study sheets' },
+      content: migratePlainTextToRichText('Backup of study sheets'),
       attachments: [
         {
           id: 'att:archive-1',
@@ -309,7 +308,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:code',
       variant: 'text',
-      content: { text: 'Anki sync helper script' },
+      content: migratePlainTextToRichText('Anki sync helper script'),
       attachments: [
         {
           id: 'att:code-1',
@@ -332,7 +331,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:file-other',
       variant: 'text',
-      content: { text: 'Exported deck binary' },
+      content: migratePlainTextToRichText('Exported deck binary'),
       attachments: [
         {
           id: 'att:file-other-1',
@@ -355,7 +354,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:link-og',
       variant: 'text',
-      content: { text: 'Useful Japanese Learning Resources' },
+      content: migratePlainTextToRichText('Useful Japanese Learning Resources'),
       attachments: [
         {
           id: 'att:link-1',
@@ -385,7 +384,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:link-fallback',
       variant: 'text',
-      content: { text: 'Dictionary bookmark' },
+      content: migratePlainTextToRichText('Dictionary bookmark'),
       attachments: [
         {
           id: 'att:link-only',
@@ -407,7 +406,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:reply',
       variant: 'text',
-      content: { text: 'Sounds good — I will start tonight.' },
+      content: migratePlainTextToRichText('Sounds good — I will start tonight.'),
       attachments: [],
       decorators: [],
       replyToMessageId: 'dev:todo',
@@ -423,9 +422,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:normal',
       variant: 'text',
-      content: {
-        text: 'Finished the vocabulary review! The focus timer helped me stay on track for the full session.',
-      },
+      content: migratePlainTextToRichText('Finished the vocabulary review! The focus timer helped me stay on track for the full session.'),
       attachments: [],
       decorators: [],
       pinned: false,
@@ -442,7 +439,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:mixed-image',
       variant: 'text',
-      content: { text: 'Trip recap album and clip' },
+      content: migratePlainTextToRichText('Trip recap album and clip'),
       attachments: [
         { id: 'att:mx-1', type: 'image', url: '/dummy/trip-1.png' },
         { id: 'att:mx-2', type: 'image', url: '/dummy/trip-2.png' },
@@ -463,9 +460,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:long',
       variant: 'text',
-      content: {
-        text: 'This is an intentionally very long message title so we can verify single-line ellipsis behavior on the preview card title row without wrapping into two lines',
-      },
+      content: migratePlainTextToRichText('This is an intentionally very long message title so we can verify single-line ellipsis behavior on the preview card title row without wrapping into two lines'),
       attachments: [
         {
           id: 'att:long-img',

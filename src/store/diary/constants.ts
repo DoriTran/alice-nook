@@ -1,3 +1,4 @@
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import type { DiaryStore, MessagePreviewStyle } from './type';
 
 import {
@@ -194,9 +195,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Learn 20 new Japanese words today.',
-      },
+      content: migratePlainTextToRichText('Learn 20 new Japanese words today.'),
       attachments: [],
       decorators: [],
       tagIds: ['tag:japanese'],
@@ -218,13 +217,13 @@ export const diaryDummyState: DiaryStore = {
         items: [
           {
             id: 'todo:1',
-            content: { text: 'N5 Vocabulary' },
+            content: migratePlainTextToRichText('N5 Vocabulary'),
             completed: true,
             attachments: [],
           },
           {
             id: 'todo:2',
-            content: { text: 'N5 Grammar' },
+            content: migratePlainTextToRichText('N5 Grammar'),
             completed: false,
             attachments: [],
           },
@@ -247,9 +246,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Mountain photos from our trip ...',
-      },
+      content: migratePlainTextToRichText('Mountain photos from our trip ...'),
       attachments: [
         {
           id: 'att:study-image-1',
@@ -308,9 +305,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Important Grammar Notes ...',
-      },
+      content: migratePlainTextToRichText('Important Grammar Notes ...'),
       attachments: [
         {
           id: 'att:study-file-1',
@@ -350,9 +345,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Useful Japanese Learning Resources',
-      },
+      content: migratePlainTextToRichText('Useful Japanese Learning Resources'),
       attachments: [
         {
           id: 'att:study-link-1',
@@ -385,9 +378,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'JLPT N5 Study Countdown',
-      },
+      content: migratePlainTextToRichText('JLPT N5 Study Countdown'),
       attachments: [],
       decorators: [
         {
@@ -417,9 +408,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Finished the vocabulary review! The focus timer helped me stay on track for the full session.',
-      },
+      content: migratePlainTextToRichText('Finished the vocabulary review! The focus timer helped me stay on track for the full session.'),
       attachments: [],
       decorators: [],
       tagIds: ['tag:japanese', 'tag:vocabulary'],
@@ -437,9 +426,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:diary',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Had a quiet morning with coffee and notes.',
-      },
+      content: migratePlainTextToRichText('Had a quiet morning with coffee and notes.'),
       attachments: [],
       decorators: [],
       tagIds: ['tag:diary'],
@@ -457,9 +444,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:project',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Finish diary architecture.',
-      },
+      content: migratePlainTextToRichText('Finish diary architecture.'),
       attachments: [],
       decorators: [],
       tagIds: ['tag:project', 'tag:important'],
@@ -477,9 +462,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:project',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'MVP Release',
-      },
+      content: migratePlainTextToRichText('MVP Release'),
       attachments: [],
       decorators: [
         {
@@ -509,9 +492,7 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:anime',
       sender: 'user',
       variant: 'text',
-      content: {
-        text: 'Watch Frieren this weekend.',
-      },
+      content: migratePlainTextToRichText('Watch Frieren this weekend.'),
       attachments: [],
       decorators: [],
       tagIds: ['tag:anime'],

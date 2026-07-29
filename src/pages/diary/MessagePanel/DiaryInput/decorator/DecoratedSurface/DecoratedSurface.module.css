@@ -33,6 +33,12 @@
   box-shadow: var(--shadow-md), var(--focus-ring);
 }
 
+/* DiaryInput borderless: keep the card border, skip the outer focus glow. */
+.surfaceCardBorderless:focus-within {
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-md);
+}
+
 .surfacePassThrough {
   min-width: 0;
 }

@@ -208,10 +208,10 @@ export const resolveMessageTitle = (message: Message): string => {
   if (message.variant === 'todo') {
     const first = message.content.items[0];
 
-    return first ? `Todo: ${first.content.text}` : 'Todo list';
+    return first ? `Todo: ${first.content.preview}` : 'Todo list';
   }
 
-  const text = message.content.text.trim();
+  const text = message.content.preview.trim();
 
   if (text) {
     return text;

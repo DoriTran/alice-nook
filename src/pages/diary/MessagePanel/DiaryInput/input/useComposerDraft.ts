@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
+import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import { generateAiResponse, uploadAttachment } from '@/api';
 import { useDiaryStore } from '@/store';
 
@@ -95,11 +97,11 @@ export const useComposerDraft = (
     setDraft((current) => ({ ...current, focused }));
   }, []);
 
-  const setText = useCallback((text: string) => {
+  const setContent = useCallback((content: RichTextContent) => {
     setDraft((current) => ({
       ...current,
-      text,
-      attachments: syncLinkAttachments(text, current.attachments),
+      content,
+      attachments: syncLinkAttachments(content.preview, current.attachments),
     }));
   }, []);
 
@@ -417,8 +419,10 @@ export const useComposerDraft = (
       }
 
       const prompt =
-        payload.variant === 'ai' && payload.content?.text
-          ? payload.content.text
+        payload.variant === 'ai' &&
+        payload.content &&
+        'preview' in payload.content
+          ? payload.content.preview
           : '';
 
       createMessage(payload);
@@ -430,11 +434,11 @@ export const useComposerDraft = (
           chatboxId,
           sender: 'assistant',
           variant: 'text',
-          content: {
-            text: response.list
+          content: migratePlainTextToRichText(
+            response.list
               ? `${response.text}\n\n${response.list.map((item) => `• ${item}`).join('\n')}`
               : response.text,
-          },
+          ),
           attachments: [],
           decorators: [],
           tagIds: [],
@@ -470,7 +474,9 @@ export const useComposerDraft = (
     // Fallback if the editor ref isn't mounted yet — still apply the glyph.
     setDraft((current) => ({
       ...current,
-      text: `${current.text}${icon}`,
+      content: migratePlainTextToRichText(
+        `${current.content.preview}${icon}`,
+      ),
     }));
   }, []);
 
@@ -488,7 +494,7 @@ export const useComposerDraft = (
     isEditing: editMessageId !== null,
     pendingVariantSwitch,
     setFocused,
-    setText,
+    setContent,
     clearAll,
     cancelEdit,
     requestVariantSwitch,

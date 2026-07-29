@@ -2,7 +2,12 @@ import type { FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
-import { AdCheckbox, AdEmojiText } from '@/packages/base';
+import {
+  AdCheckbox,
+  AdEmojiText,
+  AdRichTextViewer,
+  isRichTextEmpty,
+} from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
 import { getMessagePreviewText } from '../../../../messagePanel.utils';
@@ -33,7 +38,7 @@ const ContentRenderer: FC<ContentRendererProps> = ({
     return (
       <ul className={styles.todoList}>
         {message.content.items.map((item) => {
-          const hasText = item.content.text.trim().length > 0;
+          const hasText = !isRichTextEmpty(item.content);
           const hasAttachments = item.attachments.length > 0;
 
           return (
@@ -43,7 +48,7 @@ const ContentRenderer: FC<ContentRendererProps> = ({
                   checked={item.completed}
                   aria-label={
                     hasText
-                      ? `Mark ${item.content.text} complete`
+                      ? `Mark ${item.content.preview} complete`
                       : 'Mark todo complete'
                   }
                   onChange={() =>
@@ -61,8 +66,8 @@ const ContentRenderer: FC<ContentRendererProps> = ({
               </div>
               <div className={styles.todoBody}>
                 {hasText ? (
-                  <AdEmojiText
-                    text={item.content.text}
+                  <AdRichTextViewer
+                    value={item.content}
                     className={`${styles.todoText} ${item.completed ? styles.todoTextDone : ''}`}
                   />
                 ) : null}
@@ -87,14 +92,14 @@ const ContentRenderer: FC<ContentRendererProps> = ({
     );
   }
 
-  if (!message.content.text.trim()) {
+  if (isRichTextEmpty(message.content)) {
     return null;
   }
 
   return (
-    <p className={styles.text}>
-      <AdEmojiText text={message.content.text} />
-    </p>
+    <div className={styles.text}>
+      <AdRichTextViewer value={message.content} />
+    </div>
   );
 };
 
