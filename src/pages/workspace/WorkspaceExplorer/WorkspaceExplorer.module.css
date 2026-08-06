@@ -1,34 +1,11 @@
-.root {
+.column {
   display: flex;
+  flex: 0 1 var(--diary-chatbox-width, 380px);
   flex-direction: column;
-  width: min(320px, 100%);
+  gap: 12px;
+  width: auto;
+  min-width: 0;
   min-height: calc(100vh - 24px);
   max-height: calc(100vh - 24px);
-  padding: 1.1rem 1rem 1rem;
-  gap: 16px;
-  box-shadow: var(--shadow-sm);
   overflow: hidden;
-}
-
-.scroll {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 1rem;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 0.2rem;
-}
-
-.byTool {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.sectionHeading {
-  margin: 0;
-  font-size: var(--font-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text);
 }

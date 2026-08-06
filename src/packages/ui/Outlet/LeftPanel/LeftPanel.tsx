@@ -34,6 +34,7 @@ const LeftPanel: FC = () => {
   const orders = useWorkspaceStore('orders');
   const ui = useWorkspaceStore('ui');
   const selectWorkspace = useWorkspaceStore('selectWorkspace');
+  const openToolHome = useWorkspaceStore('openToolHome');
   const diaryHydrated = useDiaryHydrated();
 
   const folded = navPanel.folded;
@@ -73,7 +74,10 @@ const LeftPanel: FC = () => {
 
     if (workspaceId) {
       selectWorkspace(workspaceId);
+      return;
     }
+
+    openToolHome(type);
   };
 
   return (

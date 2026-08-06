@@ -10,7 +10,8 @@ const EmptyState: FC = () => {
       </div>
       <h2 className={styles.title}>Select a workspace</h2>
       <p className={styles.description}>
-        Choose a workspace from the explorer to open its tool view.
+        Choose a workspace from My Workspaces, or open a Workspace App to get
+        started.
       </p>
     </div>
   );

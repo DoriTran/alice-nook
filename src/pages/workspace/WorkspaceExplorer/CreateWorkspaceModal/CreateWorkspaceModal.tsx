@@ -46,9 +46,10 @@ const CreateWorkspaceModal: FC<CreateWorkspaceModalProps> = ({
 
   useEffect(() => {
     if (opened) {
+      setType(initialType);
       nameInputRef.current?.focus();
     }
-  }, [opened]);
+  }, [initialType, opened]);
 
   const handleClose = () => {
     setName('');

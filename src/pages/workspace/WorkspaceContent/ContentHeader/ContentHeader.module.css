@@ -27,7 +27,13 @@
   height: 3rem;
   border-radius: var(--radius-lg);
   font-size: 1.35rem;
+  color: var(--surface);
   flex-shrink: 0;
+}
+
+.icon svg {
+  display: block;
+  transform: translateY(1px);
 }
 
 .copy {

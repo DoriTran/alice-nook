@@ -7,6 +7,7 @@ import { useWorkspacePageData } from '../.hooks/useWorkspacePageData';
 import { workspaceToolRenderers } from '../tools/registry';
 import ContentHeader from './ContentHeader/ContentHeader';
 import EmptyState from './EmptyState/EmptyState';
+import ToolHome from './ToolHome/ToolHome';
 import styles from './WorkspaceContent.module.css';
 
 const WorkspaceContent: FC = () => {
@@ -18,6 +19,14 @@ const WorkspaceContent: FC = () => {
     workspaceSources,
     workspaceRecords,
   } = useWorkspacePageData();
+
+  if (ui.activeToolHomeType) {
+    return (
+      <LayoutCard tag="main" className={styles.root} data-module="workspace">
+        <ToolHome type={ui.activeToolHomeType} />
+      </LayoutCard>
+    );
+  }
 
   if (!selectedWorkspace) {
     return (

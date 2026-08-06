@@ -24,6 +24,24 @@ import { workspaceInitialState, workspaceDummyState } from './constants';
 
 const ensureUnique = <T>(items: T[]) => Array.from(new Set(items));
 
+const normalizeWorkspace = (workspace: Workspace): Workspace => ({
+  ...workspace,
+  pinned: workspace.pinned ?? false,
+  archived: workspace.archived ?? false,
+  coverImageUrl: workspace.coverImageUrl ?? null,
+  tags: workspace.tags ?? [],
+});
+
+const normalizeWorkspaces = (
+  workspaces: Record<string, Workspace>,
+): Record<string, Workspace> =>
+  Object.fromEntries(
+    Object.entries(workspaces).map(([id, workspace]) => [
+      id,
+      normalizeWorkspace(workspace),
+    ]),
+  );
+
 // #endregion
 
 const useWorkspaceStoreBase = create<WorkspaceStore & WorkspaceStoreActions>()(
@@ -54,6 +72,14 @@ const useWorkspaceStoreBase = create<WorkspaceStore & WorkspaceStoreActions>()(
           colorId: data.colorId ?? DEFAULT_COLOR_ID,
 
           sourceIds: data.sourceIds ?? [],
+
+          pinned: data.pinned ?? false,
+
+          archived: data.archived ?? false,
+
+          coverImageUrl: data.coverImageUrl ?? null,
+
+          tags: data.tags ?? [],
 
           createdAt: nowIso(),
 
@@ -345,6 +371,7 @@ const useWorkspaceStoreBase = create<WorkspaceStore & WorkspaceStoreActions>()(
               ...state.ui,
               selectedWorkspaceId: workspaceId,
               selectedRecordId: null,
+              activeToolHomeType: null,
               lastUsedWorkspaceByType: workspace
                 ? {
                     ...state.ui.lastUsedWorkspaceByType,
@@ -375,14 +402,63 @@ const useWorkspaceStoreBase = create<WorkspaceStore & WorkspaceStoreActions>()(
           },
         })),
 
-      setExplorerView: (view) =>
+      openToolHome: (type) =>
         set((state) => ({
           ui: {
             ...state.ui,
-
-            explorerView: view,
+            activeToolHomeType: type,
+            selectedWorkspaceId: null,
+            selectedRecordId: null,
           },
         })),
+
+      clearToolHome: () =>
+        set((state) => ({
+          ui: {
+            ...state.ui,
+            activeToolHomeType: null,
+          },
+        })),
+
+      toggleWorkspacePinned: (workspaceId) =>
+        set((state) => {
+          const current = state.workspaces[workspaceId];
+
+          if (!current) {
+            return state;
+          }
+
+          return {
+            workspaces: {
+              ...state.workspaces,
+              [workspaceId]: {
+                ...current,
+                pinned: !current.pinned,
+                updatedAt: nowIso(),
+              },
+            },
+          };
+        }),
+
+      toggleWorkspaceArchived: (workspaceId) =>
+        set((state) => {
+          const current = state.workspaces[workspaceId];
+
+          if (!current) {
+            return state;
+          }
+
+          return {
+            workspaces: {
+              ...state.workspaces,
+              [workspaceId]: {
+                ...current,
+                archived: !current.archived,
+                updatedAt: nowIso(),
+              },
+            },
+          };
+        }),
 
       // #endregion
 
@@ -433,9 +509,16 @@ const useWorkspaceStoreBase = create<WorkspaceStore & WorkspaceStoreActions>()(
         const merged = {
           ...currentState,
           ...persisted,
+          workspaces: normalizeWorkspaces({
+            ...currentState.workspaces,
+            ...persisted?.workspaces,
+          }),
           ui: {
             ...currentState.ui,
             ...persisted?.ui,
+            activeToolHomeType:
+              persisted?.ui?.activeToolHomeType ??
+              currentState.ui.activeToolHomeType,
           },
           orders: {
             ...currentState.orders,

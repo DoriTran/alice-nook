@@ -28,6 +28,14 @@ export type Workspace = {
 
   sourceIds: string[];
 
+  pinned: boolean;
+
+  archived: boolean;
+
+  coverImageUrl: string | null;
+
+  tags: string[];
+
   createdAt: string;
 
   updatedAt: string | null;
@@ -202,7 +210,7 @@ export type WorkspaceUIState = {
 
   inspectorOpen: boolean;
 
-  explorerView: 'grid' | 'list';
+  activeToolHomeType: WorkspaceType | null;
 
   lastUsedWorkspaceByType: Partial<Record<WorkspaceType, string>>;
 };
@@ -272,7 +280,13 @@ export type WorkspaceStoreActions = {
 
   setInspectorOpen: (open: boolean) => void;
 
-  setExplorerView: (view: 'grid' | 'list') => void;
+  openToolHome: (type: WorkspaceType) => void;
+
+  clearToolHome: () => void;
+
+  toggleWorkspacePinned: (workspaceId: string) => void;
+
+  toggleWorkspaceArchived: (workspaceId: string) => void;
 
   // Utility
 

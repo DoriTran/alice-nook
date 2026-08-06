@@ -24,12 +24,17 @@ const Workspace: FC = () => {
   }, [hydrated, seedIfEmpty]);
 
   useEffect(() => {
-    if (!hydrated || ui.selectedWorkspaceId) {
+    if (!hydrated || ui.selectedWorkspaceId || ui.activeToolHomeType) {
       return;
     }
 
     selectWorkspace(DEFAULT_WORKSPACE_ID);
-  }, [hydrated, selectWorkspace, ui.selectedWorkspaceId]);
+  }, [
+    hydrated,
+    selectWorkspace,
+    ui.activeToolHomeType,
+    ui.selectedWorkspaceId,
+  ]);
 
   return (
     <div className={styles.rootPage}>

@@ -3,12 +3,13 @@ import { useMemo } from 'react';
 import { useDiaryStore, useWorkspaceStore } from '@/store';
 
 import {
+  countWorkspacesByType,
   getRecentWorkspaces,
   getWorkspaceRecords,
   getWorkspaceSources,
-  groupWorkspacesByType,
-  QUICK_ACCESS_WORKSPACE_IDS,
+  getWorkspacesOfType,
 } from '../workspace.utils';
+import { countWorkspacesByFilterTab } from '../workspaceListFilter.utils';
 
 export const useWorkspacePageData = () => {
   const workspaces = useWorkspaceStore('workspaces');
@@ -36,21 +37,42 @@ export const useWorkspacePageData = () => {
     [ui.selectedWorkspaceId, records],
   );
 
-  const groupedWorkspaces = useMemo(
-    () => groupWorkspacesByType(workspaces, orders.workspaceIds),
-    [workspaces, orders.workspaceIds],
+  const allWorkspaces = useMemo(
+    () =>
+      orders.workspaceIds
+        .map((id) => workspaces[id])
+        .filter((workspace): workspace is NonNullable<typeof workspace> =>
+          Boolean(workspace),
+        ),
+    [orders.workspaceIds, workspaces],
   );
 
-  const quickAccessWorkspaces = useMemo(
-    () =>
-      QUICK_ACCESS_WORKSPACE_IDS.map((id) => workspaces[id]).filter(Boolean),
-    [workspaces],
+  const workspaceCountsByType = useMemo(
+    () => countWorkspacesByType(workspaces, orders.workspaceIds),
+    [orders.workspaceIds, workspaces],
+  );
+
+  const filterCounts = useMemo(
+    () => countWorkspacesByFilterTab(allWorkspaces),
+    [allWorkspaces],
   );
 
   const recentWorkspaces = useMemo(
     () => getRecentWorkspaces(workspaces, orders.workspaceIds),
     [workspaces, orders.workspaceIds],
   );
+
+  const toolHomeWorkspaces = useMemo(() => {
+    if (!ui.activeToolHomeType) {
+      return [];
+    }
+
+    return getWorkspacesOfType(
+      workspaces,
+      orders.workspaceIds,
+      ui.activeToolHomeType,
+    );
+  }, [orders.workspaceIds, ui.activeToolHomeType, workspaces]);
 
   return {
     workspaces,
@@ -63,8 +85,10 @@ export const useWorkspacePageData = () => {
     selectedRecord,
     workspaceSources,
     workspaceRecords,
-    groupedWorkspaces,
-    quickAccessWorkspaces,
+    allWorkspaces,
+    workspaceCountsByType,
+    filterCounts,
     recentWorkspaces,
+    toolHomeWorkspaces,
   };
 };

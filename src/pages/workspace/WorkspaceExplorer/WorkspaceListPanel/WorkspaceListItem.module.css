@@ -1,0 +1,96 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.root:hover {
+  border-color: color-mix(in srgb, var(--workspace) 35%, var(--border-soft));
+  transform: translateY(-1px);
+}
+
+.selected {
+  border-color: color-mix(in srgb, var(--workspace) 55%, var(--border-soft));
+  background: color-mix(in srgb, var(--workspace-bg) 70%, var(--surface));
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: var(--radius-sm);
+  color: var(--surface);
+  flex-shrink: 0;
+}
+
+.icon svg {
+  display: block;
+  flex-shrink: 0;
+  transform: translateY(0.5px);
+}
+
+.meta {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--font-sm);
+  font-weight: var(--font-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pin {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.subRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.typePill {
+  flex-shrink: 0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--workspace-bg) 75%, var(--surface));
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  font-weight: var(--font-medium);
+}
+
+.updated {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
