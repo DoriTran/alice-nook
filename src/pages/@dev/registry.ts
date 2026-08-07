@@ -5,6 +5,7 @@ import BrushHighlightDev from './brushhighlight';
 import ChatboxTagsDev from './chatboxtags';
 import DragDropSortableDev from './dragdropsortable';
 import MessagePreviewDev from './messagepreview';
+import SidebarBgDev from './sidebarbg';
 import TicketShapeDev from './ticketshape';
 import TicketShape2Dev from './ticketshape2';
 
@@ -49,6 +50,11 @@ export const devTests: readonly DevTestEntry[] = [
     key: 'chatboxtags',
     displayName: 'Chatbox Tag Overflow',
     component: ChatboxTagsDev,
+  },
+  {
+    key: 'sidebarbg',
+    displayName: 'Sidebar Background',
+    component: SidebarBgDev,
   },
 ] as const;
 
