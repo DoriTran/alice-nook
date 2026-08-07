@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import {
   DEFAULT_COLOR_ID,
   toCustomColorId,
@@ -19,8 +20,6 @@ import type {
   MessageUpdateData,
   Tag,
 } from './type';
-
-import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 
 import { idbStorage, nowIso } from '../helper';
 import { migrateDiaryPersistedState } from '../migrateColorId';

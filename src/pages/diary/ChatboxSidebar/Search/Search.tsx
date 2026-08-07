@@ -8,8 +8,8 @@ import { useState, type ChangeEvent, type FC } from 'react';
 import { AdIcon, AdPopover } from '@/packages/base';
 
 import type { DiaryFilterTab } from '../../types';
-import FilterMenu, { FILTER_TAB_LABELS } from '../Filter/FilterMenu';
 
+import FilterMenu, { FILTER_TAB_LABELS } from '../Filter/FilterMenu';
 import styles from './Search.module.css';
 
 export type SearchProps = {

@@ -1,5 +1,6 @@
-import { TagX } from 'lucide-react';
 import type { FC, MouseEvent } from 'react';
+
+import { TagX } from 'lucide-react';
 
 import type { Message, PreviewTile } from '@/store/diary/type';
 

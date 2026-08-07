@@ -1,13 +1,11 @@
-import Placeholder from '@tiptap/extension-placeholder';
 import type { Editor, JSONContent } from '@tiptap/core';
+
+import Placeholder from '@tiptap/extension-placeholder';
 import { useEditor, type EditorOptions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 
-import {
-  EmojiConvertExtension,
-  EmojiExtension,
-} from './extensions/emoji';
+import { EmojiConvertExtension, EmojiExtension } from './extensions/emoji';
 import { EMPTY_DOC } from './richtext/createRichTextContent';
 
 export const createAdRichTextExtensions = (placeholder?: string) => [

@@ -1,8 +1,7 @@
 import type { FC, RefObject } from 'react';
 
-import type { EnterKeyBehavior } from '@/store/settings/type';
-
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
+import type { EnterKeyBehavior } from '@/store/settings/type';
 
 import type { ComposerEditorRef } from '../../input/composer.types';
 

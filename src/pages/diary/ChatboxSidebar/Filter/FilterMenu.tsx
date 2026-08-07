@@ -1,11 +1,12 @@
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import type { FC } from 'react';
+
 import {
   faBoxArchive,
   faClock,
   faThLarge,
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
-import type { FC } from 'react';
 
 import { AdIcon } from '@/packages/base';
 
@@ -50,7 +51,10 @@ const FilterMenu: FC<FilterMenuProps> = ({ activeTab, counts, onSelect }) => {
                 <AdIcon icon={tab.icon} size={13} />
               </span>
               <span className={styles.label}>{tab.label}</span>
-              <span className={styles.count} data-active={selected || undefined}>
+              <span
+                className={styles.count}
+                data-active={selected || undefined}
+              >
                 {counts[tab.id]}
               </span>
             </button>

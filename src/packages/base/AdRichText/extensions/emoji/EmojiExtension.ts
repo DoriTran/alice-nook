@@ -40,9 +40,11 @@ export const EmojiExtension = Node.create<EmojiOptions>({
         default: '',
         parseHTML: (element) =>
           element.getAttribute('data-emoji') ?? element.textContent ?? '',
-        renderHTML: (attributes) => ({
-          'data-emoji': attributes.value,
-        }),
+        renderHTML: (attributes) => {
+          const raw = (attributes as { value?: unknown }).value;
+          const value = typeof raw === 'string' ? raw : '';
+          return { 'data-emoji': value };
+        },
       },
     };
   },
@@ -56,12 +58,14 @@ export const EmojiExtension = Node.create<EmojiOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
+    const raw = (node.attrs as { value?: unknown }).value;
+    const value = typeof raw === 'string' ? raw : '';
     return [
       'span',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        'data-emoji': node.attrs.value,
+        'data-emoji': value,
       }),
-      node.attrs.value,
+      value,
     ];
   },
 

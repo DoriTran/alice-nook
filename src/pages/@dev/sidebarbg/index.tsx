@@ -36,7 +36,18 @@ type BgToken =
   | '--secondary'
   | '--secondary-light';
 type DotColorToken = '--text' | '--primary' | '--accent-purple';
-type GradientDir = '180deg' | '160deg' | 'to bottom right';
+type GradientDir =
+  | '0deg'
+  | '45deg'
+  | '90deg'
+  | '135deg'
+  | '160deg'
+  | '180deg'
+  | '225deg'
+  | '270deg'
+  | '315deg'
+  | 'to bottom right'
+  | 'to bottom left';
 type GradientTarget = BgToken | 'none';
 
 const BG_TOKENS: readonly BgToken[] = [
@@ -56,9 +67,17 @@ const DOT_COLOR_TOKENS: readonly DotColorToken[] = [
 ];
 
 const GRADIENT_DIRS: readonly { value: GradientDir; label: string }[] = [
-  { value: '180deg', label: 'Top → bottom (180deg)' },
+  { value: '0deg', label: 'Bottom → top (0deg)' },
+  { value: '45deg', label: 'To top right (45deg)' },
+  { value: '90deg', label: 'Left → right (90deg)' },
+  { value: '135deg', label: 'To bottom right (135deg)' },
   { value: '160deg', label: 'Slight diagonal (160deg)' },
+  { value: '180deg', label: 'Top → bottom (180deg)' },
+  { value: '225deg', label: 'To bottom left (225deg)' },
+  { value: '270deg', label: 'Right → left (270deg)' },
+  { value: '315deg', label: 'To top left (315deg)' },
   { value: 'to bottom right', label: 'To bottom right' },
+  { value: 'to bottom left', label: 'To bottom left' },
 ];
 
 const SHAPES: readonly { value: DecorationShape; label: string }[] = [
@@ -165,10 +184,10 @@ const SidebarBgDev: FC = () => {
   const [base, setBase] = useState<BgToken>('--surface');
   const [gradientTarget, setGradientTarget] =
     useState<GradientTarget>('--primary-light');
-  const [gradientDir, setGradientDir] = useState<GradientDir>('180deg');
-  const [gradientPct, setGradientPct] = useState(100);
+  const [gradientDir, setGradientDir] = useState<GradientDir>('0deg');
+  const [gradientPct, setGradientPct] = useState(75);
   /** 0 = target as-is; 50 ≈ mid between primary-light and primary; 100 = full --primary */
-  const [towardPrimary, setTowardPrimary] = useState(35);
+  const [towardPrimary, setTowardPrimary] = useState(80);
   const [shape, setShape] = useState<DecorationShape>('flower');
   const [dotColor, setDotColor] = useState<DotColorToken>('--text');
   const [dotOpacity, setDotOpacity] = useState(5);
@@ -283,9 +302,7 @@ const SidebarBgDev: FC = () => {
               Gradient direction
               <select
                 value={gradientDir}
-                onChange={(e) =>
-                  setGradientDir(e.target.value as GradientDir)
-                }
+                onChange={(e) => setGradientDir(e.target.value as GradientDir)}
               >
                 {GRADIENT_DIRS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -327,9 +344,7 @@ const SidebarBgDev: FC = () => {
               Decoration shape
               <select
                 value={shape}
-                onChange={(e) =>
-                  setShape(e.target.value as DecorationShape)
-                }
+                onChange={(e) => setShape(e.target.value as DecorationShape)}
               >
                 {SHAPES.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -343,9 +358,7 @@ const SidebarBgDev: FC = () => {
               Decoration color (level 3)
               <select
                 value={dotColor}
-                onChange={(e) =>
-                  setDotColor(e.target.value as DotColorToken)
-                }
+                onChange={(e) => setDotColor(e.target.value as DotColorToken)}
               >
                 {DOT_COLOR_TOKENS.map((token) => (
                   <option key={token} value={token}>

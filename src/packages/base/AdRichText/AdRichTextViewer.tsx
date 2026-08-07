@@ -1,9 +1,11 @@
-import { EditorContent } from '@tiptap/react';
 import type { FC } from 'react';
 
-import { useAdRichTextEditor } from './AdRichTextEngine';
-import styles from './AdRichText.module.css';
+import { EditorContent } from '@tiptap/react';
+
 import type { RichTextContent } from './types';
+
+import styles from './AdRichText.module.css';
+import { useAdRichTextEditor } from './AdRichTextEngine';
 
 export type AdRichTextViewerProps = {
   value: RichTextContent;

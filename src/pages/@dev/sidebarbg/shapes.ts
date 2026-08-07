@@ -15,7 +15,11 @@ const sparklePath = (size: number): string => {
  * Build a tile SVG (`spacing`×`spacing`) with a `size` decoration at the
  * top-left corner so `mask-size` does not stretch the shape.
  */
-const tileSvg = (shape: DecorationShape, size: number, spacing: number): string => {
+const tileSvg = (
+  shape: DecorationShape,
+  size: number,
+  spacing: number,
+): string => {
   const s = Math.max(2, Math.round(size));
   const tile = Math.max(s, Math.round(spacing));
   let mark: string;

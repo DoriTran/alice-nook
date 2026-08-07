@@ -1,4 +1,5 @@
 import type { ResolvedChatboxTag } from '@/pages/diary/ChatboxSidebar/Chatbox/chatbox.utils';
+
 import {
   calculateFittingTagCount,
   getOverflowProbeLabel,

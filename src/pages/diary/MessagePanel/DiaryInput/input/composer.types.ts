@@ -1,12 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { createEmptyRichTextContent } from '@/packages/base/AdRichText/richtext';
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type {
   Attachment,
   MessageDecorator,
   MessageVariant,
 } from '@/store/diary/type';
+
+import { createEmptyRichTextContent } from '@/packages/base/AdRichText/richtext';
 
 export type DraftTodoItem = {
   id: string;

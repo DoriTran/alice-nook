@@ -2,10 +2,7 @@ import { type FC, useMemo, useState } from 'react';
 
 import ChatboxTagRow from '@/pages/diary/ChatboxSidebar/Chatbox/ChatboxTagRow';
 
-import {
-  CHATBOX_TAG_FIXTURES,
-  runFitUtilCases,
-} from './fixtures';
+import { CHATBOX_TAG_FIXTURES, runFitUtilCases } from './fixtures';
 import styles from './index.module.css';
 
 const WIDTH_MIN = 160;
@@ -80,9 +77,7 @@ const ChatboxTagsDev: FC = () => {
                 <div className={styles.cardTitle}>{fixture.name}</div>
                 <ChatboxTagRow
                   tags={fixture.tags}
-                  className={
-                    useTagsIndent ? styles.tagsIndent : undefined
-                  }
+                  className={useTagsIndent ? styles.tagsIndent : undefined}
                 />
               </div>
             </div>

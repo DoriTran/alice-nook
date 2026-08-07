@@ -139,8 +139,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
     [displayTags],
   );
 
-  const tagDialog =
-    messageDialog?.kind === 'tag' ? messageDialog : null;
+  const tagDialog = messageDialog?.kind === 'tag' ? messageDialog : null;
 
   return (
     <div className={styles.root}>
@@ -172,11 +171,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
         ) : null}
         <ul className={styles.tagRibbonList}>
           {displayTags.map((tag) => (
-            <TagRibbonRow
-              key={tag.tagId}
-              tag={tag}
-              onClick={handleTagClick}
-            />
+            <TagRibbonRow key={tag.tagId} tag={tag} onClick={handleTagClick} />
           ))}
           <TagFormRow onCreated={handleTagCreated} />
         </ul>

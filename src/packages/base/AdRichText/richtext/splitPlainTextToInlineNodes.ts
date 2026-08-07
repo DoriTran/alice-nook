@@ -1,4 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
+
 import emojiRegex from 'emoji-regex';
 
 import { CUSTOM_EMOJI_SHORTCODE_RE } from '../../AdEmojiPicker/customEmojis';

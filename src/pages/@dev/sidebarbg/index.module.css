@@ -96,16 +96,16 @@
  * Top/height match the real sidebar: margin 12px, height calc(100vh - 24px).
  */
 .previewSidebar {
-  --sb-base: var(--background);
-  --sb-gradient-target: var(--background-soft);
-  --sb-gradient-dir: 180deg;
-  --sb-gradient-pct: 55%;
-  --sb-toward-primary: 0%;
+  --sb-base: var(--surface);
+  --sb-gradient-target: var(--primary-light);
+  --sb-gradient-dir: 0deg;
+  --sb-gradient-pct: 75%;
+  --sb-toward-primary: 80%;
   --sb-dot-color: var(--text);
-  --sb-dot-opacity: 6%;
+  --sb-dot-opacity: 5%;
   --sb-mask-image: none;
-  --sb-spacing: 24px;
-  --sb-offset: 12px;
+  --sb-spacing: 22px;
+  --sb-offset: 11px;
 
   flex-shrink: 0;
   position: sticky;

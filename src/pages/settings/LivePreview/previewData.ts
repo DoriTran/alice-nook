@@ -1,9 +1,10 @@
-import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import type {
   Message,
   MessageBase,
   MessageDecorator,
 } from '@/store/diary/type';
+
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 
 const nowIso = new Date().toISOString();
 const targetIso = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
@@ -33,7 +34,9 @@ export const PREVIEW_MESSAGES: Message[] = [
   {
     ...base('preview-1'),
     variant: 'text',
-    content: migratePlainTextToRichText("Morning! Today I'll focus on studying Japanese grammar ✨"),
+    content: migratePlainTextToRichText(
+      "Morning! Today I'll focus on studying Japanese grammar ✨",
+    ),
   },
   {
     ...base('preview-2', 'user', [

@@ -3,11 +3,7 @@ import { forwardRef } from 'react';
 
 import type { EnterKeyBehavior } from '@/store/settings/type';
 
-import {
-  AdIcon,
-  AdRichText,
-  type RichTextContent,
-} from '@/packages/base';
+import { AdIcon, AdRichText, type RichTextContent } from '@/packages/base';
 
 import type { ComposerEditorRef } from '../../input/composer.types';
 

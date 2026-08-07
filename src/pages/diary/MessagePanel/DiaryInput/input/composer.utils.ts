@@ -1,7 +1,3 @@
-import {
-  isRichTextEmpty,
-  migratePlainTextToRichText,
-} from '@/packages/base/AdRichText/richtext';
 import type {
   Attachment,
   AttachmentType,
@@ -12,6 +8,10 @@ import type {
   TodoItem,
 } from '@/store/diary/type';
 
+import {
+  isRichTextEmpty,
+  migratePlainTextToRichText,
+} from '@/packages/base/AdRichText/richtext';
 import { classifyAttachmentType } from '@/store/diary/attachment.registry';
 
 import { createDefaultTimerDecorator } from '../decorator/timer/timer.utils';

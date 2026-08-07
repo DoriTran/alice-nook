@@ -4,7 +4,9 @@ import type { JSONContent } from '@tiptap/core';
  * Recursively walk Tiptap JSON and concatenate text nodes + emoji values.
  * Ignores formatting marks.
  */
-export const extractPlainText = (json: JSONContent | null | undefined): string => {
+export const extractPlainText = (
+  json: JSONContent | null | undefined,
+): string => {
   if (!json) {
     return '';
   }

@@ -1,5 +1,6 @@
-import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import type { Message } from '@/store/diary/type';
+
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 
 const base = {
   chatboxId: 'cb:dev',
@@ -63,7 +64,9 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:ai',
       variant: 'ai',
-      content: migratePlainTextToRichText('Here is a study plan for JLPT N5 this week.'),
+      content: migratePlainTextToRichText(
+        'Here is a study plan for JLPT N5 this week.',
+      ),
       attachments: [],
       decorators: [],
       createdAt: '2026-01-04T11:00:00.000Z',
@@ -406,7 +409,9 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:reply',
       variant: 'text',
-      content: migratePlainTextToRichText('Sounds good — I will start tonight.'),
+      content: migratePlainTextToRichText(
+        'Sounds good — I will start tonight.',
+      ),
       attachments: [],
       decorators: [],
       replyToMessageId: 'dev:todo',
@@ -422,7 +427,9 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:normal',
       variant: 'text',
-      content: migratePlainTextToRichText('Finished the vocabulary review! The focus timer helped me stay on track for the full session.'),
+      content: migratePlainTextToRichText(
+        'Finished the vocabulary review! The focus timer helped me stay on track for the full session.',
+      ),
       attachments: [],
       decorators: [],
       pinned: false,
@@ -460,7 +467,9 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
       ...base,
       id: 'dev:long',
       variant: 'text',
-      content: migratePlainTextToRichText('This is an intentionally very long message title so we can verify single-line ellipsis behavior on the preview card title row without wrapping into two lines'),
+      content: migratePlainTextToRichText(
+        'This is an intentionally very long message title so we can verify single-line ellipsis behavior on the preview card title row without wrapping into two lines',
+      ),
       attachments: [
         {
           id: 'att:long-img',

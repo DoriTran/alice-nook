@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
-import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
-import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import { generateAiResponse, uploadAttachment } from '@/api';
+import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
 
 import { syncLinkAttachments } from '../attachment/linkAttachments.utils';
@@ -474,9 +474,7 @@ export const useComposerDraft = (
     // Fallback if the editor ref isn't mounted yet — still apply the glyph.
     setDraft((current) => ({
       ...current,
-      content: migratePlainTextToRichText(
-        `${current.content.preview}${icon}`,
-      ),
+      content: migratePlainTextToRichText(`${current.content.preview}${icon}`),
     }));
   }, []);
 

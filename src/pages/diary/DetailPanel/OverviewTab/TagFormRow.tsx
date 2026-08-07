@@ -19,11 +19,7 @@ import styles from './OverviewTab.module.css';
 const TAG_SHADES: Array<'strong' | 'soft'> = ['strong', 'soft'];
 
 export type TagFormRowProps = {
-  onCreated: (tag: {
-    tagId: string;
-    label: string;
-    colorId: ColorId;
-  }) => void;
+  onCreated: (tag: { tagId: string; label: string; colorId: ColorId }) => void;
 };
 
 const TagFormRow: FC<TagFormRowProps> = ({ onCreated }) => {

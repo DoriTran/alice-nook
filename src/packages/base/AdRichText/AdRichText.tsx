@@ -7,13 +7,13 @@ import {
   type KeyboardEvent,
 } from 'react';
 
-import type { Editor } from '@tiptap/core';
+import type { AdRichTextHandle, RichTextContent } from './types';
 
-import { useAdRichTextEditor } from './AdRichTextEngine';
+import { useLatestRef } from '../AdDragDrop/useLatestRef';
 import styles from './AdRichText.module.css';
+import { useAdRichTextEditor } from './AdRichTextEngine';
 import { createRichTextContent } from './richtext/createRichTextContent';
 import { isEmojiToken } from './richtext/splitPlainTextToInlineNodes';
-import type { AdRichTextHandle, RichTextContent } from './types';
 
 export type AdRichTextProps = {
   value: RichTextContent;
@@ -53,7 +53,6 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
     const onFocusRef = useRef(onFocus);
     const onBlurRef = useRef(onBlur);
     const enterSubmitsRef = useRef(enterSubmits);
-    const editorRef = useRef<Editor | null>(null);
     /** Preserve selection when emoji picker steals focus on mousedown. */
     const selectionRef = useRef<{ from: number; to: number } | null>(null);
 
@@ -77,18 +76,6 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       enterSubmitsRef.current = enterSubmits;
     }, [enterSubmits]);
 
-    const saveSelection = () => {
-      const editor = editorRef.current;
-      if (!editor || editor.isDestroyed) {
-        return;
-      }
-
-      selectionRef.current = {
-        from: editor.state.selection.from,
-        to: editor.state.selection.to,
-      };
-    };
-
     const editor = useAdRichTextEditor({
       content: value.json,
       editable,
@@ -101,12 +88,15 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
         onFocusRef.current?.();
       },
       onBlur: () => {
-        saveSelection();
         onBlurRef.current?.();
       },
       editorProps: {
         handleKeyDown: (_view, event) => {
-          if (!onSubmitRef.current || event.key !== 'Enter' || event.isComposing) {
+          if (
+            !onSubmitRef.current ||
+            event.key !== 'Enter' ||
+            event.isComposing
+          ) {
             return false;
           }
 
@@ -125,7 +115,34 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       },
     });
 
-    editorRef.current = editor;
+    const editorRef = useLatestRef(editor);
+
+    const saveSelection = () => {
+      const current = editorRef.current;
+      if (!current || current.isDestroyed) {
+        return;
+      }
+
+      selectionRef.current = {
+        from: current.state.selection.from,
+        to: current.state.selection.to,
+      };
+    };
+
+    useEffect(() => {
+      if (!editor) {
+        return;
+      }
+
+      const onBlurSave = () => {
+        saveSelection();
+      };
+
+      editor.on('blur', onBlurSave);
+      return () => {
+        editor.off('blur', onBlurSave);
+      };
+    }, [editor]);
 
     useImperativeHandle(
       ref,
@@ -175,6 +192,8 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       .join(' ');
 
     return (
+      // Caret snapshot for emoji-picker focus steal — not a user-facing control.
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- mouse/key up only
       <div
         className={rootClass}
         onMouseUp={handleMouseUp}

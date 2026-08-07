@@ -1,4 +1,5 @@
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
+
 import type { DiaryStore, MessagePreviewStyle } from './type';
 
 import {
@@ -408,7 +409,9 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:study',
       sender: 'user',
       variant: 'text',
-      content: migratePlainTextToRichText('Finished the vocabulary review! The focus timer helped me stay on track for the full session.'),
+      content: migratePlainTextToRichText(
+        'Finished the vocabulary review! The focus timer helped me stay on track for the full session.',
+      ),
       attachments: [],
       decorators: [],
       tagIds: ['tag:japanese', 'tag:vocabulary'],
@@ -426,7 +429,9 @@ export const diaryDummyState: DiaryStore = {
       chatboxId: 'cb:diary',
       sender: 'user',
       variant: 'text',
-      content: migratePlainTextToRichText('Had a quiet morning with coffee and notes.'),
+      content: migratePlainTextToRichText(
+        'Had a quiet morning with coffee and notes.',
+      ),
       attachments: [],
       decorators: [],
       tagIds: ['tag:diary'],

@@ -40,10 +40,6 @@ const WorkspaceListPanel: FC<WorkspaceListPanelProps> = ({ onCreate }) => {
       aria-label="My workspaces"
       data-module="workspace"
     >
-      <header className={styles.header}>
-        <h1 className={styles.title}>My Workspaces</h1>
-      </header>
-
       <div className={styles.searchRow}>
         <WorkspaceSearch
           value={searchQuery}
