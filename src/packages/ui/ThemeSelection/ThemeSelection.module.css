@@ -12,7 +12,9 @@
   padding: 0.5rem 0.625rem 0.5rem 1rem;
   border-radius: 60px;
   background: var(--surface-soft);
-  box-shadow: var(--shadow-inset);
+  box-shadow:
+    0 0 0 1px rgb(86 58 34 / 7%),
+    0 2px 8px rgb(86 58 34 / 12%);
   color: var(--text);
   transition:
     grid-template-columns var(--left-panel-transition),

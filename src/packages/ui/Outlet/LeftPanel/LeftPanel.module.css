@@ -276,7 +276,9 @@
 
 .navItem[data-module][data-active='true'] {
   background: var(--nav-bg-active);
-  box-shadow: var(--shadow-inset);
+  box-shadow:
+    0 0 0 1px rgb(86 58 34 / 7%),
+    0 2px 8px rgb(86 58 34 / 12%);
   font-weight: var(--font-semibold);
 }
 
