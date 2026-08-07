@@ -44,7 +44,7 @@ export const useMessageHeaderData = (
     const group = chatbox.groupId ? groups[chatbox.groupId] : null;
     const hasMessages = chatbox.totalMessage > 0;
     const activityAt = hasMessages
-      ? (chatbox.updatedAt ?? chatbox.lastMessageAt)
+      ? (chatbox.updatedAt ?? chatbox.lastMessageAt ?? chatbox.createdAt)
       : chatbox.createdAt;
 
     const messageIds = orders.chatboxMessageOrders[chatboxId] ?? [];

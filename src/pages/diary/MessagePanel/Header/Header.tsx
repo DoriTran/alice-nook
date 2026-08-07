@@ -13,7 +13,7 @@ import {
   Fragment,
   type FC,
   type CSSProperties,
-  type ReactNode,
+  type JSX,
   type RefObject,
 } from 'react';
 
@@ -116,7 +116,9 @@ const Header: FC<HeaderProps> = ({
           ),
         }
       : null,
-  ].filter((item): item is { key: string; node: ReactNode } => Boolean(item));
+  ].filter(
+    (item): item is { key: string; node: JSX.Element } => item != null,
+  );
 
   return (
     <header

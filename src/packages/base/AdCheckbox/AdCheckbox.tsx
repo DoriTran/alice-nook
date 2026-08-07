@@ -24,7 +24,7 @@ const AdCheckbox: FC<AdCheckboxProps> = ({
       size={size}
       radius={radius}
       variant={variant}
-      vars={(theme, checkboxProps) => {
+      vars={(theme, checkboxProps, ctx) => {
         const base: CheckboxVarsResult = {
           root: {
             '--checkbox-color': 'var(--primary)',
@@ -36,7 +36,7 @@ const AdCheckbox: FC<AdCheckboxProps> = ({
         };
 
         if (typeof vars === 'function') {
-          const extra = vars(theme, checkboxProps) as
+          const extra = vars(theme, checkboxProps, ctx) as
             | CheckboxVarsResult
             | undefined;
           return {
