@@ -93,7 +93,6 @@ const AuthLeftPanel: FC = () => {
         className={styles.leftStage}
         style={{
           width: stage.width,
-          minWidth: stage.minWidth,
         }}
       >
         <div

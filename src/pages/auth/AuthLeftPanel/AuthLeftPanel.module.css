@@ -78,7 +78,7 @@
 
 /*
  * Illustration zone sits in the space left of the auth card (~460px + side gap).
- * width / minWidth come from authDecor.config.ts
+ * width comes from authDecor.config.ts
  */
 .leftStage {
   position: absolute;

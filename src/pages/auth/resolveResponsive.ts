@@ -31,6 +31,56 @@ export type Responsive<T extends object> = T & {
   [K: string]: Partial<T> | T[keyof T] | undefined;
 };
 
+/**
+ * Keys that look like responsive breakpoint overrides (`w<900`, `h>=800`,
+ * `<900`, `1024<=w<1200`, `w<1024,h>990`, …). Kept in sync with the runtime
+ * parser below — used only to shape the resolved return type.
+ */
+type IsBreakpointKeyString<K extends string> = K extends
+  | `${number}${string}${'w' | 'h'}${string}`
+  | `${'h' | 'w' | ''}${'<' | '>' | '<=' | '>='}${number}${string}`
+  ? true
+  : false;
+
+type IsBreakpointKey<K extends PropertyKey> = K extends string
+  ? IsBreakpointKeyString<K>
+  : false;
+
+type BasePropKeys<T> = {
+  [K in keyof T]-?: IsBreakpointKey<K> extends true ? never : K;
+}[keyof T];
+
+type OverrideObjects<T> = {
+  [K in keyof T]-?: IsBreakpointKey<K> extends true
+    ? T[K] extends object
+      ? T[K]
+      : never
+    : never;
+}[keyof T];
+
+type UnionKeys<U> = U extends unknown ? keyof U : never;
+
+type UnionValue<U, K extends PropertyKey> = U extends unknown
+  ? K extends keyof U
+    ? U[K]
+    : never
+  : never;
+
+/**
+ * Flatten a responsive config entry: base props (value-widened by overrides)
+ * plus optional props that only appear under breakpoint keys.
+ */
+export type ResolvedResponsive<T extends object> = {
+  [K in BasePropKeys<T>]: K extends UnionKeys<OverrideObjects<T>>
+    ? T[K] | UnionValue<OverrideObjects<T>, K>
+    : T[K];
+} & {
+  [K in Exclude<
+    UnionKeys<OverrideObjects<T>>,
+    BasePropKeys<T>
+  >]?: UnionValue<OverrideObjects<T>, K>;
+};
+
 type ParsedClause = {
   axis: 'w' | 'h';
   op: '<' | '<=' | '>' | '>=';
@@ -153,20 +203,20 @@ function compareWithinGroup(a: ParsedBreakpoint, b: ParsedBreakpoint): number {
 export function resolveResponsive<T extends object>(
   entry: T,
   viewport: ViewportSize | number,
-): T {
+): ResolvedResponsive<T> {
   const size: ViewportSize =
     typeof viewport === 'number'
       ? { width: viewport, height: viewport }
       : viewport;
 
   const base: Record<string, unknown> = {};
-  const overrides: { parsed: ParsedBreakpoint; value: Partial<T> }[] = [];
+  const overrides: { parsed: ParsedBreakpoint; value: object }[] = [];
 
   for (const [key, value] of Object.entries(entry)) {
     const parsed = parseBreakpoint(key);
     if (parsed) {
       if (value != null && typeof value === 'object') {
-        overrides.push({ parsed, value: value as Partial<T> });
+        overrides.push({ parsed, value });
       }
     } else {
       base[key] = value;
@@ -179,13 +229,13 @@ export function resolveResponsive<T extends object>(
     return compareWithinGroup(a.parsed, b.parsed);
   });
 
-  let resolved = { ...base } as T;
+  let resolved: Record<string, unknown> = { ...base };
   for (const { parsed, value } of overrides) {
     if (matchesBreakpoint(parsed, size)) {
       resolved = { ...resolved, ...value };
     }
   }
-  return resolved;
+  return resolved as ResolvedResponsive<T>;
 }
 
 function subscribeViewport(onStoreChange: () => void): () => void {

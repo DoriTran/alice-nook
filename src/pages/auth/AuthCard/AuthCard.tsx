@@ -36,7 +36,8 @@ const AuthCard: FC<AuthCardProps> = ({ mode, onModeChange }) => {
   const peekUp = resolveResponsive(authCard.peekUp, vp);
   const panelDivider = resolveResponsive(authCard.panelDivider, vp);
 
-  const peekUpAllowed = peekUp.width !== '0' && peekUp.width !== '0px';
+  // Hidden when width resolves to 0 / 0px (desktop base); shown on tall mobile.
+  const peekUpAllowed = Number.parseFloat(peekUp.width) > 0;
   const showPeekUp = !isSignIn && peekUpAllowed;
   const [peekUpInFront, setPeekUpInFront] = useState(false);
   const peekUpInFrontRef = useRef(false);
@@ -88,7 +89,7 @@ const AuthCard: FC<AuthCardProps> = ({ mode, onModeChange }) => {
         width: panel.width,
         right: panel.right === 'auto' ? undefined : panel.right,
         bottom: panel.bottom,
-        left: panel.left === 'auto' ? undefined : panel.left,
+        left: panel.left,
         // Bottom / centered layouts must clear the CSS vertical-center transform.
         ...(panel.bottom != null || panel.centered
           ? {
