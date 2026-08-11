@@ -13,6 +13,9 @@ export type AdAnimationProps = {
   /** Vertical floating distance in px. Example: 8 → roughly -8px → +8px. */
   float?: number;
 
+  /** Horizontal local drift distance in px. Example: 15 → small left/right wobble. */
+  drift?: number;
+
   /** Maximum rotation in degrees. Example: 2 → roughly -2deg → +2deg. */
   rotate?: number;
 
@@ -42,6 +45,7 @@ const WRAPPER_STYLE: CSSProperties = {
 const AdAnimation: FC<AdAnimationProps> = ({
   children,
   float = 6,
+  drift = 0,
   rotate = 1.5,
   size = 1,
   duration = 4,
@@ -62,8 +66,9 @@ const AdAnimation: FC<AdAnimationProps> = ({
   }
 
   const animate: TargetAndTransition = {
-    ...(float !== 0 ? { y: [-float, float, -float] } : {}),
-    ...(rotate !== 0 ? { rotate: [-rotate, rotate, -rotate] } : {}),
+    ...(float !== 0 ? { y: [0, -float, float * 0.5, -float * 0.5, 0] } : {}),
+    ...(drift !== 0 ? { x: [0, drift, -drift, drift * 0.5, 0] } : {}),
+    ...(rotate !== 0 ? { rotate: [0, rotate, -rotate, rotate * 0.5, 0] } : {}),
     ...(size !== 1 ? { scale: [1, size, 1] } : {}),
     ...custom?.animate,
   };

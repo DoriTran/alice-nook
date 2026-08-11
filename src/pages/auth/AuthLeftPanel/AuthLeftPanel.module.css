@@ -1,0 +1,214 @@
+/*
+ * Structural styles only.
+ * Tunable size / position / rotate values live in ./authDecor.config.ts
+ */
+
+/* Smooth config-driven layout changes across responsive breakpoints.
+ * `transform` is safe here — AdAnimation runs on inner FloatingDecor, not these wraps. */
+.leftStage,
+.logoBlock,
+.logoImg,
+.helpImg,
+.dividerImg,
+.sloganImg,
+.shelvesWrap,
+.windowWrap,
+.lampWrap,
+.desk,
+.deskDecor,
+.mascot,
+.bookstackWrap,
+.cupWrap,
+.linedHeartWrap,
+.vaseWrap,
+.diaryWrap,
+.noteOpenWrap,
+.washiTapeWrap,
+.decorImg {
+  transition:
+    top 420ms ease,
+    right 420ms ease,
+    bottom 420ms ease,
+    left 420ms ease,
+    width 420ms ease,
+    min-width 420ms ease,
+    max-width 420ms ease,
+    height 420ms ease,
+    min-height 420ms ease,
+    margin 420ms ease,
+    gap 420ms ease,
+    opacity 420ms ease,
+    filter 420ms ease,
+    transform 420ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leftStage,
+  .logoBlock,
+  .logoImg,
+  .helpImg,
+  .dividerImg,
+  .sloganImg,
+  .shelvesWrap,
+  .windowWrap,
+  .lampWrap,
+  .desk,
+  .deskDecor,
+  .mascot,
+  .bookstackWrap,
+  .cupWrap,
+  .linedHeartWrap,
+  .vaseWrap,
+  .diaryWrap,
+  .noteOpenWrap,
+  .washiTapeWrap,
+  .decorImg {
+    transition: none;
+  }
+}
+
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  /* Do not hard-clip the mascot / desk props — soft masks handle edge fade. */
+  overflow: visible;
+}
+
+/*
+ * Illustration zone sits in the space left of the auth card (~460px + side gap).
+ * width / minWidth come from authDecor.config.ts
+ */
+.leftStage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: visible;
+}
+
+.logoBlock {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.logoImg,
+.helpImg,
+.dividerImg,
+.sloganImg {
+  display: block;
+  height: auto;
+  user-select: none;
+}
+
+.logoImg {
+  width: 100%;
+}
+
+.dividerImg {
+  margin: 0.05rem 0;
+}
+
+.shelvesWrap,
+.windowWrap,
+.lampWrap {
+  position: absolute;
+}
+
+.shelvesWrap {
+  z-index: 3;
+}
+
+.windowWrap {
+  z-index: 2;
+}
+
+.lampWrap {
+  z-index: 6;
+}
+
+/* Shared appearance for every non-mascot decoration image.
+ * Opacity / blur tunable via authDecor.config.ts → --decor-opacity / --decor-blur */
+.decorImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  opacity: var(--decor-opacity, 1);
+  filter: blur(var(--decor-blur, 0px));
+}
+
+.desk {
+  position: absolute;
+  bottom: 0;
+  z-index: 3;
+  width: auto;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  user-select: none;
+}
+
+.deskDecor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  overflow: visible;
+}
+
+/*
+ * Soft fade on the desk surface only.
+ * Do NOT mask .deskDecor — CSS masks clip to the box even with overflow:visible,
+ * which chops the mascot when it is taller than the decor container.
+ */
+.desk {
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      black 14%,
+      black 86%,
+      transparent 100%
+    ),
+    linear-gradient(to top, transparent 0%, black 22%, black 100%);
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      black 14%,
+      black 86%,
+      transparent 100%
+    ),
+    linear-gradient(to top, transparent 0%, black 22%, black 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.mascot {
+  position: absolute;
+  user-select: none;
+  opacity: var(--decor-opacity, 1);
+  filter: blur(var(--decor-blur, 0px));
+}
+
+.bookstackWrap,
+.cupWrap,
+.linedHeartWrap,
+.vaseWrap,
+.diaryWrap,
+.noteOpenWrap,
+.washiTapeWrap {
+  position: absolute;
+}

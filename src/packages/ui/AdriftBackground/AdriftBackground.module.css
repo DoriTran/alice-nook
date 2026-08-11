@@ -1,0 +1,19 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.traveler {
+  position: absolute;
+  left: 0;
+  will-change: transform;
+}
+
+.asset {
+  display: block;
+  height: auto;
+  user-select: none;
+}

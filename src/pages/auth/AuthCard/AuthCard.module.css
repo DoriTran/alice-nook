@@ -1,0 +1,457 @@
+/*
+ * Structural styles only.
+ * Tunable panel size / decoration spacing live in ./authCard.config.ts
+ */
+
+/* Smooth config-driven layout changes across responsive breakpoints.
+ * Omit `transform` on `.pinnedStickerWrap` — AdAnimation owns that. */
+.wrap,
+.card,
+.pinnedStickerWrap,
+.peekWrap,
+.flowerPotWrap,
+.flowerPot,
+.panelDivider {
+  transition:
+    top 420ms ease,
+    right 420ms ease,
+    bottom 420ms ease,
+    left 420ms ease,
+    width 420ms ease,
+    max-width 420ms ease,
+    margin 420ms ease,
+    padding 420ms ease,
+    border-radius 420ms ease,
+    transform 420ms ease;
+}
+
+.pinnedSticker {
+  transition:
+    width 420ms ease,
+    transform 420ms ease;
+}
+
+.peekUpWrap {
+  transition:
+    width 420ms ease,
+    bottom 420ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .card,
+  .pinnedStickerWrap,
+  .pinnedSticker,
+  .peekWrap,
+  .peekUpWrap,
+  .flowerPotWrap,
+  .flowerPot,
+  .panelDivider {
+    transition: none;
+  }
+}
+
+.wrap {
+  --auth-text: #5c3d4a;
+  --auth-text-muted: #9a7a86;
+  --auth-text-soft: #b896a2;
+  --auth-link: #b07ab8;
+  --auth-cta: #f299b1;
+  --auth-cta-hover: #e87a9a;
+  --auth-cta-text: #fffafc;
+  --auth-field-bg: #fffafc;
+  --auth-field-border: #f1d4df;
+  --auth-tab-active: #f299b1;
+  --auth-tab-active-text: #fffafc;
+
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  background-color: #fffdfd;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow:
+    0 18px 48px rgb(92 61 74 / 12%),
+    0 2px 8px rgb(92 61 74 / 6%);
+}
+
+.formBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: height 320ms ease;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Legacy Edge */
+}
+
+.formBody::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.formBodyInner {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--auth-cta) 28%, white);
+  border-radius: 999px;
+  background: #fff7fa;
+  padding: 4px;
+}
+
+.tabs button[role='radio'] {
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--auth-text-muted);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.tabs button[role='radio'][data-active] {
+  background: var(--auth-tab-active);
+  color: var(--auth-tab-active-text);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgb(242 153 177 / 35%);
+}
+
+.tabs button[role='radio']:hover:not([data-active]):not(:disabled) {
+  color: var(--auth-text);
+  background: color-mix(in srgb, var(--auth-cta) 10%, transparent);
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.flowerPotWrap {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.flowerPot {
+  display: block;
+  height: auto;
+  user-select: none;
+}
+
+.heading {
+  margin: 0.35rem 0 0.35rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--auth-text);
+  letter-spacing: -0.01em;
+}
+
+.caption {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--auth-text-muted);
+}
+
+.panelDivider {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.65rem auto 0;
+  user-select: none;
+}
+
+.pinnedStickerWrap {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.pinnedSticker {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.peekWrap {
+  /* Right edge of the cut PNG sits on the card's left edge. */
+  position: absolute;
+  right: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.peekMascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  transition: opacity 360ms ease;
+}
+
+.peekMascotOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peekMascot {
+    transition: none;
+  }
+}
+
+.peekUpWrap {
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+  transform-origin: bottom center;
+}
+
+.peekUpMascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--auth-text-muted);
+}
+
+.inputShell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--auth-text-soft);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.85rem 0.65rem 2.55rem;
+  border: 1.5px solid var(--auth-field-border);
+  border-radius: 14px;
+  background: var(--auth-field-bg);
+  color: var(--auth-text);
+  font: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.input::placeholder {
+  color: var(--auth-text-soft);
+}
+
+.input:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--auth-cta) 40%,
+    var(--auth-field-border)
+  );
+  background: #fff5f8;
+}
+
+.input:focus-visible {
+  border-color: color-mix(
+    in srgb,
+    var(--auth-cta) 70%,
+    var(--auth-field-border)
+  );
+  box-shadow: 0 0 0 3px rgb(242 153 177 / 22%);
+}
+
+.inputWithToggle {
+  padding-right: 2.75rem;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--auth-text-soft);
+  cursor: pointer;
+}
+
+.togglePassword:hover {
+  color: var(--auth-text-muted);
+  background: rgb(242 153 177 / 12%);
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.35rem;
+}
+
+/* Match sign-in's breathing room (forgot-row + gap) before the CTA. */
+.primaryBtnSpaced {
+  margin-top: 0.85rem;
+}
+
+.forgotLink,
+.footerLink {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--auth-link);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.forgotLink:hover,
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+.errorText {
+  margin: -0.25rem 0 0;
+  font-size: 0.78rem;
+  color: #e05a72;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 16px;
+  background: var(--auth-cta);
+  color: var(--auth-cta-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgb(242 153 177 / 35%);
+  transition:
+    background 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: var(--auth-cta-hover);
+  box-shadow: 0 10px 24px rgb(242 153 177 / 42%);
+}
+
+.primaryBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.orRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--auth-text-soft);
+  font-size: 0.8rem;
+}
+
+.orLine {
+  flex: 1;
+  border: none;
+  border-top: 1.5px dashed color-mix(in srgb, var(--auth-cta) 35%, white);
+}
+
+.googleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1.5px solid var(--auth-field-border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--auth-text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.googleBtn:hover:not(:disabled) {
+  background: #fff7fa;
+  border-color: color-mix(
+    in srgb,
+    var(--auth-cta) 35%,
+    var(--auth-field-border)
+  );
+}
+
+.googleBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.footer {
+  margin-top: 0.35rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--auth-text-muted);
+}

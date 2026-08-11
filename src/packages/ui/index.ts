@@ -1,5 +1,10 @@
 export { default as Outlet } from './Outlet/Outlet';
 
+export {
+  default as AdriftBackground,
+  type AdriftBackgroundProps,
+  type AdriftDecoration,
+} from './AdriftBackground';
 export { default as Bookmark } from './Bookmark/Bookmark';
 export { default as BrushHighlight } from './BrushHighlight/BrushHighlight';
 export type {

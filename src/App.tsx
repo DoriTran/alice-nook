@@ -1,12 +1,13 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { Outlet } from '@/packages/ui';
-import { Dev, Diary, Home, Settings, Workspace } from '@/pages';
+import { Auth, Dev, Diary, Home, Settings, Workspace } from '@/pages';
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/auth" element={<Auth />} />
         <Route path="/" element={<Outlet />}>
           <Route index element={<Navigate to="/diary" />} />
           <Route path="home" element={<Home />} />

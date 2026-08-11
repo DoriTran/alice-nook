@@ -1,3 +1,6 @@
+# Local planning / summary docs (not versioned)
+docs/
+
 # Logs
 logs
 *.log
