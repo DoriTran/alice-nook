@@ -1,6 +1,6 @@
 .page {
   position: relative;
-  min-height: 100vh;
+  min-height: var(--app-viewport-height);
   width: 100%;
   overflow: hidden;
   background-color: #f7efe4;
@@ -28,7 +28,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  min-height: 100vh;
+  min-height: var(--app-viewport-height);
 }
 
 @media (max-width: 720px) {

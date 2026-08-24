@@ -23,7 +23,7 @@ export const authResponsiveConfig = {
     'w<': {
       page: {
         position: 'relative',
-        'min-height': '100vh',
+        'min-height': 'var(--app-viewport-height)',
         width: '100%',
         overflow: 'hidden',
         'background-position': 'center',
@@ -41,7 +41,7 @@ export const authResponsiveConfig = {
         position: 'relative',
         'z-index': '2',
         width: '100%',
-        'min-height': '100vh',
+        'min-height': 'var(--app-viewport-height)',
       },
       panel: {
         position: 'absolute',

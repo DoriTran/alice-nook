@@ -29,6 +29,9 @@ body {
 }
 
 :root {
+  /* Visible application viewport; dvh tracks mobile browser chrome. */
+  --app-viewport-height: 100vh;
+
   /* Font Sizes */
   --font-3xs: 0.5rem;
   --font-2xs: 0.625rem;
@@ -80,6 +83,12 @@ body {
   /* Left panel collapse / expand (sidebar, profile, nav groups) */
   --left-panel-transition-duration: 400ms;
   --left-panel-transition: var(--left-panel-transition-duration) ease;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-viewport-height: 100dvh;
+  }
 }
 
 /* ==================================================
@@ -724,7 +733,7 @@ Never leave outline: none without a themed replacement.
    Basic reusable classes
 -------------------------------------------------- */
 .app-shell {
-  min-height: 100vh;
+  min-height: var(--app-viewport-height);
   background:
     radial-gradient(circle at top left, var(--surface-soft), transparent 34%),
     var(--background);
