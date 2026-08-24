@@ -1,9 +1,8 @@
 /*
- * Structural styles only.
- * Tunable size / position / rotate values live in ./authDecor.config.ts
+ * Structural styles + responsive layout/size/position from former authDecor.config.
  */
 
-/* Smooth config-driven layout changes across responsive breakpoints.
+/* Smooth layout changes across responsive breakpoints.
  * `transform` is safe here — AdAnimation runs on inner FloatingDecor, not these wraps. */
 .leftStage,
 .logoBlock,
@@ -78,7 +77,6 @@
 
 /*
  * Illustration zone sits in the space left of the auth card (~460px + side gap).
- * width comes from authDecor.config.ts
  */
 .leftStage {
   position: absolute;
@@ -86,6 +84,7 @@
   left: 0;
   bottom: 0;
   overflow: visible;
+  width: calc(100% - 700px);
 }
 
 .logoBlock {
@@ -96,6 +95,10 @@
   align-items: center;
   transform: translateX(-50%);
   text-align: center;
+  top: 8%;
+  left: 50%;
+  width: 600px;
+  gap: 1.5rem;
 }
 
 .logoImg,
@@ -111,8 +114,17 @@
   width: 100%;
 }
 
+.helpImg {
+  width: 400px;
+}
+
 .dividerImg {
+  width: 140px;
   margin: 0.05rem 0;
+}
+
+.sloganImg {
+  width: 350px;
 }
 
 .shelvesWrap,
@@ -123,18 +135,30 @@
 
 .shelvesWrap {
   z-index: 3;
+  top: 6%;
+  left: -2%;
+  width: 350px;
+  --decor-opacity: 0.75;
+  --decor-blur: 1px;
 }
 
 .windowWrap {
   z-index: 2;
+  top: 15%;
+  left: 86%;
+  width: 320px;
+  --decor-opacity: 0.75;
+  --decor-blur: 1px;
 }
 
 .lampWrap {
   z-index: 6;
+  left: max(2%, calc(50% - 480px));
+  bottom: 280px;
+  width: 150px;
 }
 
-/* Shared appearance for every non-mascot decoration image.
- * Opacity / blur tunable via authDecor.config.ts → --decor-opacity / --decor-blur */
+/* Shared appearance for every non-mascot decoration image. */
 .decorImg {
   display: block;
   width: 100%;
@@ -142,6 +166,7 @@
   user-select: none;
   opacity: var(--decor-opacity, 1);
   filter: blur(var(--decor-blur, 0px));
+  transform: rotate(var(--decor-rotate, 0deg));
 }
 
 .desk {
@@ -149,6 +174,10 @@
   bottom: 0;
   z-index: 3;
   width: auto;
+  height: 28vh;
+  min-height: 28vh;
+  left: -4%;
+  right: -4%;
   background-position: center bottom;
   background-repeat: no-repeat;
   background-size: cover;
@@ -162,6 +191,8 @@
   bottom: 0;
   z-index: 5;
   overflow: visible;
+  height: 640px;
+  min-height: 42vh;
 }
 
 /*
@@ -201,6 +232,10 @@
   user-select: none;
   opacity: var(--decor-opacity, 1);
   filter: blur(var(--decor-blur, 0px));
+  left: 47.5%;
+  bottom: 25%;
+  width: 47.5vh;
+  transform: translateX(-50%) rotate(0deg);
 }
 
 .bookstackWrap,
@@ -211,4 +246,525 @@
 .noteOpenWrap,
 .washiTapeWrap {
   position: absolute;
+}
+
+.bookstackWrap {
+  left: max(2%, calc(50% - 470px));
+  bottom: 20px;
+  width: 250px;
+}
+
+.cupWrap {
+  left: max(2%, calc(50% - 650px));
+  bottom: 200px;
+  width: 125px;
+}
+
+.linedHeartWrap {
+  left: calc(50% - 275px);
+  bottom: 85%;
+  width: min(12%, 86px);
+  --decor-rotate: -8deg;
+}
+
+.vaseWrap {
+  left: min(75%, calc(50% + 210px));
+  bottom: 250px;
+  width: 150px;
+}
+
+.diaryWrap {
+  left: 50%;
+  bottom: 40px;
+  width: 150px;
+  --decor-rotate: -6deg;
+}
+
+.noteOpenWrap {
+  left: min(88%, calc(50% + 180px));
+  bottom: 12%;
+  width: 200px;
+  --decor-rotate: 4deg;
+}
+
+.washiTapeWrap {
+  left: min(88%, calc(50% + 400px));
+  bottom: 180px;
+  width: 100px;
+  --decor-rotate: 18deg;
+}
+
+/* ── Height-only (wider → narrower) ── */
+
+/* was: 'h<1240' → @media (height < 1240px) */
+@media (height < 1240px) {
+  .sloganImg {
+    width: 0;
+  }
+}
+
+/* was: 'h<1100' → @media (height < 1100px) */
+@media (height < 1100px) {
+  .shelvesWrap {
+    width: 250px;
+  }
+
+  .windowWrap {
+    width: 280px;
+  }
+}
+
+/* was: 'h<1000' → @media (height < 1000px) */
+@media (height < 1000px) {
+  .logoBlock {
+    width: 500px;
+  }
+
+  .helpImg {
+    width: 350px;
+  }
+
+  .dividerImg {
+    width: 0;
+  }
+}
+
+/* was: 'h<900' → @media (height < 900px) */
+@media (height < 900px) {
+  .shelvesWrap {
+    width: 200px;
+  }
+
+  .windowWrap {
+    width: 240px;
+  }
+
+  .diaryWrap {
+    width: 120px;
+    left: 45%;
+    bottom: 20px;
+  }
+
+  .noteOpenWrap {
+    width: 150px;
+    left: min(88%, calc(50% + 180px));
+    bottom: 50px;
+  }
+}
+
+/* was: 'h<750' → @media (height < 750px) */
+@media (height < 750px) {
+  .logoBlock {
+    width: 350px;
+  }
+
+  .helpImg {
+    width: 250px;
+  }
+
+  .diaryWrap {
+    width: 0;
+  }
+}
+
+/* ── Width-only (wider → narrower) ── */
+
+/* was: 'w<2000' → @media (width < 2000px) */
+@media (width < 2000px) {
+  .cupWrap {
+    left: max(10%, calc(50% - 400px));
+    bottom: 600px;
+  }
+
+  .washiTapeWrap {
+    left: calc(50% + 210px);
+    bottom: 600px;
+  }
+}
+
+/* was: 'w<1550' → @media (width < 1550px) */
+@media (width < 1550px) {
+  .leftStage {
+    width: calc(100% - 650px);
+  }
+}
+
+/* was: 'w<1500' → @media (width < 1500px) */
+@media (width < 1500px) {
+  .mascot {
+    width: 40vh;
+  }
+
+  .logoBlock {
+    top: 10%;
+    width: 450px;
+  }
+
+  .helpImg {
+    width: 300px;
+  }
+
+  .dividerImg {
+    width: 110px;
+  }
+
+  .sloganImg {
+    width: 280px;
+  }
+
+  .shelvesWrap {
+    width: 250px;
+  }
+
+  .windowWrap {
+    width: 280px;
+  }
+
+  .lampWrap {
+    width: 120px;
+  }
+
+  .bookstackWrap {
+    width: 200px;
+  }
+
+  .cupWrap {
+    width: 100px;
+    bottom: 85%;
+  }
+
+  .linedHeartWrap {
+    left: calc(50% - 230px);
+    bottom: 70%;
+  }
+
+  .vaseWrap {
+    width: 100px;
+  }
+
+  .diaryWrap {
+    width: 120px;
+  }
+
+  .noteOpenWrap {
+    width: 150px;
+  }
+
+  .washiTapeWrap {
+    width: 80px;
+    bottom: 500px;
+    left: calc(50% + 150px);
+  }
+}
+
+/* was: 'w<1350' → @media (width < 1350px) */
+@media (width < 1350px) {
+  .leftStage {
+    width: calc(100% - 600px);
+  }
+
+  .mascot {
+    width: 35vh;
+  }
+
+  .logoBlock {
+    top: 12.5%;
+  }
+
+  .shelvesWrap {
+    width: 200px;
+  }
+
+  .windowWrap {
+    width: 240px;
+  }
+
+  .lampWrap {
+    width: 100px;
+  }
+
+  .bookstackWrap {
+    width: 160px;
+    left: max(2%, calc(50% - 280px));
+    bottom: 35px;
+  }
+
+  .cupWrap {
+    width: 80px;
+  }
+
+  .linedHeartWrap {
+    left: calc(50% - 200px);
+    bottom: 75%;
+  }
+
+  .vaseWrap {
+    width: 75px;
+  }
+
+  .diaryWrap {
+    width: 100px;
+    left: 45%;
+    bottom: 50px;
+  }
+
+  .noteOpenWrap {
+    width: 120px;
+    left: calc(50% + 140px);
+    bottom: 100px;
+  }
+
+  .washiTapeWrap {
+    width: 50px;
+  }
+}
+
+/* was: 'w<1200' → @media (width < 1200px) */
+@media (width < 1200px) {
+  .leftStage {
+    width: calc(100% - 480px);
+  }
+
+  .logoBlock {
+    top: 17.5%;
+  }
+
+  .cupWrap {
+    bottom: 43%;
+    left: max(2%, calc(50% - 290px));
+  }
+
+  .vaseWrap {
+    bottom: 250px;
+  }
+
+  .diaryWrap {
+    width: 0;
+    height: 0;
+  }
+
+  .noteOpenWrap {
+    width: 0;
+    height: 0;
+  }
+}
+
+/* was: 'w<1024' → @media (width < 1024px) */
+@media (width < 1024px) {
+  .leftStage {
+    width: 100%;
+  }
+
+  .mascot {
+    width: 250px;
+    bottom: calc(65vh - 65px);
+  }
+
+  .logoBlock {
+    top: 5%;
+    width: 300px;
+    gap: 0.5rem;
+  }
+
+  .helpImg {
+    width: 250px;
+  }
+
+  .desk {
+    height: 65vh;
+  }
+
+  .deskDecor {
+    height: 720px;
+  }
+
+  .shelvesWrap {
+    width: 150px;
+  }
+
+  .windowWrap {
+    width: 150px;
+    left: 80%;
+  }
+
+  .bookstackWrap {
+    width: 100px;
+    bottom: 60vh;
+    left: calc(50% + 200px);
+  }
+
+  .cupWrap {
+    bottom: 100%;
+    left: calc(50% - 230px);
+  }
+
+  .linedHeartWrap {
+    width: 70px;
+    bottom: 70vh;
+    left: calc(50% - 210px);
+  }
+
+  .vaseWrap {
+    bottom: calc(100% + 40px);
+    left: calc(50% + 100px);
+  }
+
+  .washiTapeWrap {
+    width: 50px;
+    bottom: 70vh;
+    left: calc(50% + 220px);
+  }
+}
+
+/* was: 'w<660' → @media (width < 660px) */
+@media (width < 660px) {
+  .lampWrap {
+    width: 0;
+  }
+
+  .cupWrap {
+    bottom: 105%;
+  }
+}
+
+/* was: 'w<600' → @media (width < 600px) */
+@media (width < 600px) {
+  .bookstackWrap {
+    width: 0;
+  }
+}
+
+/* was: 'w<540' → @media (width < 540px) */
+@media (width < 540px) {
+  .vaseWrap {
+    left: calc(50% + 125px);
+  }
+
+  .washiTapeWrap {
+    width: 0;
+  }
+}
+
+/* was: 'w<460' → @media (width < 460px) */
+@media (width < 460px) {
+  .cupWrap {
+    width: 0;
+  }
+
+  .linedHeartWrap {
+    width: 0;
+  }
+
+  .vaseWrap {
+    width: 0;
+  }
+}
+
+/* ── Combined AND (mirror JS merge order) ── */
+
+/* was: 'h<1050,w<2000' → @media (height < 1050px) and (width < 2000px) */
+@media (height < 1050px) and (width < 2000px) {
+  .cupWrap {
+    width: 0;
+  }
+
+  .linedHeartWrap {
+    width: 0;
+  }
+
+  .washiTapeWrap {
+    width: 0;
+  }
+}
+
+/* was: 'w<1024,h<1200' → @media (width < 1024px) and (height < 1200px) */
+@media (width < 1024px) and (height < 1200px) {
+  .mascot {
+    width: 18vh;
+  }
+}
+
+/* was: 'w<1024,h<1100' → @media (width < 1024px) and (height < 1100px) */
+@media (width < 1024px) and (height < 1100px) {
+  .mascot {
+    width: 0;
+  }
+
+  .logoBlock {
+    top: 8%;
+  }
+
+  .sloganImg {
+    width: 200px;
+  }
+}
+
+/* was: 'h<675,w<1024' → @media (height < 675px) and (width < 1024px) */
+@media (height < 675px) and (width < 1024px) {
+  .lampWrap {
+    width: 0;
+  }
+
+  .bookstackWrap {
+    width: 0;
+  }
+
+  .vaseWrap {
+    width: 0;
+  }
+
+  .washiTapeWrap {
+    width: 0;
+  }
+}
+
+/* was: 'w<1024,h>=675' → @media (width < 1024px) and (height >= 675px) */
+@media (width < 1024px) and (height >= 675px) {
+  .lampWrap {
+    width: 100px;
+    bottom: 62.5vh;
+    left: calc(50% - 340px);
+  }
+}
+
+/* was: 'h<900,w>=1024' → @media (height < 900px) and (width >= 1024px) */
+@media (height < 900px) and (width >= 1024px) {
+  .bookstackWrap {
+    width: 170px;
+    left: max(2%, calc(50% - 350px));
+  }
+}
+
+/* was: 'h<1000,w>=1024' → @media (height < 1000px) and (width >= 1024px) */
+@media (height < 1000px) and (width >= 1024px) {
+  .lampWrap {
+    bottom: 23vh;
+    left: max(2%, calc(50% - 350px));
+    width: 140px;
+  }
+
+  .vaseWrap {
+    bottom: 23vh;
+    width: 120px;
+    left: min(75%, calc(50% + 180px));
+  }
+}
+
+/* was: 'w<1024,h>=1100' → @media (width < 1024px) and (height >= 1100px) */
+@media (width < 1024px) and (height >= 1100px) {
+  .sloganImg {
+    width: 0;
+  }
+}
+
+/* was: '1024<=w<1200' → @media (width >= 1024px) and (width < 1200px) */
+@media (width >= 1024px) and (width < 1200px) {
+  .lampWrap {
+    width: 0;
+  }
+
+  .bookstackWrap {
+    width: 0;
+    height: 0;
+  }
 }

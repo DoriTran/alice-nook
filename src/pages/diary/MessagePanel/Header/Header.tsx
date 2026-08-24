@@ -116,9 +116,7 @@ const Header: FC<HeaderProps> = ({
           ),
         }
       : null,
-  ].filter(
-    (item): item is { key: string; node: JSX.Element } => item != null,
-  );
+  ].filter((item): item is { key: string; node: JSX.Element } => item != null);
 
   return (
     <header

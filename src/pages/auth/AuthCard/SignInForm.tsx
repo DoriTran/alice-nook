@@ -35,7 +35,7 @@ const SignInForm: FC<SignInFormProps> = ({ onSwitchToSignup }) => {
           Email
         </label>
         <div className={styles.inputShell}>
-          <Mail aria-hidden className={styles.inputIcon} size={16} />
+          <Mail aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="email"
             className={styles.input}
@@ -53,7 +53,7 @@ const SignInForm: FC<SignInFormProps> = ({ onSwitchToSignup }) => {
           Password
         </label>
         <div className={styles.inputShell}>
-          <Lock aria-hidden className={styles.inputIcon} size={16} />
+          <Lock aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="current-password"
             className={`${styles.input} ${styles.inputWithToggle}`}
@@ -69,7 +69,7 @@ const SignInForm: FC<SignInFormProps> = ({ onSwitchToSignup }) => {
             onClick={() => setShowPassword((prev) => !prev)}
             type="button"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? <EyeOff /> : <Eye />}
           </button>
         </div>
       </div>

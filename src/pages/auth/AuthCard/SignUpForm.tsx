@@ -48,7 +48,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
           Nook name
         </label>
         <div className={styles.inputShell}>
-          <UserRound aria-hidden className={styles.inputIcon} size={16} />
+          <UserRound aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="nickname"
             className={styles.input}
@@ -66,7 +66,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
           Email
         </label>
         <div className={styles.inputShell}>
-          <Mail aria-hidden className={styles.inputIcon} size={16} />
+          <Mail aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="email"
             className={styles.input}
@@ -84,7 +84,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
           Password
         </label>
         <div className={styles.inputShell}>
-          <Lock aria-hidden className={styles.inputIcon} size={16} />
+          <Lock aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="new-password"
             className={`${styles.input} ${styles.inputWithToggle}`}
@@ -100,7 +100,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
             onClick={() => setShowPassword((prev) => !prev)}
             type="button"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? <EyeOff /> : <Eye />}
           </button>
         </div>
       </div>
@@ -110,7 +110,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
           Confirm password
         </label>
         <div className={styles.inputShell}>
-          <Lock aria-hidden className={styles.inputIcon} size={16} />
+          <Lock aria-hidden className={styles.inputIcon} />
           <input
             autoComplete="new-password"
             className={`${styles.input} ${styles.inputWithToggle}`}
@@ -128,18 +128,14 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
             onClick={() => setShowConfirm((prev) => !prev)}
             type="button"
           >
-            {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showConfirm ? <EyeOff /> : <Eye />}
           </button>
         </div>
       </div>
 
       {error ? <p className={styles.errorText}>{error}</p> : null}
 
-      <button
-        className={`${styles.primaryBtn} ${styles.primaryBtnSpaced}`}
-        disabled={loading}
-        type="submit"
-      >
+      <button className={styles.primaryBtn} disabled={loading} type="submit">
         {loading ? 'Creating…' : 'Create my nook ✨'}
       </button>
 

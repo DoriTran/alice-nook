@@ -12,6 +12,7 @@ import { buildAdriftDecorations } from './auth.utils';
 import AuthCard, { type AuthMode } from './AuthCard/AuthCard';
 import AuthLeftPanel from './AuthLeftPanel/AuthLeftPanel';
 import styles from './AuthPage.module.css';
+import { AuthResponsiveStyles } from './authResponsive.config';
 
 function parseMode(value: string | null): AuthMode {
   return value === 'signup' ? 'signup' : 'signin';
@@ -45,6 +46,7 @@ const AuthPage: FC = () => {
         <AuthLeftPanel />
         <AuthCard mode={mode} onModeChange={handleModeChange} />
       </div>
+      <AuthResponsiveStyles />
     </main>
   );
 };

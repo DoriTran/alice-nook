@@ -1,10 +1,12 @@
 /*
- * Structural styles only.
- * Tunable panel size / decoration spacing live in ./authCard.config.ts
+ * Auth card layout + chrome.
+ * Tunable values live here as CSS vars / properties on layout classes.
  */
 
-/* Smooth config-driven layout changes across responsive breakpoints.
+/* Smooth layout changes across responsive breakpoints.
  * Omit `transform` on `.pinnedStickerWrap` — AdAnimation owns that. */
+.signinContainer,
+.signupContainer,
 .wrap,
 .card,
 .pinnedStickerWrap,
@@ -25,6 +27,43 @@
     transform 420ms ease;
 }
 
+.signinContainer,
+.signupContainer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 1vh 8vw;
+  scrollbar-width: none;
+}
+
+.signinContainer::-webkit-scrollbar,
+.signupContainer::-webkit-scrollbar {
+  width: 0;
+}
+
+.signinContainer[data-manual-scrollbar],
+.signupContainer[data-manual-scrollbar] {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(92 61 74 / 32%) transparent;
+}
+
+.signinContainer[data-manual-scrollbar]::-webkit-scrollbar,
+.signupContainer[data-manual-scrollbar]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.signinContainer[data-manual-scrollbar]::-webkit-scrollbar-thumb,
+.signupContainer[data-manual-scrollbar]::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(92 61 74 / 32%);
+}
+
 .pinnedSticker {
   transition:
     width 420ms ease,
@@ -38,6 +77,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .signinContainer,
+  .signupContainer,
   .wrap,
   .card,
   .pinnedStickerWrap,
@@ -64,11 +105,76 @@
   --auth-tab-active: #f299b1;
   --auth-tab-active-text: #fffafc;
 
-  position: absolute;
-  top: 50%;
+  /* tabs */
+  --auth-tabs-mb: 0.75rem;
+  --auth-tabs-pad: 4px;
+  --auth-tabs-fs: 0.875rem;
+
+  /* header */
+  --auth-header-mb: 1.25rem;
+  --auth-heading-fs: 1.75rem;
+  --auth-caption-fs: 0.9rem;
+  --auth-heading-m: 0.35rem 0;
+  --auth-flower-mb: 0.25rem;
+  --auth-divider-mt: 0.65rem;
+
+  /* form */
+  --auth-form-gap: 0.9rem;
+  --auth-field-gap: 0.35rem;
+  --auth-label-fs: 0.8rem;
+  --auth-footer-fs: 0.85rem;
+  --auth-footer-mt: 0.35rem;
+  --auth-link-fs: 0.8rem;
+  --auth-or-fs: 0.8rem;
+  --auth-or-gap: 0.75rem;
+  --auth-error-fs: 0.78rem;
+  --auth-icon-size: 16px;
+
+  /* input */
+  --auth-input-min-h: 2.75rem;
+  --auth-input-fs: 0.9rem;
+  --auth-input-radius: 14px;
+  --auth-input-py: 0.65rem;
+  --auth-input-pis: 2.55rem;
+  --auth-input-pie: 0.85rem;
+  --auth-input-pie-toggle: 2.75rem;
+  --auth-input-icon-offset: 0.85rem;
+  --auth-input-toggle-size: 2rem;
+
+  /* primary */
+  --auth-primary-min-h: 2.9rem;
+  --auth-primary-fs: 0.95rem;
+  --auth-primary-radius: 16px;
+  --auth-primary-pad: 0.75rem 1rem;
+
+  /* google */
+  --auth-google-min-h: 2.75rem;
+  --auth-google-fs: 0.9rem;
+  --auth-google-radius: 14px;
+  --auth-google-pad: 0.65rem 1rem;
+  --auth-google-gap: 0.55rem;
+
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
   z-index: 4;
-  margin: 0;
-  transform: translateY(-50%);
+  flex-shrink: 0;
+  width: 560px;
+  margin-block: auto;
+  transform: none;
+}
+
+.wrap[data-mode='signin'] {
+  --auth-forgot-mt: -0.35rem;
+  --auth-primary-mt: 0px;
+  margin-top: auto;
+}
+
+.wrap[data-mode='signup'] {
+  --auth-primary-mt: 0.85rem;
+  margin-top: auto;
 }
 
 .card {
@@ -77,7 +183,10 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
+  padding: 1.75rem 2rem 1.5rem;
+  border-radius: 28px;
   background-color: #fffdfd;
   background-position: center;
   background-repeat: no-repeat;
@@ -88,10 +197,9 @@
 }
 
 .formBody {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
   transition: height 320ms ease;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Legacy Edge */
@@ -108,16 +216,16 @@
 
 .tabs {
   flex-shrink: 0;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--auth-tabs-mb, 0.75rem);
   border: 1px solid color-mix(in srgb, var(--auth-cta) 28%, white);
   border-radius: 999px;
   background: #fff7fa;
-  padding: 4px;
+  padding: var(--auth-tabs-pad, 4px);
 }
 
 .tabs button[role='radio'] {
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: var(--auth-tabs-fs, 0.875rem);
   font-weight: 600;
   color: var(--auth-text-muted);
   border-color: transparent;
@@ -142,23 +250,24 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--auth-header-mb, 1.25rem);
 }
 
 .flowerPotWrap {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--auth-flower-mb, 0.25rem);
 }
 
 .flowerPot {
   display: block;
+  width: 115px;
   height: auto;
   user-select: none;
 }
 
 .heading {
-  margin: 0.35rem 0 0.35rem;
-  font-size: 1.75rem;
+  margin: var(--auth-heading-m, 0.35rem 0);
+  font-size: var(--auth-heading-fs, 1.75rem);
   font-weight: 700;
   color: var(--auth-text);
   letter-spacing: -0.01em;
@@ -166,21 +275,25 @@
 
 .caption {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--auth-caption-fs, 0.9rem);
   color: var(--auth-text-muted);
 }
 
 .panelDivider {
   display: block;
   width: 100%;
+  max-width: 200px;
   height: auto;
-  margin: 0.65rem auto 0;
+  margin: var(--auth-divider-mt, 0.65rem) auto 0;
   user-select: none;
 }
 
 .pinnedStickerWrap {
   position: absolute;
+  top: -70px;
+  right: -80px;
   z-index: 6;
+  width: 200px;
   pointer-events: none;
 }
 
@@ -188,6 +301,7 @@
   display: block;
   width: 100%;
   height: auto;
+  transform: rotate(8deg);
   user-select: none;
 }
 
@@ -195,7 +309,10 @@
   /* Right edge of the cut PNG sits on the card's left edge. */
   position: absolute;
   right: 100%;
+  bottom: 50px;
   z-index: 5;
+  width: 150px;
+  margin-right: -10px;
   pointer-events: none;
 }
 
@@ -222,6 +339,9 @@
 .peekUpWrap {
   position: absolute;
   left: 50%;
+  bottom: calc(100% - var(--peek-up-overlap) + 6px);
+  width: 0;
+  --peek-up-overlap: 0px;
   pointer-events: none;
   transform-origin: bottom center;
 }
@@ -236,17 +356,17 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: var(--auth-form-gap, 0.9rem);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--auth-field-gap, 0.35rem);
 }
 
 .label {
-  font-size: 0.8rem;
+  font-size: var(--auth-label-fs, 0.8rem);
   font-weight: 600;
   color: var(--auth-text-muted);
 }
@@ -259,21 +379,29 @@
 
 .inputIcon {
   position: absolute;
-  left: 0.85rem;
+  left: var(--auth-input-icon-offset, 0.85rem);
   color: var(--auth-text-soft);
   pointer-events: none;
 }
 
+.inputIcon,
+.togglePassword svg,
+.googleBtn svg {
+  width: var(--auth-icon-size, 16px);
+  height: var(--auth-icon-size, 16px);
+}
+
 .input {
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.85rem 0.65rem 2.55rem;
+  min-height: var(--auth-input-min-h, 2.75rem);
+  padding: var(--auth-input-py, 0.65rem) var(--auth-input-pie, 0.85rem)
+    var(--auth-input-py, 0.65rem) var(--auth-input-pis, 2.55rem);
   border: 1.5px solid var(--auth-field-border);
-  border-radius: 14px;
+  border-radius: var(--auth-input-radius, 14px);
   background: var(--auth-field-bg);
   color: var(--auth-text);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--auth-input-fs, 0.9rem);
   outline: none;
   transition:
     border-color 160ms ease,
@@ -304,7 +432,7 @@
 }
 
 .inputWithToggle {
-  padding-right: 2.75rem;
+  padding-right: var(--auth-input-pie-toggle, 2.75rem);
 }
 
 .togglePassword {
@@ -313,8 +441,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: var(--auth-input-toggle-size, 2rem);
+  height: var(--auth-input-toggle-size, 2rem);
   padding: 0;
   border: none;
   border-radius: 999px;
@@ -331,12 +459,7 @@
 .forgotRow {
   display: flex;
   justify-content: flex-end;
-  margin-top: -0.35rem;
-}
-
-/* Match sign-in's breathing room (forgot-row + gap) before the CTA. */
-.primaryBtnSpaced {
-  margin-top: 0.85rem;
+  margin-top: var(--auth-forgot-mt, -0.35rem);
 }
 
 .forgotLink,
@@ -346,7 +469,7 @@
   background: none;
   color: var(--auth-link);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--auth-link-fs, 0.8rem);
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -359,7 +482,7 @@
 
 .errorText {
   margin: -0.25rem 0 0;
-  font-size: 0.78rem;
+  font-size: var(--auth-error-fs, 0.78rem);
   color: #e05a72;
 }
 
@@ -369,14 +492,15 @@
   justify-content: center;
   gap: 0.4rem;
   width: 100%;
-  min-height: 2.9rem;
-  padding: 0.75rem 1rem;
+  min-height: var(--auth-primary-min-h, 2.9rem);
+  margin-top: var(--auth-primary-mt, 0px);
+  padding: var(--auth-primary-pad, 0.75rem 1rem);
   border: none;
-  border-radius: 16px;
+  border-radius: var(--auth-primary-radius, 16px);
   background: var(--auth-cta);
   color: var(--auth-cta-text);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: var(--auth-primary-fs, 0.95rem);
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgb(242 153 177 / 35%);
@@ -403,9 +527,9 @@
 .orRow {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--auth-or-gap, 0.75rem);
   color: var(--auth-text-soft);
-  font-size: 0.8rem;
+  font-size: var(--auth-or-fs, 0.8rem);
 }
 
 .orLine {
@@ -418,16 +542,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: var(--auth-google-gap, 0.55rem);
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
+  min-height: var(--auth-google-min-h, 2.75rem);
+  padding: var(--auth-google-pad, 0.65rem 1rem);
   border: 1.5px solid var(--auth-field-border);
-  border-radius: 14px;
+  border-radius: var(--auth-google-radius, 14px);
   background: #fff;
   color: var(--auth-text);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--auth-google-fs, 0.9rem);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -450,8 +574,413 @@
 }
 
 .footer {
-  margin-top: 0.35rem;
+  margin-top: var(--auth-footer-mt, 0.35rem);
   text-align: center;
-  font-size: 0.85rem;
+  font-size: var(--auth-footer-fs, 0.85rem);
   color: var(--auth-text-muted);
+}
+
+/* ── Height-only (narrower height wins) ───────────────────────────── */
+
+/* was: 'h<1000' → @media (height < 1000px) */
+@media (height < 1000px) {
+  .pinnedStickerWrap {
+    top: 0;
+    right: 0;
+    width: 0;
+  }
+}
+
+/* was: 'h<900' → @media (height < 900px) */
+@media (height < 900px) {
+  .wrap {
+    --auth-tabs-mb: 0.55rem;
+    --auth-tabs-pad: 3px;
+    --auth-tabs-fs: 0.65rem;
+    --auth-header-mb: 0.95rem;
+    --auth-heading-fs: 1.3rem;
+    --auth-caption-fs: 0.68rem;
+    --auth-heading-m: 0.25rem 0;
+    --auth-flower-mb: 0.2rem;
+    --auth-divider-mt: 0.5rem;
+    --auth-form-gap: 0.65rem;
+    --auth-field-gap: 0.25rem;
+    --auth-label-fs: 0.6rem;
+    --auth-footer-fs: 0.64rem;
+    --auth-footer-mt: 0.25rem;
+    --auth-link-fs: 0.6rem;
+    --auth-or-fs: 0.6rem;
+    --auth-or-gap: 0.55rem;
+    --auth-error-fs: 0.58rem;
+    --auth-icon-size: 12px;
+    --auth-input-min-h: 2.05rem;
+    --auth-input-fs: 0.68rem;
+    --auth-input-radius: 10px;
+    --auth-input-py: 0.5rem;
+    --auth-input-pis: 1.9rem;
+    --auth-input-pie: 0.65rem;
+    --auth-input-pie-toggle: 2.05rem;
+    --auth-input-icon-offset: 0.65rem;
+    --auth-input-toggle-size: 1.5rem;
+    --auth-primary-min-h: 2.15rem;
+    --auth-primary-fs: 0.7rem;
+    --auth-primary-radius: 12px;
+    --auth-primary-pad: 0.55rem 0.75rem;
+    --auth-google-min-h: 2.05rem;
+    --auth-google-fs: 0.68rem;
+    --auth-google-radius: 10px;
+    --auth-google-pad: 0.5rem 0.75rem;
+    --auth-google-gap: 0.4rem;
+  }
+
+  .wrap[data-mode='signin'] {
+    --auth-forgot-mt: -0.25rem;
+  }
+
+  .wrap[data-mode='signup'] {
+    --auth-primary-mt: 0.65rem;
+  }
+
+  .card {
+    padding: 1.3rem 1.5rem 1.1rem;
+    border-radius: 21px;
+  }
+
+  .flowerPot {
+    width: 86px;
+  }
+
+  .panelDivider {
+    max-width: 150px;
+  }
+}
+
+/* was: 'h<700' → @media (height < 700px) */
+@media (height < 700px) {
+  .wrap {
+    --auth-tabs-mb: 0.4rem;
+    --auth-tabs-pad: 2px;
+    --auth-tabs-fs: 0.5rem;
+    --auth-header-mb: 0.7rem;
+    --auth-heading-fs: 1rem;
+    --auth-caption-fs: 0.5rem;
+    --auth-heading-m: 0.2rem 0;
+    --auth-flower-mb: 0.15rem;
+    --auth-divider-mt: 0.4rem;
+    --auth-form-gap: 0.5rem;
+    --auth-field-gap: 0.2rem;
+    --auth-label-fs: 0.45rem;
+    --auth-footer-fs: 0.48rem;
+    --auth-footer-mt: 0.2rem;
+    --auth-link-fs: 0.45rem;
+    --auth-or-fs: 0.45rem;
+    --auth-or-gap: 0.4rem;
+    --auth-error-fs: 0.45rem;
+    --auth-icon-size: 9px;
+    --auth-input-min-h: 1.55rem;
+    --auth-input-fs: 0.5rem;
+    --auth-input-radius: 8px;
+    --auth-input-py: 0.4rem;
+    --auth-input-pis: 1.4rem;
+    --auth-input-pie: 0.5rem;
+    --auth-input-pie-toggle: 1.55rem;
+    --auth-input-icon-offset: 0.5rem;
+    --auth-input-toggle-size: 1.15rem;
+    --auth-primary-min-h: 1.6rem;
+    --auth-primary-fs: 0.55rem;
+    --auth-primary-radius: 9px;
+    --auth-primary-pad: 0.4rem 0.55rem;
+    --auth-google-min-h: 1.55rem;
+    --auth-google-fs: 0.5rem;
+    --auth-google-radius: 8px;
+    --auth-google-pad: 0.4rem 0.55rem;
+    --auth-google-gap: 0.3rem;
+  }
+
+  .wrap[data-mode='signin'] {
+    --auth-forgot-mt: -0.2rem;
+  }
+
+  .wrap[data-mode='signup'] {
+    --auth-primary-mt: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem 1.15rem 0.85rem;
+    border-radius: 16px;
+  }
+
+  .flowerPot {
+    width: 65px;
+  }
+
+  .panelDivider {
+    max-width: 113px;
+  }
+}
+
+/* was: 'h<550' → @media (height < 550px) */
+@media (height < 550px) {
+  .wrap {
+    --auth-tabs-mb: 0.3rem;
+    --auth-tabs-pad: 2px;
+    --auth-tabs-fs: 0.4rem;
+    --auth-header-mb: 0.5rem;
+    --auth-heading-fs: 0.75rem;
+    --auth-caption-fs: 0.4rem;
+    --auth-heading-m: 0.15rem 0;
+    --auth-flower-mb: 0.1rem;
+    --auth-divider-mt: 0.3rem;
+    --auth-form-gap: 0.4rem;
+    --auth-field-gap: 0.15rem;
+    --auth-label-fs: 0.35rem;
+    --auth-footer-fs: 0.36rem;
+    --auth-footer-mt: 0.15rem;
+    --auth-link-fs: 0.35rem;
+    --auth-or-fs: 0.35rem;
+    --auth-or-gap: 0.3rem;
+    --auth-error-fs: 0.35rem;
+    --auth-icon-size: 7px;
+    --auth-input-min-h: 1.15rem;
+    --auth-input-fs: 0.4rem;
+    --auth-input-radius: 6px;
+    --auth-input-py: 0.3rem;
+    --auth-input-pis: 1.05rem;
+    --auth-input-pie: 0.4rem;
+    --auth-input-pie-toggle: 1.15rem;
+    --auth-input-icon-offset: 0.4rem;
+    --auth-input-toggle-size: 0.85rem;
+    --auth-primary-min-h: 1.2rem;
+    --auth-primary-fs: 0.4rem;
+    --auth-primary-radius: 7px;
+    --auth-primary-pad: 0.3rem 0.4rem;
+    --auth-google-min-h: 1.15rem;
+    --auth-google-fs: 0.4rem;
+    --auth-google-radius: 6px;
+    --auth-google-pad: 0.3rem 0.4rem;
+    --auth-google-gap: 0.25rem;
+  }
+
+  .wrap[data-mode='signin'] {
+    --auth-forgot-mt: -0.15rem;
+  }
+
+  .wrap[data-mode='signup'] {
+    --auth-primary-mt: 0.4rem;
+  }
+
+  .card {
+    padding: 0.75rem 0.85rem 0.65rem;
+    border-radius: 12px;
+  }
+
+  .flowerPot {
+    width: 49px;
+  }
+
+  .panelDivider {
+    max-width: 85px;
+  }
+}
+
+/* ── Width-only (narrower width wins) ─────────────────────────────── */
+
+/* was: 'w<1550' → @media (width < 1550px) */
+@media (width < 1550px) {
+  .signinContainer,
+  .signupContainer {
+    padding-right: 5vw;
+  }
+
+  .wrap {
+    width: 530px;
+  }
+
+  .pinnedStickerWrap {
+    right: -60px;
+  }
+}
+
+/* was: 'w<1350' → @media (width < 1350px) */
+@media (width < 1350px) {
+  .signinContainer,
+  .signupContainer {
+    padding-right: 4vw;
+  }
+
+  .wrap {
+    width: 480px;
+  }
+
+  .pinnedStickerWrap {
+    right: -30px;
+    width: 150px;
+  }
+}
+
+/* was: 'w<1200' / '<1200' → @media (width < 1200px) */
+@media (width < 1200px) {
+  .signinContainer,
+  .signupContainer {
+    padding-right: 2vw;
+  }
+
+  .wrap {
+    width: 420px;
+  }
+
+  .peekWrap {
+    width: 120px;
+  }
+
+  .flowerPot {
+    width: 90px;
+  }
+}
+
+/* was: 'w<1024' → @media (width < 1024px) */
+@media (width < 1024px) {
+  .signinContainer,
+  .signupContainer {
+    align-items: center;
+    padding: 1.25rem 30px 30px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 530px;
+    margin-top: auto;
+    margin-bottom: 0;
+  }
+
+  .pinnedStickerWrap {
+    top: 0;
+    right: 0;
+    width: 0;
+  }
+
+  .peekWrap {
+    width: 0;
+    margin-right: 0;
+  }
+}
+
+/* was: '<960' → @media (width < 960px) */
+@media (width < 960px) {
+  .flowerPot {
+    width: 72px;
+  }
+
+  .panelDivider {
+    max-width: 180px;
+  }
+}
+
+/* was: 'w<700' → @media (width < 700px) */
+@media (width < 700px) {
+  .wrap {
+    width: 100%;
+  }
+}
+
+/* ── Combined AND (apply last) ────────────────────────────────────── */
+
+/* was: 'h<900,w>=1024' → @media (height < 900px) and (width >= 1024px) */
+@media (height < 900px) and (width >= 1024px) {
+  .wrap {
+    width: 400px;
+  }
+}
+
+/* was: 'h<700,w>=1024' → @media (height < 700px) and (width >= 1024px) */
+@media (height < 700px) and (width >= 1024px) {
+  .wrap {
+    width: 300px;
+  }
+}
+
+/* was: 'h<550,w>=1024' → @media (height < 550px) and (width >= 1024px) */
+@media (height < 550px) and (width >= 1024px) {
+  .wrap {
+    width: 225px;
+  }
+}
+
+/* was: 'h<900,w<1200' → @media (height < 900px) and (width < 1200px) */
+@media (height < 900px) and (width < 1200px) {
+  .flowerPot {
+    width: 68px;
+  }
+}
+
+/* was: 'h<900,w<960' → @media (height < 900px) and (width < 960px) */
+@media (height < 900px) and (width < 960px) {
+  .flowerPot {
+    width: 54px;
+  }
+
+  .panelDivider {
+    max-width: 135px;
+  }
+}
+
+/* was: 'h<700,w<1200' → @media (height < 700px) and (width < 1200px) */
+@media (height < 700px) and (width < 1200px) {
+  .flowerPot {
+    width: 51px;
+  }
+}
+
+/* was: 'h<700,w<960' → @media (height < 700px) and (width < 960px) */
+@media (height < 700px) and (width < 960px) {
+  .flowerPot {
+    width: 40px;
+  }
+
+  .panelDivider {
+    max-width: 101px;
+  }
+}
+
+/* was: 'h<550,w<1200' → @media (height < 550px) and (width < 1200px) */
+@media (height < 550px) and (width < 1200px) {
+  .flowerPot {
+    width: 38px;
+  }
+}
+
+/* was: 'h<550,w<960' → @media (height < 550px) and (width < 960px) */
+@media (height < 550px) and (width < 960px) {
+  .flowerPot {
+    width: 30px;
+  }
+
+  .panelDivider {
+    max-width: 76px;
+  }
+}
+
+/* Peek-up: looser height first, then taller */
+/* was: 'w<1024,h>990' → @media (width < 1024px) and (height > 990px) */
+@media (width < 1024px) and (height > 990px) {
+  .peekUpWrap {
+    width: 150px;
+    --peek-up-overlap: 20px;
+  }
+}
+
+/* was: 'w<1024,h>1024' → @media (width < 1024px) and (height > 1024px) */
+@media (width < 1024px) and (height > 1024px) {
+  .peekUpWrap {
+    width: 200px;
+    --peek-up-overlap: 25px;
+  }
+}
+
+/* was: 'w<1024,h>1100' → @media (width < 1024px) and (height > 1100px) */
+@media (width < 1024px) and (height > 1100px) {
+  .peekUpWrap {
+    width: 300px;
+    --peek-up-overlap: 35px;
+  }
 }

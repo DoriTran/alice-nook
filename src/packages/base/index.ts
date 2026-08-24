@@ -65,10 +65,7 @@ export {
   default as AdActionButton,
   type AdActionButtonProps,
 } from './AdActionButton';
-export {
-  default as AdAnimation,
-  type AdAnimationProps,
-} from './AdAnimation';
+export { default as AdAnimation, type AdAnimationProps } from './AdAnimation';
 export {
   default as AdEmojiPicker,
   AdEmojiGlyph,
