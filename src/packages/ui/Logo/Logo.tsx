@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 
-import logo from '@/assets/logo/logo.png';
-import logoImg from '@/assets/logo/logo_img.png';
-import logoText from '@/assets/logo/logo_text.png';
+import logo from '@/assets/v0/logo/logo.png';
+import logoImg from '@/assets/v0/logo/logo_img.png';
+import logoText from '@/assets/v0/logo/logo_text.png';
 
 import styles from './Logo.module.css';
 

@@ -21,7 +21,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import moodSticker from '@/assets/decoration/Emoji 1.png';
+import moodSticker from '@/assets/v0/decoration/Emoji 1.png';
 import { useAppStore } from '@/store';
 
 import AdVirtualList, { type AdVirtualListHandle } from '../AdVirtualList';

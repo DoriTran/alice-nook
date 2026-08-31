@@ -1,11 +1,11 @@
-import angry from '@/assets/emoji/Angry.png';
-import brush from '@/assets/emoji/Brush.png';
-import flower from '@/assets/emoji/Flower.png';
-import happy from '@/assets/emoji/Happy.png';
-import hope from '@/assets/emoji/Hope.png';
-import sad from '@/assets/emoji/Sad.png';
-import star from '@/assets/emoji/Star.png';
-import surprise from '@/assets/emoji/Surprise.png';
+import angry from '@/assets/v0/emoji/Angry.png';
+import brush from '@/assets/v0/emoji/Brush.png';
+import flower from '@/assets/v0/emoji/Flower.png';
+import happy from '@/assets/v0/emoji/Happy.png';
+import hope from '@/assets/v0/emoji/Hope.png';
+import sad from '@/assets/v0/emoji/Sad.png';
+import star from '@/assets/v0/emoji/Star.png';
+import surprise from '@/assets/v0/emoji/Surprise.png';
 
 export type AdCustomEmoji = {
   id: string;
