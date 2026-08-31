@@ -1,6 +1,8 @@
 import { useCallback, useState, type FC } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { GOOGLE_AUTH_ERROR } from '@/auth/errors';
+import { getAuthDestination } from '@/auth/redirects';
 import { AdriftBackground } from '@/packages/ui';
 
 import {
@@ -21,17 +23,21 @@ function parseMode(value: string | null): AuthMode {
 const AuthPage: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const mode = parseMode(searchParams.get('mode'));
+  const returnTo = getAuthDestination(`?${searchParams.toString()}`);
+  const oauthError = searchParams.has('error') ? GOOGLE_AUTH_ERROR : null;
   const [decorations] = useState(() =>
     buildAdriftDecorations(RANDOM_DECORATIONS, RANDOM_DECORATION_COUNT),
   );
 
   const handleModeChange = useCallback(
     (next: AuthMode) => {
-      setSearchParams(next === 'signin' ? {} : { mode: next }, {
-        replace: true,
-      });
+      const nextParams = new URLSearchParams();
+      const requestedReturnTo = searchParams.get('returnTo');
+      if (requestedReturnTo) nextParams.set('returnTo', requestedReturnTo);
+      if (next === 'signup') nextParams.set('mode', next);
+      setSearchParams(nextParams, { replace: true });
     },
-    [setSearchParams],
+    [searchParams, setSearchParams],
   );
 
   return (
@@ -44,7 +50,12 @@ const AuthPage: FC = () => {
       </div>
       <div className={styles.content}>
         <AuthLeftPanel />
-        <AuthCard mode={mode} onModeChange={handleModeChange} />
+        <AuthCard
+          initialError={oauthError}
+          mode={mode}
+          onModeChange={handleModeChange}
+          returnTo={returnTo}
+        />
       </div>
       <AuthResponsiveStyles />
     </main>

@@ -28,3 +28,8 @@ public/twemoji
 *.njsproj
 *.sln
 *.sw?
+
+# Environment
+.env
+.env*.local
+

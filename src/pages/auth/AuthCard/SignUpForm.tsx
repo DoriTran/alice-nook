@@ -2,47 +2,94 @@ import { Eye, EyeOff, Lock, Mail, UserRound } from 'lucide-react';
 import { useState, type FC, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { sleep } from '../auth.utils';
+import { authClient } from '@/auth';
+import { getSignUpError } from '@/auth/errors';
+import { startGoogleSignIn } from '@/auth/google';
+
 import styles from './AuthCard.module.css';
 import GoogleIcon from './GoogleIcon';
 
 export type SignUpFormProps = {
+  initialError?: string | null;
   onSwitchToSignin: () => void;
+  returnTo: string;
 };
 
-const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
+const SignUpForm: FC<SignUpFormProps> = ({
+  initialError,
+  onSwitchToSignin,
+  returnTo,
+}) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
 
-  const runStub = () => {
+  const handleGoogleSignIn = async () => {
     if (loading) return;
     setLoading(true);
-    void sleep(700).then(() => {
-      void navigate('/diary');
-    });
+    setError(null);
+    try {
+      const result = await startGoogleSignIn(returnTo);
+      if (result.error) {
+        setError('Google sign-in could not be started. Please try again.');
+        setLoading(false);
+      }
+    } catch {
+      setError('Google sign-in could not be started. Please try again.');
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (loading) return;
     setError(null);
 
     const form = event.currentTarget;
-    const password = new FormData(form).get('password');
-    const confirm = new FormData(form).get('confirmPassword');
+    const data = new FormData(form);
+    const nameValue = data.get('nookName');
+    const emailValue = data.get('email');
+    const passwordValue = data.get('password');
+    const confirmValue = data.get('confirmPassword');
+    const name = (typeof nameValue === 'string' ? nameValue : '').trim();
+    const email = (typeof emailValue === 'string' ? emailValue : '')
+      .trim()
+      .toLowerCase();
+    const password = typeof passwordValue === 'string' ? passwordValue : '';
+    const confirm = typeof confirmValue === 'string' ? confirmValue : '';
 
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
     }
 
-    runStub();
+    if (!name) {
+      setError('Please enter a name for your nook.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await authClient.signUp.email({ name, email, password });
+      if (result.error) {
+        setError(getSignUpError(result.error));
+        return;
+      }
+      void navigate(returnTo, { replace: true });
+    } catch (requestError) {
+      setError(getSignUpError(requestError));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form
+      className={styles.form}
+      onSubmit={(event) => void handleSubmit(event)}
+    >
       <div className={styles.field}>
         <label className={styles.label} htmlFor="auth-signup-name">
           Nook name
@@ -133,7 +180,11 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
         </div>
       </div>
 
-      {error ? <p className={styles.errorText}>{error}</p> : null}
+      {error ? (
+        <p aria-live="polite" className={styles.errorText} role="alert">
+          {error}
+        </p>
+      ) : null}
 
       <button className={styles.primaryBtn} disabled={loading} type="submit">
         {loading ? 'Creating…' : 'Create my nook ✨'}
@@ -148,7 +199,7 @@ const SignUpForm: FC<SignUpFormProps> = ({ onSwitchToSignin }) => {
       <button
         className={styles.googleBtn}
         disabled={loading}
-        onClick={runStub}
+        onClick={() => void handleGoogleSignIn()}
         type="button"
       >
         <GoogleIcon />

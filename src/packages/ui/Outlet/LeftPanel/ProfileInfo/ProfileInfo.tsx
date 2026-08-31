@@ -1,16 +1,18 @@
-import type { FC } from 'react';
-
 import {
   faBell,
   faChevronLeft,
   faChevronRight,
   faComment,
   faHardDrive,
+  faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 import { Progress } from '@mantine/core';
 import clsx from 'clsx';
+import { useState, type FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import logoImg from '@/assets/logo/logo_img.png';
+import logoImg from '@/assets/v0/logo/logo_img.png';
+import { authClient, useSession } from '@/auth';
 import { AdDivider, AdIcon } from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
@@ -39,9 +41,32 @@ const formatCompactCount = (value: number) => {
 };
 
 const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
+  const navigate = useNavigate();
+  const { data: session } = useSession();
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   const chatboxes = useDiaryStore('chatboxes');
   const messageCount = getTotalMessageCount(chatboxes);
   const storagePercent = (STORAGE_USED_GB / STORAGE_TOTAL_GB) * 100;
+  const user = session?.user;
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError(null);
+    try {
+      const result = await authClient.signOut();
+      if (result.error) {
+        setSignOutError('Could not sign out. Please try again.');
+        return;
+      }
+      void navigate('/auth', { replace: true });
+    } catch {
+      setSignOutError('Could not sign out. Please try again.');
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   return (
     <footer className={clsx(styles.profileInfo, collapsed && styles.collapsed)}>
@@ -57,7 +82,7 @@ const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
       <div className={styles.header}>
         <div className={styles.avatarWrap}>
           <div className={styles.avatar}>
-            <img alt="" height={40} src={logoImg} width={40} />
+            <img alt="" height={40} src={user?.image || logoImg} width={40} />
           </div>
           <span className={styles.messageBadge}>
             {formatCompactCount(messageCount)}
@@ -65,8 +90,8 @@ const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
         </div>
 
         <div className={styles.identity}>
-          <p className={styles.name}>Alice</p>
-          <p className={styles.email}>alice.notes@deardiary.app</p>
+          <p className={styles.name}>{user?.name || 'Guest'}</p>
+          <p className={styles.email}>{user?.email || 'Not signed in'}</p>
         </div>
       </div>
 
@@ -126,6 +151,29 @@ const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
             </>
           ) : null}
         </div>
+
+        {user ? (
+          <>
+            {signOutError ? (
+              <p
+                aria-live="polite"
+                className={styles.signOutError}
+                role="alert"
+              >
+                {signOutError}
+              </p>
+            ) : null}
+            <button
+              className={styles.signOutBtn}
+              disabled={signingOut}
+              onClick={() => void handleSignOut()}
+              type="button"
+            >
+              <AdIcon icon={faRightFromBracket} size={13} />
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </>
+        ) : null}
       </div>
     </footer>
   );

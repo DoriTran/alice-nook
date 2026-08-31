@@ -12,8 +12,10 @@ import SignUpForm from './SignUpForm';
 export type AuthMode = 'signin' | 'signup';
 
 export type AuthCardProps = {
+  initialError?: string | null;
   mode: AuthMode;
   onModeChange: (mode: AuthMode) => void;
+  returnTo: string;
 };
 
 /** Slide distance for peek-up enter/exit (px). */
@@ -23,7 +25,12 @@ const PEEK_UP_Z_INDEX_AT = 0.8;
 const PEEK_UP_DURATION = 0.45;
 const MANUAL_SCROLLBAR_IDLE_MS = 700;
 
-const AuthCard: FC<AuthCardProps> = ({ mode, onModeChange }) => {
+const AuthCard: FC<AuthCardProps> = ({
+  initialError,
+  mode,
+  onModeChange,
+  returnTo,
+}) => {
   const isSignIn = mode === 'signin';
   const showPeekUp = !isSignIn;
   const manualScrollbarTimeoutRef = useRef<number | undefined>(undefined);
@@ -208,9 +215,17 @@ const AuthCard: FC<AuthCardProps> = ({ mode, onModeChange }) => {
           >
             <div className={styles.formBodyInner} ref={formInnerRef}>
               {isSignIn ? (
-                <SignInForm onSwitchToSignup={() => onModeChange('signup')} />
+                <SignInForm
+                  initialError={initialError}
+                  onSwitchToSignup={() => onModeChange('signup')}
+                  returnTo={returnTo}
+                />
               ) : (
-                <SignUpForm onSwitchToSignin={() => onModeChange('signin')} />
+                <SignUpForm
+                  initialError={initialError}
+                  onSwitchToSignin={() => onModeChange('signin')}
+                  returnTo={returnTo}
+                />
               )}
             </div>
           </div>

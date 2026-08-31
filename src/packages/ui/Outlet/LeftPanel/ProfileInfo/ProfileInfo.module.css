@@ -297,3 +297,36 @@
 .storageProgressTrack {
   background: var(--surface-muted) !important;
 }
+
+.signOutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--font-xs);
+  cursor: pointer;
+}
+
+.signOutBtn:hover:not(:disabled) {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.signOutBtn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.signOutError {
+  margin: 0;
+  color: var(--danger, #a33b3b);
+  font-size: var(--font-2xs);
+  text-align: center;
+}
