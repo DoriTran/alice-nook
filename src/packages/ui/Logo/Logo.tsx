@@ -1,39 +1,23 @@
 import type { FC } from 'react';
 
-import logo from '@/assets/v0/logo/logo.png';
-import logoImg from '@/assets/v0/logo/logo_img.png';
-import logoText from '@/assets/v0/logo/logo_text.png';
+import expandedLogo from '@/assets/v2/logo/expanded.png';
+import stackedLogo from '@/assets/v2/logo/stacked.png';
 
 import styles from './Logo.module.css';
 
 interface LogoProps {
-  text?: boolean;
-  image?: boolean;
-  size?: number;
-  width?: number;
-  height?: number;
+  variant: 'expanded' | 'stacked';
   className?: string;
 }
 
-const Logo: FC<LogoProps> = ({
-  text,
-  image,
-  size,
-  width,
-  height,
-  className,
-}) => {
-  const src = text ? logoText : image ? logoImg : logo;
-  const resolvedWidth = size ?? width;
-  const resolvedHeight = size ?? height;
+const Logo: FC<LogoProps> = ({ variant, className }) => {
+  const src = variant === 'expanded' ? expandedLogo : stackedLogo;
 
   return (
     <img
-      alt={text || !image ? 'Dear Diary' : ''}
+      alt="Alice Nook"
       className={[styles.base, className].filter(Boolean).join(' ')}
       src={src}
-      height={resolvedHeight}
-      width={resolvedWidth}
     />
   );
 };

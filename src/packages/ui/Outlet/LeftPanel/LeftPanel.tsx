@@ -87,8 +87,10 @@ const LeftPanel: FC = () => {
       data-collapsed={folded || undefined}
     >
       <header className={styles.header}>
-        <Logo className={styles.headerLogo} image size={folded ? 64 : 100} />
-        <Logo className={styles.headerTextLogo} height={84} text />
+        <Logo
+          className={styles.headerLogo}
+          variant={folded ? 'stacked' : 'expanded'}
+        />
       </header>
 
       <nav aria-label="Sidebar" className={`${styles.nav} scrollbar-hidden`}>

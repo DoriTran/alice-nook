@@ -74,16 +74,11 @@
 .header {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .headerLogo {
   flex-shrink: 0;
-  border-radius: var(--radius-sm);
-}
-
-.headerTextLogo {
-  flex-shrink: 0;
-  width: auto;
   max-width: 100%;
   transition:
     opacity var(--left-panel-transition),
@@ -93,12 +88,6 @@
 .panel[data-collapsed] .header {
   justify-content: center;
   padding-inline: 0;
-}
-
-.panel[data-collapsed] .headerTextLogo {
-  max-width: 0;
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* Navigation */

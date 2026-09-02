@@ -450,10 +450,8 @@ const SidebarBgDev: FC = () => {
         <header className={panelStyles.header}>
           <Logo
             className={panelStyles.headerLogo}
-            image
-            size={collapsed ? 64 : 100}
+            variant={collapsed ? 'stacked' : 'expanded'}
           />
-          <Logo className={panelStyles.headerTextLogo} height={84} text />
         </header>
 
         <nav
