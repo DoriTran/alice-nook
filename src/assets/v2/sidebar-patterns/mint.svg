@@ -4,6 +4,6 @@
     <symbol id="b" viewBox="0 0 512 512"><path d="M512 32C512 140.1 435.4 230.3 333.6 251.4 325.7 193.3 299.6 141 261.1 100.5 301.2 40 369.9 0 448 0l32 0c17.7 0 32 14.3 32 32zM0 96C0 78.3 14.3 64 32 64l32 0c123.7 0 224 100.3 224 224l0 192c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-160C100.3 320 0 219.7 0 96z"/></symbol>
     <symbol id="c" viewBox="0 0 384 512"><path d="M192 512C86 512 0 426 0 320 0 228.8 130.2 45.9 166.6-3.5 172.5-11.5 181.8-16 191.8-16l.4 0c10 0 19.3 4.5 25.2 12.5 36.4 49.4 166.6 232.3 166.6 323.5 0 106-86 192-192 192zM112 312c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 75.1 60.9 136 136 136 13.3 0 24-10.7 24-24s-10.7-24-24-24c-48.6 0-88-39.4-88-88z"/></symbol>
   </defs>
-  <use href="#a" x="4" y="9" width="12" height="12"/><use href="#b" x="24" y="9" width="12" height="12"/><use href="#c" x="44" y="9" width="12" height="12"/>
-  <use href="#b" x="-6" y="39" width="12" height="12"/><use href="#c" x="14" y="39" width="12" height="12"/><use href="#a" x="34" y="39" width="12" height="12"/><use href="#b" x="54" y="39" width="12" height="12"/>
+  <use href="#a" x="4" y="7" width="12" height="12"/><use href="#b" x="24" y="9" width="12" height="12"/><use href="#c" x="44" y="11" width="12" height="12"/>
+  <use href="#b" x="-6" y="39" width="12" height="12"/><use href="#c" x="14" y="41" width="12" height="12"/><use href="#a" x="34" y="37" width="12" height="12"/><use href="#b" x="54" y="39" width="12" height="12"/>
 </svg>
