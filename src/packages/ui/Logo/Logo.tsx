@@ -11,14 +11,26 @@ interface LogoProps {
 }
 
 const Logo: FC<LogoProps> = ({ variant, className }) => {
-  const src = variant === 'expanded' ? expandedLogo : stackedLogo;
-
   return (
-    <img
-      alt="Alice Nook"
+    <span
+      aria-label="Alice Nook"
       className={[styles.base, className].filter(Boolean).join(' ')}
-      src={src}
-    />
+      data-variant={variant}
+      role="img"
+    >
+      <img
+        aria-hidden="true"
+        alt=""
+        className={`${styles.image} ${styles.expanded}`}
+        src={expandedLogo}
+      />
+      <img
+        aria-hidden="true"
+        alt=""
+        className={`${styles.image} ${styles.stacked}`}
+        src={stackedLogo}
+      />
+    </span>
   );
 };
 
