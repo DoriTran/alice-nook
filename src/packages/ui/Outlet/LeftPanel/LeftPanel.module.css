@@ -201,6 +201,9 @@
   flex: 1;
   flex-direction: column;
   gap: 1.25rem;
+  width: calc(100% + 1rem);
+  margin-inline: -0.5rem;
+  padding: 0.25rem 0.5rem;
   min-height: 0;
   overflow-y: auto;
   transition: gap var(--left-panel-transition);
@@ -359,6 +362,13 @@
   --nav-bg-hover: var(--settings-hover);
 }
 
+/* Story and Tools share the sidebar theme treatment used by the lower cards. */
+.navItem[data-nav-tone='theme'] {
+  --nav-accent: var(--primary);
+  --nav-bg-active: var(--surface-soft);
+  --nav-bg-hover: color-mix(in srgb, var(--surface-soft) 82%, transparent);
+}
+
 .navItem[data-module]:hover {
   background: var(--nav-bg-hover);
 }
@@ -402,7 +412,7 @@
 .panel[data-collapsed] .nav {
   align-self: stretch;
   gap: 0.625rem;
-  width: 100%;
+  width: calc(100% + 1rem);
 }
 
 .panel[data-collapsed] .navItem {

@@ -131,6 +131,7 @@ const LeftPanel: FC = () => {
                       undefined
                     }
                     data-module="diary"
+                    data-nav-tone="theme"
                     type="button"
                     onClick={() => goToStoryChatbox(chatbox.id)}
                   >
@@ -157,6 +158,7 @@ const LeftPanel: FC = () => {
                     undefined
                   }
                   data-module={item.type}
+                  data-nav-tone="theme"
                   type="button"
                   onClick={() => goToTool(item.type)}
                 >
