@@ -311,10 +311,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.previewSidebar::after {
-  content: none;
-}
-
 .previewMuted {
   color: var(--sidebar-text-muted, var(--text-muted));
 }
