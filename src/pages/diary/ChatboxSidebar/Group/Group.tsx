@@ -192,9 +192,6 @@ const Group: FC<GroupProps> = ({
           Edit
         </AdMenuItem>
       </AdMenu>
-      <span className={styles.groupDecoration} aria-hidden>
-        <AdIcon icon="heart" source="lucide" size={20} />
-      </span>
       <div
         className={styles.listShell}
         id={listId}

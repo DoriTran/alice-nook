@@ -265,7 +265,7 @@
 .menuBtn {
   position: absolute;
   top: 0.4rem;
-  right: 2.35rem;
+  right: 1rem;
   z-index: 3;
   display: flex;
   flex-shrink: 0;
@@ -278,20 +278,6 @@
   color: var(--text-muted);
   cursor: pointer;
   opacity: 0;
-}
-
-.groupDecoration {
-  position: absolute;
-  top: -0.55rem;
-  right: 0.75rem;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: color-mix(in srgb, var(--group-color) 72%, var(--text-soft));
-  filter: drop-shadow(0 1px 0 var(--surface));
-  pointer-events: none;
-  transform: rotate(10deg);
 }
 
 .root[data-ready] .menuBtn {
