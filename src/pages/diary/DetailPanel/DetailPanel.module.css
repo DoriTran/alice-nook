@@ -1,4 +1,16 @@
 .root {
+  --detail-accent: var(--primary);
+  --detail-accent-soft: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  --detail-surface: var(--surface);
+  --detail-surface-soft: color-mix(
+    in srgb,
+    var(--primary) 4%,
+    var(--surface-soft)
+  );
+  --detail-border: color-mix(in srgb, var(--primary) 18%, var(--border-soft));
+  --detail-decoration-opacity: 0.78;
+  --detail-decoration-muted-opacity: 0.56;
+  position: relative;
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
@@ -10,12 +22,25 @@
   padding: 1.1rem 1rem 1rem;
   gap: 0.75rem;
   overflow: hidden;
+  border-color: var(--detail-border);
+  background: var(--detail-surface);
   box-shadow: var(--shadow-sm);
   transition:
     width var(--left-panel-transition),
     padding var(--left-panel-transition),
     margin-left var(--left-panel-transition),
     opacity var(--left-panel-transition);
+}
+
+:global([data-mode='dark']) .root {
+  --detail-accent-soft: color-mix(in srgb, var(--primary) 14%, var(--surface));
+  --detail-surface-soft: color-mix(
+    in srgb,
+    var(--primary) 7%,
+    var(--surface-soft)
+  );
+  --detail-decoration-opacity: 0.48;
+  --detail-decoration-muted-opacity: 0.34;
 }
 
 .root[data-collapsed] {
@@ -29,6 +54,8 @@
 }
 
 .scroll {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -37,4 +64,46 @@
   overflow-y: auto;
   padding-right: 0.15rem;
   padding-bottom: 0.75rem;
+}
+
+.footerDecoration {
+  position: absolute;
+  z-index: 0;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  height: 10.5rem;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--detail-decoration-opacity);
+}
+
+.bottomLeftDecoration,
+.bottomRightDecoration {
+  position: absolute;
+  bottom: 0;
+  object-fit: contain;
+  user-select: none;
+}
+
+.bottomLeftDecoration {
+  left: -0.2rem;
+  width: min(47%, 8rem);
+}
+
+.bottomRightDecoration {
+  right: -0.35rem;
+  width: min(57%, 9.5rem);
+}
+
+@media (max-width: 1400px) {
+  .footerDecoration {
+    height: 9rem;
+  }
+}
+
+@media (max-height: 900px) {
+  .footerDecoration {
+    display: none;
+  }
 }

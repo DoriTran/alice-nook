@@ -1,3 +1,4 @@
+import { Archive, Pin } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 
 import type { ColorId } from '@/packages/color';
@@ -151,12 +152,14 @@ const OverviewTab: FC<OverviewTabProps> = ({
         <div className={styles.progressList}>
           <ProgressBarRow
             label="Pinned"
+            icon={<Pin size={14} strokeWidth={1.8} />}
             count={stats.pinnedCount}
             total={stats.totalMessages}
             onClick={() => setMessageDialog({ kind: 'pinned' })}
           />
           <ProgressBarRow
             label="Archived"
+            icon={<Archive size={14} strokeWidth={1.8} />}
             count={stats.archivedCount}
             total={stats.totalMessages}
             tone="blue"

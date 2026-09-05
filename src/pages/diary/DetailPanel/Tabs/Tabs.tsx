@@ -17,21 +17,23 @@ export type TabsProps = {
 
 const Tabs: FC<TabsProps> = ({ activeTab, onTabChange }) => {
   return (
-    <nav className={styles.root} aria-label="Detail panel sections">
-      {TAB_ITEMS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          role="tab"
-          className={styles.tab}
-          aria-selected={activeTab === tab.id}
-          data-active={activeTab === tab.id || undefined}
-          onClick={() => onTabChange(tab.id)}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </nav>
+    <div className={styles.root}>
+      <nav className={styles.tabList} aria-label="Detail panel sections">
+        {TAB_ITEMS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            className={styles.tab}
+            aria-selected={activeTab === tab.id}
+            data-active={activeTab === tab.id || undefined}
+            onClick={() => onTabChange(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+    </div>
   );
 };
 

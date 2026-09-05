@@ -1,4 +1,5 @@
 import {
+  faBoxArchive,
   faClock,
   faColumns,
   faComment,
@@ -54,6 +55,7 @@ const Header: FC<HeaderProps> = ({
     paletteStrong,
     iconBg,
     pinned,
+    archived,
     groupName,
     totalMessage,
     totalAttachments,
@@ -141,13 +143,20 @@ const Header: FC<HeaderProps> = ({
             </span>
             {pinned ? (
               <span className={styles.overlayPin} aria-label="Pinned">
-                <AdIcon icon={faThumbtack} size={12} />
+                <AdIcon icon={faThumbtack} size={17.5} />
               </span>
             ) : null}
           </div>
 
           <div className={styles.textBlock}>
-            <h1 className={styles.name}>{name}</h1>
+            <h1 className={styles.name}>
+              {archived ? (
+                <span className={styles.titleArchive} aria-label="Archived">
+                  <AdIcon icon={faBoxArchive} size="1em" />
+                </span>
+              ) : null}
+              <span className={styles.nameText}>{name}</span>
+            </h1>
 
             {description ? (
               <p className={styles.description}>{description}</p>

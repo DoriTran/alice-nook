@@ -2,14 +2,18 @@ import type { FC, CSSProperties } from 'react';
 
 import {
   faBell,
+  faBellSlash,
   faMagnifyingGlass,
   faPen,
 } from '@fortawesome/free-solid-svg-icons';
 
+import topLeftDecoration from '@/assets/v2/diary/detail-panel/top left.png';
+import topRightDecoration from '@/assets/v2/diary/detail-panel/top right.png';
 import { AdIcon } from '@/packages/base';
 
 import type { DetailPanelIdentity } from '../detailPanel.utils';
 
+import DetailDecoration from '../components/DetailDecoration';
 import styles from './Header.module.css';
 
 export type HeaderProps = {
@@ -47,6 +51,16 @@ const Header: FC<HeaderProps> = ({
         } as CSSProperties
       }
     >
+      <div className={styles.decorations} aria-hidden>
+        <DetailDecoration
+          src={topLeftDecoration}
+          className={styles.topLeftDecoration}
+        />
+        <DetailDecoration
+          src={topRightDecoration}
+          className={styles.topRightDecoration}
+        />
+      </div>
       <div className={styles.identity}>
         <span
           className={styles.iconWrap}
@@ -81,7 +95,6 @@ const Header: FC<HeaderProps> = ({
         <button
           type="button"
           className={styles.actionBtn}
-          data-active={notificationEnabled || undefined}
           aria-label={
             notificationEnabled
               ? 'Disable notifications'
@@ -90,7 +103,7 @@ const Header: FC<HeaderProps> = ({
           aria-pressed={notificationEnabled}
           onClick={onToggleNotification}
         >
-          <AdIcon icon={faBell} size={14} />
+          <AdIcon icon={notificationEnabled ? faBell : faBellSlash} size={14} />
         </button>
       </div>
     </header>

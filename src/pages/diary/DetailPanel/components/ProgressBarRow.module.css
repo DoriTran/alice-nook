@@ -15,7 +15,8 @@
   position: relative;
   height: 1.5rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--border-soft) 70%, var(--surface));
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface-soft);
   overflow: hidden;
 }
 
@@ -26,12 +27,44 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--primary) 45%, transparent);
+  background: color-mix(in srgb, var(--detail-accent) 16%, transparent);
   transition: width var(--transition-fast);
 }
 
 .root[data-tone='blue'] .fill {
-  background: color-mix(in srgb, #5b8def 45%, transparent);
+  background: color-mix(in srgb, var(--info) 14%, transparent);
+}
+
+.root:hover .track {
+  border-color: color-mix(
+    in srgb,
+    var(--detail-accent) 32%,
+    var(--detail-border)
+  );
+  background: var(--detail-accent-soft);
+}
+
+.root:focus-visible {
+  border-radius: 999px;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.labelGroup,
+.trailing {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.icon,
+.chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 .content {

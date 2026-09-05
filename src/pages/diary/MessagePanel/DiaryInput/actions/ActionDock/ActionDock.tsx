@@ -1,7 +1,7 @@
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import {
   CircleSlash,
-  FilePlusCorner,
+  FolderPlus,
   ImageUp,
   SendHorizontal,
   Sparkles,
@@ -115,7 +115,7 @@ const ActionDock: FC<ActionDockProps> = ({
       <div className={styles.leftActions}>
         <div className={styles.group}>
           <ActionButton
-            icon={FilePlusCorner}
+            icon={FolderPlus}
             label="Upload attachment"
             onClick={() => fileInputRef.current?.click()}
           />

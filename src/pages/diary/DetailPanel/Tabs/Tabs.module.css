@@ -1,9 +1,15 @@
 .root {
-  display: flex;
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   width: 100%;
-  padding-bottom: 0.15rem;
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--detail-border);
+}
+
+.tabList {
+  display: flex;
+  width: 100%;
+  padding-bottom: 0.2rem;
 }
 
 .tab {
@@ -26,7 +32,7 @@
 }
 
 .tab[data-active] {
-  color: var(--primary);
+  color: var(--detail-accent);
   font-weight: var(--font-semibold);
 }
 
@@ -38,5 +44,10 @@
   bottom: 0;
   height: 2px;
   border-radius: 999px;
-  background: var(--primary);
+  background: var(--detail-accent);
+}
+
+.tab:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: -2px;
 }

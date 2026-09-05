@@ -18,6 +18,7 @@ export type MessageHeaderData = {
   paletteStrong: string;
   iconBg: string;
   pinned: boolean;
+  archived: boolean;
   groupName: string | null;
   totalMessage: number;
   totalAttachments: number;
@@ -70,6 +71,7 @@ export const useMessageHeaderData = (
       paletteStrong: palette.strong,
       iconBg: palette.soft,
       pinned: chatbox.pinned,
+      archived: chatbox.archived,
       groupName: group?.name ?? null,
       totalMessage: chatbox.totalMessage,
       totalAttachments,

@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState, type FC } from 'react';
 
+import bottomLeftDecoration from '@/assets/v2/diary/detail-panel/bottom left.png';
+import bottomRightDecoration from '@/assets/v2/diary/detail-panel/bottom right.png';
 import LayoutCard from '@/packages/ui/LayoutCard/LayoutCard';
 import { useDiaryStore } from '@/store';
 
 import type { DetailPanelTab, MediaFilter } from '../types';
 
+import DetailDecoration from './components/DetailDecoration';
 import styles from './DetailPanel.module.css';
 import Header from './Header/Header';
 import MediaTab from './MediaTab/MediaTab';
@@ -102,6 +105,16 @@ const DetailPanel: FC<DetailPanelProps> = ({
             onDeleteChatbox={() => onDeleteChatbox(chatboxId)}
           />
         ) : null}
+      </div>
+      <div className={styles.footerDecoration} aria-hidden>
+        <DetailDecoration
+          src={bottomLeftDecoration}
+          className={styles.bottomLeftDecoration}
+        />
+        <DetailDecoration
+          src={bottomRightDecoration}
+          className={styles.bottomRightDecoration}
+        />
       </div>
     </LayoutCard>
   );

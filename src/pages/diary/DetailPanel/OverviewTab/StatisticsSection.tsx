@@ -1,10 +1,14 @@
 import type { FC } from 'react';
 
+import statisticDivider from '@/assets/v2/diary/detail-panel/statistic below devider.png';
+import totalLeftDecoration from '@/assets/v2/diary/detail-panel/total left.png';
+import totalRightDecoration from '@/assets/v2/diary/detail-panel/total right.png';
 import { AdIcon } from '@/packages/base';
 
 import type { MediaFilter } from '../../types';
 import type { DetailPanelStats } from '../detailPanel.utils';
 
+import DetailDecoration from '../components/DetailDecoration';
 import styles from './OverviewTab.module.css';
 
 export type StatisticsSectionProps = {
@@ -55,12 +59,22 @@ const StatisticsSection: FC<StatisticsSectionProps> = ({
         onClick={() => onOpenMedia('all')}
         aria-label="Open all media"
       >
-        <span className={styles.totalLabel}>Total</span>
-        <span className={styles.totalLine}>
-          <strong>{stats.totalMessages}</strong> Messages
-        </span>
-        <span className={styles.totalLine}>
-          <strong>{stats.totalAttachments}</strong> Attachments
+        <DetailDecoration
+          src={totalLeftDecoration}
+          className={styles.totalLeftDecoration}
+        />
+        <DetailDecoration
+          src={totalRightDecoration}
+          className={styles.totalRightDecoration}
+        />
+        <span className={styles.totalContent}>
+          <span className={styles.totalLabel}>Total</span>
+          <span className={styles.totalLine}>
+            <strong>{stats.totalMessages}</strong> Messages
+          </span>
+          <span className={styles.totalLine}>
+            <strong>{stats.totalAttachments}</strong> Attachments
+          </span>
         </span>
       </button>
 
@@ -91,6 +105,10 @@ const StatisticsSection: FC<StatisticsSectionProps> = ({
       </div>
 
       <div className={styles.updatedAt}>
+        <DetailDecoration
+          src={statisticDivider}
+          className={styles.updatedDivider}
+        />
         <span className={styles.updatedLabel}>Updated at</span>
         <span className={styles.updatedValue}>{stats.updatedLabel}</span>
       </div>

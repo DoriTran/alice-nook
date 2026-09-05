@@ -21,6 +21,16 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.sectionHeader:hover .heading {
+  color: var(--detail-accent);
+}
+
+.sectionHeader:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
 }
 
 .section:not(:first-child) .sectionHeader {
@@ -36,12 +46,17 @@
   font-size: var(--font-sm);
   font-weight: var(--font-bold);
   color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 .sectionCaret {
   display: inline-flex;
   color: var(--text-muted);
   transition: transform var(--transition-fast);
+}
+
+.sectionHeader:hover .sectionCaret {
+  color: var(--detail-accent);
 }
 
 .sectionHeader[data-expanded] .sectionCaret {
@@ -55,6 +70,8 @@
 }
 
 .totalCard {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,10 +79,17 @@
   gap: 0.15rem;
   width: 100%;
   padding: 0.9rem 0.95rem;
-  border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border-soft));
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
-  box-shadow: var(--shadow-sm);
+  min-height: 6.4rem;
+  border: 1px solid var(--detail-border);
+  border-radius: calc(var(--radius-lg) + 0.2rem);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--detail-accent) 9%, transparent),
+      transparent 68%
+    ),
+    var(--detail-surface-soft);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--text) 5%, transparent);
   text-align: center;
   font: inherit;
   color: inherit;
@@ -74,7 +98,51 @@
 }
 
 .totalCard:hover {
-  box-shadow: var(--shadow-md);
+  border-color: color-mix(
+    in srgb,
+    var(--detail-accent) 34%,
+    var(--detail-border)
+  );
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.totalCard:focus-visible,
+.categoryCard:focus-visible,
+.newTagButton:focus-visible,
+.tagRibbon:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.totalContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.totalLeftDecoration,
+.totalRightDecoration {
+  position: absolute;
+  z-index: 0;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  opacity: var(--detail-decoration-muted-opacity);
+}
+
+.totalLeftDecoration {
+  bottom: -0.3rem;
+  left: -0.25rem;
+  width: clamp(4.2rem, 28%, 5.25rem);
+}
+
+.totalRightDecoration {
+  top: 0.55rem;
+  right: 0.55rem;
+  width: clamp(2rem, 13%, 2.65rem);
 }
 
 .totalLabel {
@@ -97,7 +165,7 @@
 .categoryGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .categoryCard {
@@ -106,11 +174,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.2rem;
-  padding: 0.65rem 0.35rem;
+  min-height: 5.35rem;
+  padding: 0.7rem 0.3rem;
   border: 1px solid var(--border-soft);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+  background: var(--detail-surface-soft);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--text) 4%, transparent);
   text-align: center;
   font: inherit;
   color: inherit;
@@ -119,7 +188,8 @@
 }
 
 .categoryCard:hover {
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--text) 7%, transparent);
 }
 
 .categoryIcon {
@@ -148,7 +218,7 @@
 }
 
 .categoryCard[data-tone='green'] {
-  background: color-mix(in srgb, #4caf50 10%, var(--surface));
+  background: color-mix(in srgb, #4caf50 9%, var(--detail-surface));
   border-color: color-mix(in srgb, #4caf50 22%, var(--border-soft));
 }
 
@@ -158,7 +228,7 @@
 }
 
 .categoryCard[data-tone='yellow'] {
-  background: color-mix(in srgb, #f9a825 12%, var(--surface));
+  background: color-mix(in srgb, #f9a825 10%, var(--detail-surface));
   border-color: color-mix(in srgb, #f9a825 24%, var(--border-soft));
 }
 
@@ -168,7 +238,11 @@
 }
 
 .categoryCard[data-tone='purple'] {
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  background: color-mix(
+    in srgb,
+    var(--detail-accent) 10%,
+    var(--detail-surface)
+  );
   border-color: color-mix(in srgb, var(--primary) 24%, var(--border-soft));
 }
 
@@ -178,7 +252,7 @@
 }
 
 .categoryCard[data-tone='blue'] {
-  background: color-mix(in srgb, #5b8def 12%, var(--surface));
+  background: color-mix(in srgb, #5b8def 10%, var(--detail-surface));
   border-color: color-mix(in srgb, #5b8def 24%, var(--border-soft));
 }
 
@@ -193,7 +267,17 @@
   align-items: center;
   gap: 0.15rem;
   text-align: center;
-  padding: 0.35rem 0.25rem;
+  padding: 0.2rem 0.25rem 0.35rem;
+}
+
+.updatedDivider {
+  width: min(8rem, 52%);
+  height: 1.7rem;
+  margin-bottom: -0.15rem;
+  object-fit: contain;
+  opacity: var(--detail-decoration-opacity);
+  pointer-events: none;
+  user-select: none;
 }
 
 .updatedLabel {
@@ -386,4 +470,27 @@
   margin: 0.15rem 0 0;
   font-size: var(--font-2xs);
   color: var(--text-muted);
+}
+
+@media (max-width: 1400px) {
+  .totalLeftDecoration {
+    width: 4.15rem;
+    opacity: var(--detail-decoration-muted-opacity);
+  }
+
+  .categoryGrid {
+    gap: 0.32rem;
+  }
+
+  .categoryCard {
+    min-height: 4.9rem;
+    padding-inline: 0.2rem;
+  }
+}
+
+@media (max-height: 720px) {
+  .totalLeftDecoration,
+  .totalRightDecoration {
+    display: none;
+  }
 }
