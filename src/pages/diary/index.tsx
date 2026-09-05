@@ -9,6 +9,7 @@ import DiaryFormModal, {
 import DetailPanel from './DetailPanel/DetailPanel';
 import styles from './index.module.css';
 import MessagePanel from './MessagePanel/MessagePanel';
+import { useTimerNotificationCoordinator } from './useTimerNotificationCoordinator';
 
 const DEFAULT_CHATBOX_ID = 'cb:study';
 
@@ -20,6 +21,7 @@ const Diary: FC = () => {
   const chatboxes = useDiaryStore('chatboxes');
   const orders = useDiaryStore('orders');
   const deleteChatbox = useDiaryStore('deleteChatbox');
+  const updateChatbox = useDiaryStore('updateChatbox');
   const selectedChatboxId = diaryPage.selectedChatboxId;
   const [detailPanelCollapsed, setDetailPanelCollapsed] = useState(false);
   const [formModal, setFormModal] = useState<DiaryFormModalState>(null);
@@ -33,13 +35,32 @@ const Diary: FC = () => {
   >([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  useTimerNotificationCoordinator(hydrated);
+
+  const handleSelectChatbox = useCallback(
+    (chatboxId: string | null) => {
+      if (chatboxId) {
+        const chatbox = chatboxes[chatboxId];
+        if (chatbox && (chatbox.hasUnread || chatbox.notificationRinging)) {
+          updateChatbox(chatboxId, {
+            hasUnread: false,
+            notificationRinging: false,
+          });
+        }
+      }
+
+      selectChatbox(chatboxId);
+    },
+    [chatboxes, selectChatbox, updateChatbox],
+  );
+
   useEffect(() => {
     if (!hydrated || selectedChatboxId) {
       return;
     }
 
-    selectChatbox(DEFAULT_CHATBOX_ID);
-  }, [hydrated, selectChatbox, selectedChatboxId]);
+    handleSelectChatbox(DEFAULT_CHATBOX_ID);
+  }, [handleSelectChatbox, hydrated, selectedChatboxId]);
 
   useEffect(() => {
     setMessageSearchQuery('');
@@ -104,16 +125,16 @@ const Diary: FC = () => {
         null;
 
       deleteChatbox(chatboxId);
-      selectChatbox(nextId);
+      handleSelectChatbox(nextId);
     },
-    [chatboxes, deleteChatbox, orders.rootOrders, selectChatbox],
+    [chatboxes, deleteChatbox, handleSelectChatbox, orders.rootOrders],
   );
 
   return (
     <div className={styles.rootPage}>
       <ChatboxSidebar
         selectedId={selectedChatboxId ?? undefined}
-        onSelect={selectChatbox}
+        onSelect={handleSelectChatbox}
         onOpenCreate={(entity) => setFormModal({ action: 'create', entity })}
         onEditChatbox={(id) =>
           setFormModal({ action: 'edit', entity: 'chatbox', id })
@@ -131,7 +152,7 @@ const Diary: FC = () => {
           onPendingScrollHandled={handlePendingScrollHandled}
           onNavigateToChatbox={(targetChatboxId, messageId) => {
             setPendingScrollMessageId(messageId);
-            selectChatbox(targetChatboxId);
+            handleSelectChatbox(targetChatboxId);
           }}
           messageSearchQuery={messageSearchQuery}
           timelineSearchActive={timelineSearchActive}

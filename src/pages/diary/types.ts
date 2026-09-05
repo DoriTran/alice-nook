@@ -30,6 +30,7 @@ export type ChatboxData = {
   archived: boolean;
   hasUnread: boolean;
   notificationEnabled: boolean;
+  notificationRinging: boolean;
   totalMessage: number;
   lastMessageAt: string | null;
   createdAt: string;

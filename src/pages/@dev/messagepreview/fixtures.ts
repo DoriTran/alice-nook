@@ -94,6 +94,7 @@ export const PREVIEW_CARD_FIXTURES: PreviewCardFixture[] = [
           startedAt: null,
           targetDate: '2026-07-01T00:00:00.000Z',
           deadlineAt: null,
+          alertedAt: null,
         },
       ],
       createdAt: '2026-01-04T10:24:00.000Z',

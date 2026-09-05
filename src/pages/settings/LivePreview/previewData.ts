@@ -57,6 +57,7 @@ export const PREVIEW_MESSAGES: Message[] = [
         startedAt: null,
         targetDate: targetIso,
         deadlineAt: null,
+        alertedAt: null,
       },
     ]),
     variant: 'text',

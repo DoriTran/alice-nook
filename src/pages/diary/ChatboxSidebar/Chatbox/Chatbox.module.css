@@ -6,25 +6,35 @@
   border-radius: var(--radius-md);
   --chatbox-card-selected-bg: color-mix(
     in srgb,
-    var(--chatbox-main) 8%,
+    var(--chatbox-main) 11%,
     var(--surface)
   );
   --chatbox-card-selected-border: color-mix(
     in srgb,
-    var(--chatbox-strong) 18%,
+    var(--chatbox-strong) 28%,
     var(--border-soft)
   );
+  --chatbox-card-underlay: color-mix(
+    in srgb,
+    var(--chatbox-main) 14%,
+    transparent
+  );
+  --chatbox-active-icon-color: var(--chatbox-strong);
+  --chatbox-active-title-color: var(--chatbox-active-icon-color);
 
+  margin: 0 2px 3px 0;
   border: 1px solid var(--chatbox-card-border, var(--border-soft));
   background: var(--chatbox-card-bg, var(--surface));
   box-shadow: none;
   transition:
+    transform 180ms ease,
     box-shadow 180ms ease,
     border-color 180ms ease,
     background-color 180ms ease;
 }
 
 .root:hover {
+  transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--border) 66%, var(--chatbox-soft));
   background: var(--chatbox-card-hover-bg, var(--surface-soft));
   box-shadow: 0 4px 12px rgb(86 58 34 / 7%);
@@ -39,16 +49,18 @@
 .root[data-active] {
   background: var(--chatbox-card-selected-bg);
   border-color: var(--chatbox-card-selected-border);
-  box-shadow: none;
+  box-shadow: 2px 3px 0 var(--chatbox-card-underlay);
 }
 
 .root[data-active]:hover {
-  background: color-mix(in srgb, var(--chatbox-main) 9%, var(--surface));
+  transform: none;
+  background: color-mix(in srgb, var(--chatbox-main) 12%, var(--surface));
   border-color: color-mix(
     in srgb,
-    var(--chatbox-strong) 20%,
+    var(--chatbox-strong) 30%,
     var(--border-soft)
   );
+  box-shadow: 2px 3px 0 var(--chatbox-card-underlay);
 }
 
 .selectBtn {
@@ -151,56 +163,62 @@
 
 .root[data-active] .iconWrap {
   background: color-mix(in srgb, var(--chatbox-main) 78%, var(--chatbox-soft));
-  color: var(--chatbox-strong);
+  color: var(--chatbox-active-icon-color);
 }
 
-:global([data-mode='dark']) .root[data-active] .iconWrap {
-  color: var(--chatbox-soft);
+:global([data-mode='dark']) .root[data-active] {
+  --chatbox-active-icon-color: var(--chatbox-soft);
+  --chatbox-active-title-color: var(--chatbox-main);
 }
 
 .iconWrap svg {
   flex-shrink: 0;
 }
 
-.overlayPin,
-.overlayArchive {
+.cardPin {
   position: absolute;
+  top: -4px;
+  left: -2px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 0.95rem;
-  height: 0.95rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  background: var(--surface);
-  color: var(--text-muted);
-}
-
-.overlayPin {
-  top: -0.2rem;
-  right: -0.2rem;
   color: var(--primary);
+  filter: drop-shadow(0 1px 0 var(--surface));
+  pointer-events: none;
+  transform: rotate(-45deg);
 }
 
-.overlayArchive {
-  right: -0.2rem;
-  bottom: -0.2rem;
+.titleArchive {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
 }
 
 .textColumn {
   display: flex;
   flex: 1;
   flex-direction: column;
+  align-self: center;
   gap: 0.15rem;
   min-width: 0;
 }
 
 .name {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   margin: 0;
-  font-size: var(--font-sm);
+  font-size: calc(var(--font-sm) + 1px);
   font-weight: var(--font-semibold);
   line-height: 1.3;
   color: var(--chatbox-text-primary, var(--text));
+  min-width: 0;
+}
+
+.nameText {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -209,11 +227,12 @@
 
 .root[data-active] .name {
   font-weight: var(--font-bold);
+  color: var(--chatbox-active-title-color);
 }
 
 .preview {
   margin: 0;
-  font-size: var(--font-2xs);
+  font-size: calc(var(--font-2xs) + 1px);
   line-height: 1.2;
   color: var(--chatbox-text-secondary, var(--text-muted));
   overflow: hidden;
@@ -229,42 +248,70 @@
   white-space: nowrap;
 }
 
-.messageBadge {
+.statusIcon {
+  --status-color: #b39a8e;
+  --status-soft: #f6efea;
+  --status-ring: var(--status-soft);
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
-  padding: 0.075rem 0.15rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, #6b4a3a 88%, var(--text));
-  color: #fff9f0;
-  font-size: var(--font-xs);
-  font-weight: var(--font-semibold);
-  line-height: 1.2;
+  width: 18px;
+  height: 18px;
+  color: var(--status-color);
 }
 
-.messageBadgeUnread {
-  background: color-mix(in srgb, #f2a7a7 75%, #e57373);
-  color: color-mix(in srgb, #6b4a3a 88%, var(--text));
+.statusIcon::before {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--status-soft) 0%,
+    color-mix(in srgb, var(--status-ring) 68%, transparent) 44%,
+    transparent 74%
+  );
+  content: '';
+  filter: blur(2px);
+  pointer-events: none;
 }
 
-.bell {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  line-height: 0;
-  color: color-mix(in srgb, #fff9f0 85%, var(--text-soft));
+.statusIcon[data-status='notification-on'] {
+  --status-color: #e97878;
+  --status-soft: #fde9e7;
 }
 
-.messageBadgeUnread .bell {
-  color: color-mix(in srgb, #6b4a3a 70%, var(--text-muted));
+.statusIcon[data-status='unread'] {
+  --status-color: #9a82d8;
+  --status-soft: #eee9fa;
+}
+
+:global([data-mode='dark']) .statusIcon {
+  --status-color: #c7b2a7;
+  --status-soft: #4a3d39;
+  --status-ring: #6a5550;
+}
+
+:global([data-mode='dark']) .statusIcon[data-status='notification-on'] {
+  --status-color: #f29a9a;
+  --status-soft: #5a3538;
+  --status-ring: #7a4a4e;
+}
+
+:global([data-mode='dark']) .statusIcon[data-status='unread'] {
+  --status-color: #b9a4f4;
+  --status-soft: #433b58;
+  --status-ring: #5c5075;
+}
+
+.statusIcon svg {
+  position: relative;
 }
 
 .tagsContainer {
   position: relative;
   min-width: 0;
   margin-top: 0.05rem;
-  padding-block: 2px;
   padding-left: calc(2.35rem + 0.55rem);
   overflow: hidden;
 }
@@ -334,6 +381,14 @@
   font-weight: var(--font-semibold);
   line-height: 1.3;
   color: color-mix(in srgb, var(--accent-purple) 70%, var(--text));
+}
+
+.tooltipMessageCount {
+  margin: 0.05rem 0 0;
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  font-weight: var(--font-normal);
+  line-height: 1.35;
 }
 
 .tooltipDescription {

@@ -32,6 +32,7 @@ export const createDefaultTimerDecorator = (): TimerDecorator => ({
   startedAt: null,
   targetDate: defaultTimerTargetDate(),
   deadlineAt: null,
+  alertedAt: null,
 });
 
 export const isTimerDecorator = (
@@ -194,6 +195,7 @@ export const playTimerDecorator = (
       running: true,
       pause: false,
       startedAt: new Date(now - elapsed).toISOString(),
+      alertedAt: null,
     };
   }
 
@@ -203,6 +205,7 @@ export const playTimerDecorator = (
       running: true,
       pause: false,
       deadlineAt: decoration.targetDate,
+      alertedAt: null,
     };
   }
 
@@ -211,6 +214,7 @@ export const playTimerDecorator = (
     running: true,
     pause: false,
     deadlineAt: new Date(now + decoration.durationMs).toISOString(),
+    alertedAt: null,
   };
 };
 
@@ -239,6 +243,7 @@ export const resetTimerDecorator = (
       pause: false,
       durationMs: 0,
       startedAt: null,
+      alertedAt: null,
     };
   }
 
@@ -252,6 +257,7 @@ export const resetTimerDecorator = (
         new Date(decoration.targetDate).getTime() - Date.now(),
       ),
       deadlineAt: null,
+      alertedAt: null,
     };
   }
 
@@ -261,6 +267,7 @@ export const resetTimerDecorator = (
     pause: false,
     durationMs: decoration.initialDurationMs ?? DEFAULT_TIMER_DURATION_MS,
     deadlineAt: null,
+    alertedAt: null,
   };
 };
 

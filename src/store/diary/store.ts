@@ -19,6 +19,7 @@ import type {
   Message,
   MessageUpdateData,
   Tag,
+  TimerDecorator,
 } from './type';
 
 import { idbStorage, nowIso } from '../helper';
@@ -32,6 +33,55 @@ import { diaryDummyState, diaryInitialState } from './constants';
 
 const ensureUnique = <T>(items: T[]) => {
   return Array.from(new Set(items));
+};
+
+const normalizeNotificationState = <T extends DiaryStore & DiaryStoreActions>(
+  state: T,
+): T => {
+  const now = Date.now();
+  const chatboxes = Object.fromEntries(
+    Object.entries(state.chatboxes).map(([id, chatbox]) => [
+      id,
+      {
+        ...chatbox,
+        notificationRinging: chatbox.notificationRinging ?? false,
+      },
+    ]),
+  );
+  const messages = Object.fromEntries(
+    Object.entries(state.messages).map(([id, message]) => [
+      id,
+      {
+        ...message,
+        decorators: message.decorators.map((decorator) => {
+          if (decorator.type !== 'timer') {
+            return decorator;
+          }
+
+          const timer = decorator as Omit<TimerDecorator, 'alertedAt'> & {
+            alertedAt?: string | null;
+          };
+          if (timer.alertedAt !== undefined) {
+            return decorator;
+          }
+
+          const deadline = timer.deadlineAt
+            ? new Date(timer.deadlineAt).getTime()
+            : Number.NaN;
+
+          return {
+            ...timer,
+            alertedAt:
+              Number.isFinite(deadline) && deadline <= now
+                ? timer.deadlineAt
+                : null,
+          } as TimerDecorator;
+        }),
+      },
+    ]),
+  );
+
+  return { ...state, chatboxes, messages } as T;
 };
 
 const recalculateChatboxMetadata = (
@@ -234,6 +284,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           archived: false,
           hasUnread: false,
           notificationEnabled: false,
+          notificationRinging: false,
           tags: data.tags ?? [],
           totalMessage: 0,
           lastMessageId: null,
@@ -948,8 +999,10 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           },
         };
 
-        return migrateDiaryRichTextState(
-          migrateDiaryIconState(migrateDiaryPersistedState(merged)),
+        return normalizeNotificationState(
+          migrateDiaryRichTextState(
+            migrateDiaryIconState(migrateDiaryPersistedState(merged)),
+          ),
         );
       },
     },

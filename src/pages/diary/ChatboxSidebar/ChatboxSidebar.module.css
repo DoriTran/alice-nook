@@ -47,10 +47,10 @@
   flex-direction: column;
   gap: 0.9rem;
   min-height: 0;
-  margin-top: 0.15rem;
   overflow-y: auto;
   scrollbar-gutter: stable only-if-needed;
   padding: 0;
+  padding-top: 5px;
 }
 
 .decorativeFooter {

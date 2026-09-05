@@ -25,6 +25,8 @@
   align-items: flex-start;
   gap: 0.3rem;
   min-width: 0;
+  padding-block: 2px;
+  padding-inline: 2px;
   overflow: hidden;
   line-height: 0;
 }

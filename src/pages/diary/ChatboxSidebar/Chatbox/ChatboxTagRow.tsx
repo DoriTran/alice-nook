@@ -72,13 +72,14 @@ const ChatboxTagRow: FC<ChatboxTagRowProps> = ({
     const container = tagsContainerRef.current;
     const measureRow = tagMeasureRef.current;
     const overflowMeasure = overflowMeasureRef.current;
+    const visibleRow = container?.querySelector<HTMLElement>(`.${styles.tags}`);
 
-    if (!container || !measureRow || !overflowMeasure) {
+    if (!container || !measureRow || !overflowMeasure || !visibleRow) {
       return;
     }
 
     const measure = () => {
-      const availableWidth = getContentBoxWidth(container);
+      const availableWidth = getContentBoxWidth(visibleRow);
 
       if (availableWidth <= 0) {
         return;

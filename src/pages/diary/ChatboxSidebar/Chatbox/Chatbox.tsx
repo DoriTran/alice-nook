@@ -1,15 +1,15 @@
 ﻿import {
-  faBell,
   faBoxArchive,
   faEllipsis,
   faPen,
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
-import clsx from 'clsx';
+import { BellOff, BellRing, EyeClosed } from 'lucide-react';
 import { useState, type CSSProperties, type FC } from 'react';
 
 import { AdIcon, AdMenu, AdMenuItem, AdTooltip } from '@/packages/base';
 import LayoutCard from '@/packages/ui/LayoutCard/LayoutCard';
+import { useDiaryStore } from '@/store';
 
 import type { ChatboxData } from '../../types';
 
@@ -47,18 +47,40 @@ const Chatbox: FC<ChatboxProps> = ({
     archived,
     hasUnread,
     notificationEnabled,
+    notificationRinging,
     totalMessage,
     lastMessageAt,
   } = data;
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const updateChatbox = useDiaryStore('updateChatbox');
   const formattedTime = formatChatboxTime(lastMessageAt);
+  const statusIcon = hasUnread
+    ? EyeClosed
+    : !notificationEnabled
+      ? BellOff
+      : notificationRinging
+        ? BellRing
+        : null;
+  const statusLabel = hasUnread
+    ? 'Unread'
+    : !notificationEnabled
+      ? 'Notifications off'
+      : notificationRinging
+        ? 'Notification ringing'
+        : null;
 
   const tooltipLabel = (
     <div className={styles.tooltipContent}>
       <p className={styles.tooltipName}>{name}</p>
       {description ? (
         <p className={styles.tooltipDescription}>{description}</p>
+      ) : null}
+      {totalMessage > 0 ? (
+        <p className={styles.tooltipMessageCount}>
+          {formatTotalMessages(totalMessage)}{' '}
+          {totalMessage === 1 ? 'message' : 'messages'}
+        </p>
       ) : null}
     </div>
   );
@@ -89,6 +111,12 @@ const Chatbox: FC<ChatboxProps> = ({
         }
         data-active={selected || undefined}
       >
+        {pinned ? (
+          <span className={styles.cardPin} aria-label="Pinned">
+            <AdIcon icon={faThumbtack} size={14} />
+          </span>
+        ) : null}
+
         <button
           type="button"
           className={styles.selectBtn}
@@ -101,20 +129,17 @@ const Chatbox: FC<ChatboxProps> = ({
                 <span className={styles.iconWrap} aria-hidden>
                   <AdIcon icon={icon} source="lucide" size={16} />
                 </span>
-                {pinned ? (
-                  <span className={styles.overlayPin} aria-label="Pinned">
-                    <AdIcon icon={faThumbtack} size={8} />
-                  </span>
-                ) : null}
-                {archived ? (
-                  <span className={styles.overlayArchive} aria-label="Archived">
-                    <AdIcon icon={faBoxArchive} size={8} />
-                  </span>
-                ) : null}
               </div>
 
               <div className={styles.textColumn}>
-                <h3 className={styles.name}>{name}</h3>
+                <h3 className={styles.name}>
+                  {archived ? (
+                    <span className={styles.titleArchive} aria-label="Archived">
+                      <AdIcon icon={faBoxArchive} size={11} />
+                    </span>
+                  ) : null}
+                  <span className={styles.nameText}>{name}</span>
+                </h3>
                 {preview ? <p className={styles.preview}>{preview}</p> : null}
               </div>
             </div>
@@ -128,26 +153,29 @@ const Chatbox: FC<ChatboxProps> = ({
                   {formattedTime}
                 </time>
               ) : null}
-              {totalMessage > 0 ? (
+              {statusIcon && statusLabel ? (
                 <span
-                  className={clsx(
-                    styles.messageBadge,
-                    hasUnread && styles.messageBadgeUnread,
-                  )}
-                  aria-label={hasUnread ? 'Unread messages' : undefined}
+                  className={styles.statusIcon}
+                  data-status={
+                    hasUnread
+                      ? 'unread'
+                      : notificationRinging
+                        ? 'notification-on'
+                        : 'notification-off'
+                  }
+                  aria-label={statusLabel}
                 >
-                  {notificationEnabled ? (
-                    <span className={styles.bell} aria-hidden>
-                      <AdIcon icon={faBell} size={7} />
-                    </span>
-                  ) : null}
-                  {formatTotalMessages(totalMessage)}
+                  <AdIcon icon={statusIcon} source="lucide" size={13} />
                 </span>
               ) : null}
             </div>
           </div>
 
-          <ChatboxTagRow tags={tags} className={styles.tagsContainer} />
+          <ChatboxTagRow
+            tags={tags}
+            chipSize={18}
+            className={styles.tagsContainer}
+          />
         </button>
 
         <AdMenu
@@ -181,6 +209,17 @@ const Chatbox: FC<ChatboxProps> = ({
           >
             <AdIcon icon={faPen} size={12} />
             Edit
+          </AdMenuItem>
+          <AdMenuItem
+            disabled={hasUnread}
+            onClick={(event) => {
+              event.stopPropagation();
+              setMenuOpen(false);
+              updateChatbox(id, { hasUnread: true });
+            }}
+          >
+            <AdIcon icon={EyeClosed} source="lucide" size={12} />
+            Unread
           </AdMenuItem>
         </AdMenu>
       </LayoutCard>

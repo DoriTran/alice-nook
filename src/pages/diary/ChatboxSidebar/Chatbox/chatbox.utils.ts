@@ -307,6 +307,7 @@ export const mapChatboxData = (
     archived: chatbox.archived,
     hasUnread: chatbox.hasUnread,
     notificationEnabled: chatbox.notificationEnabled,
+    notificationRinging: chatbox.notificationRinging,
     totalMessage: chatbox.totalMessage,
     lastMessageAt: chatbox.lastMessageAt,
     createdAt: chatbox.createdAt,

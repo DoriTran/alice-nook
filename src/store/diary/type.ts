@@ -138,6 +138,7 @@ export type Chatbox = {
   archived: boolean;
   hasUnread: boolean;
   notificationEnabled: boolean;
+  notificationRinging: boolean;
   tags: ChatboxTagStatistic[];
   totalMessage: number;
   lastMessageId: string | null;
@@ -160,7 +161,9 @@ export type ChatboxUpdateData = Partial<
     | 'colorId'
     | 'pinned'
     | 'archived'
+    | 'hasUnread'
     | 'notificationEnabled'
+    | 'notificationRinging'
   >
 > & {
   tags?: ChatboxTagStatistic[];
@@ -295,6 +298,8 @@ export type TimerDecorator = {
   targetDate: string;
   /** ISO deadline when timer/datetime mode is running */
   deadlineAt: string | null;
+  /** ISO timestamp recording that the current deadline already raised a ring. */
+  alertedAt: string | null;
 };
 
 // #endregion
