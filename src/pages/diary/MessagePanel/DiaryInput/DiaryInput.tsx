@@ -63,6 +63,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     send,
     insertReactionIcon,
     canSend,
+    canClear,
   } = useComposerDraft(chatboxId, {
     replyToMessageId,
     onReplyClear: onCancelReply,
@@ -179,6 +180,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
           variant={draft.variant}
           decorators={draft.decorators}
           canSend={canSend}
+          canClear={canClear}
           editing={isEditing}
           onClear={clearAll}
           onAddFiles={handleAddFiles}

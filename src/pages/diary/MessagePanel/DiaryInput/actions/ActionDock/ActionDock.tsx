@@ -1,20 +1,21 @@
+import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import {
-  faCheck,
-  faCheckSquare,
-  faImage,
-  faPaperPlane,
-  faPlus,
-  faStopwatch,
-  faTicket,
-  faTrashCan,
-  faVideo,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
+  CircleSlash,
+  FilePlusCorner,
+  ImageUp,
+  SendHorizontal,
+  Sparkles,
+  SquareCheckBig,
+  Tickets,
+  TimerReset,
+  Video,
+  type LucideIcon,
+} from 'lucide-react';
 import { useRef, type FC, type ReactNode } from 'react';
 
 import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
-import { AdIcon } from '@/packages/base';
+import { AdIcon, AdTooltip } from '@/packages/base';
 
 import styles from './ActionDock.module.css';
 
@@ -22,6 +23,7 @@ export type ActionDockProps = {
   variant: MessageVariant;
   decorators: MessageDecorator[];
   canSend: boolean;
+  canClear: boolean;
   editing?: boolean;
   onClear: () => void;
   onAddFiles: (
@@ -36,10 +38,61 @@ export type ActionDockProps = {
   onConfirmEdit?: () => void;
 };
 
+type ActionButtonProps = {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  activeClassName?: string;
+  disabled?: boolean;
+  send?: boolean;
+  onClick: () => void;
+};
+
+const ActionButton: FC<ActionButtonProps> = ({
+  icon,
+  label,
+  active = false,
+  activeClassName = '',
+  disabled = false,
+  send = false,
+  onClick,
+}) => (
+  <AdTooltip
+    label={label}
+    position="top"
+    withArrow={false}
+    classNames={{ tooltip: styles.tooltip }}
+  >
+    <button
+      type="button"
+      className={`${styles.btn} ${active ? activeClassName : ''} ${send ? styles.sendBtn : ''}`}
+      aria-label={label}
+      aria-pressed={active || undefined}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <AdIcon icon={icon} source="lucide" size={16} />
+    </button>
+  </AdTooltip>
+);
+
+type RichTooltipProps = {
+  name: string;
+  description: string;
+};
+
+const RichTooltip: FC<RichTooltipProps> = ({ name, description }) => (
+  <div className={styles.tooltipContent}>
+    <span className={styles.tooltipName}>{name}</span>
+    <span className={styles.tooltipDescription}>{description}</span>
+  </div>
+);
+
 const ActionDock: FC<ActionDockProps> = ({
   variant,
   decorators,
   canSend,
+  canClear,
   editing = false,
   onClear,
   onAddFiles,
@@ -59,128 +112,183 @@ const ActionDock: FC<ActionDockProps> = ({
 
   return (
     <div className={styles.root}>
-      <div className={styles.group}>
-        <button
-          type="button"
-          className={styles.btn}
-          aria-label="Clear all"
-          onClick={onClear}
-        >
-          <AdIcon icon={faTrashCan} size={14} />
-        </button>
-      </div>
-
-      <span className={styles.divider} aria-hidden />
-
-      <div className={styles.group}>
-        <button
-          type="button"
-          className={styles.btn}
-          aria-label="Add file"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <AdIcon icon={faPlus} size={14} />
-        </button>
-        <button
-          type="button"
-          className={styles.btn}
-          aria-label="Add image"
-          onClick={() => imageInputRef.current?.click()}
-        >
-          <AdIcon icon={faImage} size={14} />
-        </button>
-        <button
-          type="button"
-          className={styles.btn}
-          aria-label="Add video"
-          onClick={() => videoInputRef.current?.click()}
-        >
-          <AdIcon icon={faVideo} size={14} />
-        </button>
-      </div>
-
-      <span className={styles.divider} aria-hidden />
-
-      <div className={styles.group}>
-        <button
-          type="button"
-          className={`${styles.btn} ${hasTicket ? styles.btnActiveTicket : ''}`}
-          aria-label="Ticket decoration"
-          aria-pressed={hasTicket}
-          onClick={() => onToggleDecorator('ticket')}
-        >
-          <AdIcon icon={faTicket} size={14} />
-        </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${hasTimer ? styles.btnActiveTimer : ''}`}
-          aria-label="Timer decorator"
-          aria-pressed={hasTimer}
-          onClick={() => onToggleDecorator('timer')}
-        >
-          <AdIcon icon={faStopwatch} size={14} />
-        </button>
-      </div>
-
-      <span className={styles.divider} aria-hidden />
-
-      <div className={styles.group}>
-        <button
-          type="button"
-          className={`${styles.btn} ${variant === 'todo' ? styles.btnActiveTodo : ''}`}
-          aria-label="Todo type"
-          aria-pressed={variant === 'todo'}
-          onClick={() => onVariantSwitch('todo')}
-        >
-          <AdIcon icon={faCheckSquare} size={14} />
-        </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${variant === 'ai' ? styles.btnActiveAi : ''}`}
-          aria-label="AI type"
-          aria-pressed={variant === 'ai'}
-          onClick={() => onVariantSwitch('ai')}
-        >
-          <span className={styles.aiLabel}>AI</span>
-        </button>
-      </div>
-
-      <span className={styles.divider} aria-hidden />
-
-      <div className={styles.group}>{reactionPicker}</div>
-
-      {editing ? (
-        <div className={styles.editActions}>
-          <span className={styles.editLabel}>Edit Message</span>
-          <button
-            type="button"
-            className={styles.btn}
-            aria-label="Cancel edit"
-            onClick={onCancelEdit}
-          >
-            <AdIcon icon={faXmark} size={14} />
-          </button>
-          <button
-            type="button"
-            className={`${styles.btn} ${styles.sendBtn}`}
-            aria-label="Confirm edit"
-            disabled={!canSend}
-            onClick={onConfirmEdit}
-          >
-            <AdIcon icon={faCheck} size={14} />
-          </button>
+      <div className={styles.leftActions}>
+        <div className={styles.group}>
+          <ActionButton
+            icon={FilePlusCorner}
+            label="Upload attachment"
+            onClick={() => fileInputRef.current?.click()}
+          />
+          <ActionButton
+            icon={ImageUp}
+            label="Upload image"
+            onClick={() => imageInputRef.current?.click()}
+          />
+          <ActionButton
+            icon={Video}
+            label="Upload video"
+            onClick={() => videoInputRef.current?.click()}
+          />
         </div>
-      ) : (
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.sendBtn}`}
-          aria-label="Send message"
-          disabled={!canSend}
-          onClick={onSend}
-        >
-          <AdIcon icon={faPaperPlane} size={14} />
-        </button>
-      )}
+
+        <span className={styles.divider} aria-hidden />
+
+        <div className={styles.group}>
+          <AdTooltip
+            label={
+              <RichTooltip
+                name="Ticket"
+                description="Turn your message into a ticket."
+              />
+            }
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${hasTicket ? styles.btnActive : ''}`}
+              aria-label="Ticket charm"
+              aria-pressed={hasTicket}
+              onClick={() => onToggleDecorator('ticket')}
+            >
+              <AdIcon icon={Tickets} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
+          <AdTooltip
+            label={
+              <RichTooltip
+                name="Timer"
+                description="Add timing controls to your message."
+              />
+            }
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${hasTimer ? styles.btnActive : ''}`}
+              aria-label="Timer charm"
+              aria-pressed={hasTimer}
+              onClick={() => onToggleDecorator('timer')}
+            >
+              <AdIcon icon={TimerReset} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
+        </div>
+
+        <span className={styles.divider} aria-hidden />
+
+        <div className={styles.group}>
+          <AdTooltip
+            label={
+              <RichTooltip
+                name="Todo"
+                description="Write your message as a checklist."
+              />
+            }
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${variant === 'todo' ? styles.btnActive : ''}`}
+              aria-label="Todo variant"
+              aria-pressed={variant === 'todo'}
+              onClick={() => onVariantSwitch('todo')}
+            >
+              <AdIcon icon={SquareCheckBig} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
+          <AdTooltip
+            label={
+              <RichTooltip
+                name="AI"
+                description="Ask AI to help write your message."
+              />
+            }
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${variant === 'ai' ? styles.btnActive : ''}`}
+              aria-label="AI variant"
+              aria-pressed={variant === 'ai'}
+              onClick={() => onVariantSwitch('ai')}
+            >
+              <AdIcon icon={Sparkles} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
+        </div>
+      </div>
+
+      <div className={styles.rightActions}>
+        <ActionButton
+          icon={CircleSlash}
+          label="Clear message"
+          disabled={!canClear}
+          onClick={onClear}
+        />
+
+        <span className={styles.divider} aria-hidden />
+
+        <div className={styles.group}>{reactionPicker}</div>
+
+        <span className={styles.divider} aria-hidden />
+
+        {editing ? (
+          <div className={styles.editActions}>
+            <span className={styles.editLabel}>Edit Message</span>
+            <AdTooltip
+              label="Cancel edit"
+              position="top"
+              withArrow={false}
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={styles.btn}
+                aria-label="Cancel edit"
+                onClick={onCancelEdit}
+              >
+                <AdIcon icon={faXmark} size={14} />
+              </button>
+            </AdTooltip>
+            <AdTooltip
+              label="Save changes"
+              position="top"
+              withArrow={false}
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.sendBtn}`}
+                aria-label="Save changes"
+                disabled={!canSend}
+                onClick={onConfirmEdit}
+              >
+                <AdIcon icon={faCheck} size={14} />
+              </button>
+            </AdTooltip>
+          </div>
+        ) : (
+          <ActionButton
+            icon={SendHorizontal}
+            label="Send message"
+            disabled={!canSend}
+            send
+            onClick={onSend}
+          />
+        )}
+      </div>
 
       <input
         ref={fileInputRef}

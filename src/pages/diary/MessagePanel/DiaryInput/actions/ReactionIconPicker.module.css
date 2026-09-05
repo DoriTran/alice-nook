@@ -90,5 +90,20 @@
 
 .triggerBtn:hover {
   color: var(--text);
-  background: color-mix(in srgb, var(--diary) 6%, var(--surface));
+  background: var(--field-bg-hover-strong);
+}
+
+.triggerBtn:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.tooltip {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-soft);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--font-xs);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }

@@ -511,6 +511,7 @@ export const useComposerDraft = (
     removeTodoRowAttachment,
     send,
     insertReactionIcon,
+    canClear: hasDraftContent(draft),
     canSend: hasDraftContent(draft) && !sending,
   };
 };

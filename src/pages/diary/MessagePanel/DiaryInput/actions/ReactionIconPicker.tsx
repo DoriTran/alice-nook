@@ -1,7 +1,7 @@
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { Heart } from 'lucide-react';
 import { useState, type FC } from 'react';
 
-import { AdEmojiPicker, AdIcon } from '@/packages/base';
+import { AdEmojiPicker, AdIcon, AdTooltip } from '@/packages/base';
 
 import styles from './ReactionIconPicker.module.css';
 
@@ -18,14 +18,21 @@ const ReactionIconPicker: FC<ReactionIconPickerProps> = ({ onSelect }) => {
       onChange={setOpened}
       onSelect={onSelect}
       anchor={
-        <button
-          type="button"
-          className={styles.triggerBtn}
-          aria-label="Insert emoji"
-          onClick={() => setOpened((current) => !current)}
+        <AdTooltip
+          label="Insert emoji"
+          position="top"
+          withArrow={false}
+          classNames={{ tooltip: styles.tooltip }}
         >
-          <AdIcon icon={faHeart} size={14} />
-        </button>
+          <button
+            type="button"
+            className={styles.triggerBtn}
+            aria-label="Insert emoji"
+            onClick={() => setOpened((current) => !current)}
+          >
+            <AdIcon icon={Heart} source="lucide" size={16} />
+          </button>
+        </AdTooltip>
       }
     />
   );
