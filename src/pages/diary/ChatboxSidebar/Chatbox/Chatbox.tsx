@@ -89,8 +89,6 @@ const Chatbox: FC<ChatboxProps> = ({
         }
         data-active={selected || undefined}
       >
-        {selected ? <span className={styles.accentBar} aria-hidden /> : null}
-
         <button
           type="button"
           className={styles.selectBtn}

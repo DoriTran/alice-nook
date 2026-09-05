@@ -4,61 +4,51 @@
   align-items: stretch;
   overflow: visible;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-soft);
-  background: var(--surface);
+  --chatbox-card-selected-bg: color-mix(
+    in srgb,
+    var(--chatbox-main) 8%,
+    var(--surface)
+  );
+  --chatbox-card-selected-border: color-mix(
+    in srgb,
+    var(--chatbox-strong) 18%,
+    var(--border-soft)
+  );
+
+  border: 1px solid var(--chatbox-card-border, var(--border-soft));
+  background: var(--chatbox-card-bg, var(--surface));
   box-shadow: none;
   transition:
-    transform 180ms ease,
     box-shadow 180ms ease,
     border-color 180ms ease,
     background-color 180ms ease;
 }
 
 .root:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--border) 75%, var(--surface));
-  box-shadow:
-    0 2px 8px rgb(86 58 34 / 4%),
-    0 10px 24px rgb(86 58 34 / 10%);
+  border-color: color-mix(in srgb, var(--border) 66%, var(--chatbox-soft));
+  background: var(--chatbox-card-hover-bg, var(--surface-soft));
+  box-shadow: 0 4px 12px rgb(86 58 34 / 7%);
 }
 
 .root:hover .menuBtn,
 .menuBtn[aria-expanded='true'] {
   opacity: 1;
-  background: color-mix(
-    in srgb,
-    var(--chatbox-soft) 10%,
-    var(--surface-muted)
-  );
+  background: color-mix(in srgb, var(--chatbox-soft) 10%, var(--surface-muted));
 }
 
 .root[data-active] {
-  background: var(--chatbox-soft);
-  border-color: color-mix(
-    in srgb,
-    var(--chatbox-strong) 28%,
-    var(--border-soft)
-  );
+  background: var(--chatbox-card-selected-bg);
+  border-color: var(--chatbox-card-selected-border);
   box-shadow: none;
 }
 
 .root[data-active]:hover {
-  background: var(--chatbox-soft);
+  background: color-mix(in srgb, var(--chatbox-main) 9%, var(--surface));
   border-color: color-mix(
     in srgb,
-    var(--chatbox-strong) 32%,
+    var(--chatbox-strong) 20%,
     var(--border-soft)
   );
-}
-
-.accentBar {
-  position: absolute;
-  top: 0.45rem;
-  bottom: 0.45rem;
-  left: 0;
-  width: 4px;
-  border-radius: 0 4px 4px 0;
-  background: var(--chatbox-strong);
 }
 
 .selectBtn {
@@ -106,21 +96,13 @@
 }
 
 .menuBtn:hover {
-  background: color-mix(
-    in srgb,
-    var(--chatbox-soft) 16%,
-    var(--surface-muted)
-  );
+  background: color-mix(in srgb, var(--chatbox-soft) 16%, var(--surface-muted));
 }
 
 .menuBtn:focus-visible {
   outline: none;
   opacity: 1;
-  background: color-mix(
-    in srgb,
-    var(--chatbox-soft) 10%,
-    var(--surface-muted)
-  );
+  background: color-mix(in srgb, var(--chatbox-soft) 10%, var(--surface-muted));
   box-shadow: 0 0 0 2px
     color-mix(in srgb, var(--chatbox-strong) 40%, var(--primary));
 }
@@ -160,7 +142,7 @@
   width: 2.35rem;
   height: 2.35rem;
   border-radius: var(--radius-sm);
-  background: var(--chatbox-soft);
+  background: color-mix(in srgb, var(--chatbox-soft) 76%, var(--surface));
   color: var(--chatbox-strong);
   transition:
     background-color 180ms ease,
@@ -168,7 +150,8 @@
 }
 
 .root[data-active] .iconWrap {
-  background: var(--chatbox-main);
+  background: color-mix(in srgb, var(--chatbox-main) 78%, var(--chatbox-soft));
+  color: var(--chatbox-strong);
 }
 
 :global([data-mode='dark']) .root[data-active] .iconWrap {
@@ -217,18 +200,22 @@
   font-size: var(--font-sm);
   font-weight: var(--font-semibold);
   line-height: 1.3;
-  color: var(--text);
+  color: var(--chatbox-text-primary, var(--text));
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.root[data-active] .name {
+  font-weight: var(--font-bold);
+}
+
 .preview {
   margin: 0;
   font-size: var(--font-2xs);
   line-height: 1.2;
-  color: var(--text-muted);
+  color: var(--chatbox-text-secondary, var(--text-muted));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -276,7 +263,8 @@
 .tagsContainer {
   position: relative;
   min-width: 0;
-  margin-top: 0.15rem;
+  margin-top: 0.05rem;
+  padding-block: 2px;
   padding-left: calc(2.35rem + 0.55rem);
   overflow: hidden;
 }

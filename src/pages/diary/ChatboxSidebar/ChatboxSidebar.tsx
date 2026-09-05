@@ -6,6 +6,7 @@ import { useDiaryHydrated, useDiaryStore } from '@/store';
 
 import type { DiaryFilterTab } from '../types';
 
+import { chatboxListAssets } from './chatboxList.assets';
 import styles from './ChatboxSidebar.module.css';
 import Header from './Header/Header';
 import Search from './Search/Search';
@@ -131,6 +132,14 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
                 ),
               )
             : null}
+          <div className={styles.decorativeFooter} aria-hidden>
+            <img className={styles.wish} src={chatboxListAssets.wish} alt="" />
+            <img
+              className={styles.signature}
+              src={chatboxListAssets.signature}
+              alt=""
+            />
+          </div>
         </div>
       </AdDragDrop>
     </LayoutCard>

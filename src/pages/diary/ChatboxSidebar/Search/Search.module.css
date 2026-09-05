@@ -9,24 +9,24 @@
   border-radius: 999px;
   background: color-mix(
     in srgb,
-    var(--background-soft) 50%,
-    var(--surface-soft)
+    var(--background-soft) 38%,
+    var(--chatbox-panel-bg, var(--surface))
   );
-  box-shadow: var(--shadow-inset);
+  box-shadow: none;
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 84%, var(--surface));
 }
 
 .root:hover {
-  border: 1px solid var(--border);
+  border-color: color-mix(in srgb, var(--border) 72%, var(--border-soft));
 }
 
 .root:focus-within {
   border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-  box-shadow: 0 0 10px 2px
-    color-mix(in srgb, var(--primary-light) 100%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--primary-light) 48%, transparent);
 }
 
 .leadingIcon {
@@ -85,7 +85,7 @@
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--border-soft);
   border-radius: 999px;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 92%, var(--surface-soft));
   color: var(--text-muted);
   font: inherit;
   font-size: var(--font-xs);

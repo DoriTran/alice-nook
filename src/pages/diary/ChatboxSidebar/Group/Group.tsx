@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type FC,
   type ReactNode,
 } from 'react';
@@ -103,6 +104,7 @@ const Group: FC<GroupProps> = ({
     <section
       ref={rootRef}
       className={styles.root}
+      style={{ '--group-color': brushColor } as CSSProperties}
       data-expanded={isExpanded || undefined}
       data-empty={isEmpty || undefined}
       aria-labelledby={titleId}
@@ -111,8 +113,8 @@ const Group: FC<GroupProps> = ({
         <BrushHighlight
           color={brushColor}
           height={GROUP_BRUSH_SIZE}
-          shadow
-          paintOpacity={0.95}
+          shadow={false}
+          paintOpacity={0.82}
           className={styles.brush}
           spacing={{ left: 12, right: 30 }}
           id={titleId}
@@ -190,6 +192,9 @@ const Group: FC<GroupProps> = ({
           Edit
         </AdMenuItem>
       </AdMenu>
+      <span className={styles.groupDecoration} aria-hidden>
+        <AdIcon icon="heart" source="lucide" size={20} />
+      </span>
       <div
         className={styles.listShell}
         id={listId}
