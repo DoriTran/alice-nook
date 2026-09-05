@@ -1,7 +1,7 @@
 import { useCallback, useState, type FC } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { GOOGLE_AUTH_ERROR } from '@/auth/errors';
+import { getAuthCallbackError } from '@/auth/errors';
 import { getAuthDestination } from '@/auth/redirects';
 import { AdriftBackground } from '@/packages/ui';
 
@@ -24,7 +24,7 @@ const AuthPage: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const mode = parseMode(searchParams.get('mode'));
   const returnTo = getAuthDestination(`?${searchParams.toString()}`);
-  const oauthError = searchParams.has('error') ? GOOGLE_AUTH_ERROR : null;
+  const oauthError = getAuthCallbackError(searchParams);
   const [decorations] = useState(() =>
     buildAdriftDecorations(RANDOM_DECORATIONS, RANDOM_DECORATION_COUNT),
   );
