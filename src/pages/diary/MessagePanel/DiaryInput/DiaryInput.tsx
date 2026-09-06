@@ -99,6 +99,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     if (draft.variant === 'todo') {
       return (
         <TodoEditor
+          key={chatboxId}
           items={draft.todoItems}
           onUpdateItem={updateTodoItem}
           onRemoveItem={removeTodoRow}
@@ -117,6 +118,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     if (draft.variant === 'ai') {
       return (
         <AIEditor
+          key={chatboxId}
           editorRef={editorRef}
           value={draft.content}
           onChange={setContent}
@@ -130,6 +132,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
 
     return (
       <TextEditor
+        key={chatboxId}
         ref={editorRef}
         value={draft.content}
         maxRows={8}

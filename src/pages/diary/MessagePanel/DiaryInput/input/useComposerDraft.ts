@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type SetStateAction,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
@@ -42,7 +48,28 @@ export const useComposerDraft = (
   const createMessage = useDiaryStore('createMessage');
   const updateMessage = useDiaryStore('updateMessage');
   const messages = useDiaryStore('messages');
-  const [draft, setDraft] = useState<ComposerDraft>(createInitialDraft);
+  const initialDraftsRef = useRef<Record<string, ComposerDraft>>({});
+  const [drafts, setDrafts] = useState<Record<string, ComposerDraft>>({});
+  const draft =
+    drafts[chatboxId] ??
+    (initialDraftsRef.current[chatboxId] ??= createInitialDraft());
+  const setDraft = useCallback(
+    (action: SetStateAction<ComposerDraft>) => {
+      setDrafts((current) => {
+        const currentDraft =
+          current[chatboxId] ??
+          (initialDraftsRef.current[chatboxId] ??= createInitialDraft());
+        const nextDraft =
+          typeof action === 'function' ? action(currentDraft) : action;
+
+        return {
+          ...current,
+          [chatboxId]: nextDraft,
+        };
+      });
+    },
+    [chatboxId],
+  );
   const [pendingVariantSwitch, setPendingVariantSwitch] =
     useState<PendingVariantSwitch>(null);
   const [sending, setSending] = useState(false);
@@ -62,7 +89,7 @@ export const useComposerDraft = (
       ...current,
       replyToMessageId: options?.replyToMessageId ?? null,
     }));
-  }, [options?.replyToMessageId]);
+  }, [options?.replyToMessageId, setDraft]);
 
   useEffect(() => {
     const previous = prevEditMessageIdRef.current;
@@ -82,7 +109,7 @@ export const useComposerDraft = (
       setDraft(createInitialDraft());
     }
     // Only re-hydrate when entering/leaving edit mode, not on every messages update.
-  }, [editMessageId]);
+  }, [editMessageId, setDraft]);
 
   useEffect(() => {
     if (editMessageId) {
@@ -93,34 +120,43 @@ export const useComposerDraft = (
     onDirtyChangeRef.current?.(hasDraftContent(draft));
   }, [draft, editMessageId]);
 
-  const setFocused = useCallback((focused: boolean) => {
-    setDraft((current) => ({ ...current, focused }));
-  }, []);
+  const setFocused = useCallback(
+    (focused: boolean) => {
+      setDraft((current) => ({ ...current, focused }));
+    },
+    [setDraft],
+  );
 
-  const setContent = useCallback((content: RichTextContent) => {
-    setDraft((current) => ({
-      ...current,
-      content,
-      attachments: syncLinkAttachments(content.preview, current.attachments),
-    }));
-  }, []);
+  const setContent = useCallback(
+    (content: RichTextContent) => {
+      setDraft((current) => ({
+        ...current,
+        content,
+        attachments: syncLinkAttachments(content.preview, current.attachments),
+      }));
+    },
+    [setDraft],
+  );
 
   const clearAll = useCallback(() => {
     setDraft(createInitialDraft());
-  }, []);
+  }, [setDraft]);
 
   const cancelEdit = useCallback(() => {
     setDraft(createInitialDraft());
     onEditClearRef.current?.();
-  }, []);
+  }, [setDraft]);
 
-  const applyVariantSwitch = useCallback((nextVariant: MessageVariant) => {
-    setDraft((current) => ({
-      ...current,
-      ...convertDraftToVariant(current, nextVariant),
-    }));
-    setPendingVariantSwitch(null);
-  }, []);
+  const applyVariantSwitch = useCallback(
+    (nextVariant: MessageVariant) => {
+      setDraft((current) => ({
+        ...current,
+        ...convertDraftToVariant(current, nextVariant),
+      }));
+      setPendingVariantSwitch(null);
+    },
+    [setDraft],
+  );
 
   const requestVariantSwitch = useCallback(
     (nextVariant: MessageVariant) => {
@@ -143,30 +179,33 @@ export const useComposerDraft = (
     [applyVariantSwitch, draft],
   );
 
-  const toggleDecorator = useCallback((type: MessageDecorator['type']) => {
-    setDraft((current) => {
-      const exists = current.decorators.some(
-        (decoration) => decoration.type === type,
-      );
+  const toggleDecorator = useCallback(
+    (type: MessageDecorator['type']) => {
+      setDraft((current) => {
+        const exists = current.decorators.some(
+          (decoration) => decoration.type === type,
+        );
 
-      if (exists) {
+        if (exists) {
+          return {
+            ...current,
+            decorators: current.decorators.filter(
+              (decoration) => decoration.type !== type,
+            ),
+          };
+        }
+
+        const decoration =
+          type === 'ticket' ? createTicketDecorator() : createTimerDecorator();
+
         return {
           ...current,
-          decorators: current.decorators.filter(
-            (decoration) => decoration.type !== type,
-          ),
+          decorators: [...current.decorators, decoration],
         };
-      }
-
-      const decoration =
-        type === 'ticket' ? createTicketDecorator() : createTimerDecorator();
-
-      return {
-        ...current,
-        decorators: [...current.decorators, decoration],
-      };
-    });
-  }, []);
+      });
+    },
+    [setDraft],
+  );
 
   const updateDecorator = useCallback(
     (index: number, decoration: MessageDecorator) => {
@@ -177,17 +216,20 @@ export const useComposerDraft = (
         ),
       }));
     },
-    [],
+    [setDraft],
   );
 
-  const removeAttachment = useCallback((attachmentId: string) => {
-    setDraft((current) => ({
-      ...current,
-      attachments: current.attachments.filter(
-        (attachment) => attachment.id !== attachmentId,
-      ),
-    }));
-  }, []);
+  const removeAttachment = useCallback(
+    (attachmentId: string) => {
+      setDraft((current) => ({
+        ...current,
+        attachments: current.attachments.filter(
+          (attachment) => attachment.id !== attachmentId,
+        ),
+      }));
+    },
+    [setDraft],
+  );
 
   const addFiles = useCallback(
     async (files: FileList | File[], kind: 'file' | 'image' | 'video') => {
@@ -238,7 +280,7 @@ export const useComposerDraft = (
         }
       }
     },
-    [],
+    [setDraft],
   );
 
   const addTodoRow = useCallback(() => {
@@ -246,7 +288,7 @@ export const useComposerDraft = (
       ...current,
       todoItems: [...current.todoItems, createEmptyTodoItem()],
     }));
-  }, []);
+  }, [setDraft]);
 
   const updateTodoItem = useCallback(
     (itemId: string, patch: Partial<DraftTodoItem>) => {
@@ -270,40 +312,48 @@ export const useComposerDraft = (
         }),
       }));
     },
-    [],
+    [setDraft],
   );
 
-  const removeTodoRow = useCallback((itemId: string) => {
-    setDraft((current) => {
-      const nextItems = current.todoItems.filter((item) => item.id !== itemId);
-      return {
-        ...current,
-        todoItems: nextItems.length > 0 ? nextItems : [createEmptyTodoItem()],
-      };
-    });
-  }, []);
+  const removeTodoRow = useCallback(
+    (itemId: string) => {
+      setDraft((current) => {
+        const nextItems = current.todoItems.filter(
+          (item) => item.id !== itemId,
+        );
+        return {
+          ...current,
+          todoItems: nextItems.length > 0 ? nextItems : [createEmptyTodoItem()],
+        };
+      });
+    },
+    [setDraft],
+  );
 
-  const reorderTodoRow = useCallback((current: number, previous: number) => {
-    if (current === previous) {
-      return;
-    }
-
-    setDraft((draftState) => {
-      const items = draftState.todoItems;
-      if (
-        current < 0 ||
-        previous < 0 ||
-        current >= items.length ||
-        previous >= items.length
-      ) {
-        return draftState;
+  const reorderTodoRow = useCallback(
+    (current: number, previous: number) => {
+      if (current === previous) {
+        return;
       }
 
-      const next = items.slice();
-      [next[current], next[previous]] = [next[previous], next[current]];
-      return { ...draftState, todoItems: next };
-    });
-  }, []);
+      setDraft((draftState) => {
+        const items = draftState.todoItems;
+        if (
+          current < 0 ||
+          previous < 0 ||
+          current >= items.length ||
+          previous >= items.length
+        ) {
+          return draftState;
+        }
+
+        const next = items.slice();
+        [next[current], next[previous]] = [next[previous], next[current]];
+        return { ...draftState, todoItems: next };
+      });
+    },
+    [setDraft],
+  );
 
   const addTodoRowFiles = useCallback(
     async (itemId: string, files: FileList | File[]) => {
@@ -369,7 +419,7 @@ export const useComposerDraft = (
         }
       }
     },
-    [],
+    [setDraft],
   );
 
   const removeTodoRowAttachment = useCallback(
@@ -388,7 +438,7 @@ export const useComposerDraft = (
         ),
       }));
     },
-    [],
+    [setDraft],
   );
 
   const send = useCallback(async () => {
@@ -465,24 +515,29 @@ export const useComposerDraft = (
     updateMessage,
   ]);
 
-  const insertReactionIcon = useCallback((icon: string) => {
-    if (editorRef.current) {
-      editorRef.current.insertAtCursor(icon);
-      return;
-    }
+  const insertReactionIcon = useCallback(
+    (icon: string) => {
+      if (editorRef.current) {
+        editorRef.current.insertAtCursor(icon);
+        return;
+      }
 
-    // Fallback if the editor ref isn't mounted yet — still apply the glyph.
-    setDraft((current) => ({
-      ...current,
-      content: migratePlainTextToRichText(`${current.content.preview}${icon}`),
-    }));
-  }, []);
+      // Fallback if the editor ref isn't mounted yet — still apply the glyph.
+      setDraft((current) => ({
+        ...current,
+        content: migratePlainTextToRichText(
+          `${current.content.preview}${icon}`,
+        ),
+      }));
+    },
+    [setDraft],
+  );
 
   const updateDraft = useCallback(
     (updater: (draft: ComposerDraft) => ComposerDraft) => {
       setDraft(updater);
     },
-    [],
+    [setDraft],
   );
 
   return {
