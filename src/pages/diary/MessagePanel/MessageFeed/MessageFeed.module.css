@@ -10,8 +10,29 @@
 .inner {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
   padding: 1rem 1.25rem 1.25rem;
+}
+
+.messageGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.endMarker {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  margin-top: -20px;
+  margin-bottom: 0.25rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.endMarkerImage {
+  display: block;
+  width: 4rem;
+  height: auto;
 }
 
 .dayGroup {
