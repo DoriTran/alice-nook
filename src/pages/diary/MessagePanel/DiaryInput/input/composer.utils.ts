@@ -27,6 +27,14 @@ export const createTicketDecorator = (): MessageDecorator => ({
 export const createTimerDecorator = (): MessageDecorator =>
   createDefaultTimerDecorator();
 
+export const createHeadingDecorator = (): MessageDecorator => ({
+  type: 'heading',
+  title: '',
+  description: '',
+  headingLevel: 'h2',
+  customFontSize: null,
+});
+
 export const hasDraftContent = (draft: ComposerDraft): boolean => {
   if (draft.attachments.length > 0 || draft.decorators.length > 0) {
     return true;

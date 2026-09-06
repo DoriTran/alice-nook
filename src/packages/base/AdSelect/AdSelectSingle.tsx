@@ -147,9 +147,10 @@ const AdSelectSingle: FC<AdSelectSingleProps> = ({
             onChange={(event) => setSearchValue(event.currentTarget.value)}
             placeholder={placeholder}
             className={styles.search}
+            classNames={{ input: styles.searchInput }}
           />
         ) : null}
-        <Combobox.Options id={listboxId}>
+        <Combobox.Options id={listboxId} className={styles.options}>
           {filteredData.map((option) => (
             <Combobox.Option
               key={option.value}

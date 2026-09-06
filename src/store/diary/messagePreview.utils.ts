@@ -211,6 +211,12 @@ export const resolveMessageTitle = (message: Message): string => {
     return first ? `Todo: ${first.content.preview}` : 'Todo list';
   }
 
+  const heading = message.decorators.find((item) => item.type === 'heading');
+
+  if (heading?.type === 'heading' && heading.title.trim()) {
+    return heading.title.trim();
+  }
+
   const text = message.content.preview.trim();
 
   if (text) {

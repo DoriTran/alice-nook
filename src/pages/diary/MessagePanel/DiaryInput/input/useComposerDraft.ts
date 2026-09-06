@@ -27,6 +27,7 @@ import {
   buildDraftFromMessage,
   buildMessagePayload,
   convertDraftToVariant,
+  createHeadingDecorator,
   createTempAttachment,
   createTimerDecorator,
   createTicketDecorator,
@@ -196,7 +197,11 @@ export const useComposerDraft = (
         }
 
         const decoration =
-          type === 'ticket' ? createTicketDecorator() : createTimerDecorator();
+          type === 'ticket'
+            ? createTicketDecorator()
+            : type === 'timer'
+              ? createTimerDecorator()
+              : createHeadingDecorator();
 
         return {
           ...current,

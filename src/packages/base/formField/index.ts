@@ -1,5 +1,9 @@
 export { default as AdField, type AdFieldProps } from './AdField';
-export { default as AdInput, type AdInputProps } from './AdInput';
+export {
+  default as AdInput,
+  type AdInputClassNames,
+  type AdInputProps,
+} from './AdInput';
 export { default as AdTextarea, type AdTextareaProps } from './AdTextarea';
 export {
   pickerTriggerClassNames,

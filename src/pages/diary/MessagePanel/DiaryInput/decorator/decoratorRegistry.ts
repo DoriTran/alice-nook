@@ -7,10 +7,12 @@ import type {
 } from './charms/charm.types';
 
 import { findDecoratorIndex } from './charms/decoratorIndex';
+import { headingDecorator } from './heading/heading.decorator';
 import { ticketDecorator } from './ticket/ticket.decorator';
 import { timerDecorator } from './timer/timer.decorator';
 
 const registry: Record<MessageDecorator['type'], DecoratorDefinition> = {
+  heading: headingDecorator,
   ticket: ticketDecorator,
   timer: timerDecorator,
 };

@@ -45,20 +45,51 @@
   font-size: var(--font-sm);
 }
 
-.search:focus-visible {
+.search:focus-within {
   border-color: var(--field-border-focus);
   box-shadow: var(--focus-ring);
 }
 
-.dropdown {
+.searchInput.searchInput {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: inherit;
+  outline: none;
+  color: var(--text);
+  caret-color: var(--text);
+  background: transparent;
+  box-shadow: none;
+}
+
+.searchInput.searchInput::placeholder {
+  color: var(--text-soft);
+  opacity: 1;
+}
+
+.searchInput.searchInput:focus,
+.searchInput.searchInput:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.dropdown.dropdown {
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
+  color: var(--text);
   background: var(--surface);
   box-shadow: var(--shadow-md);
   padding: 0.25rem;
 }
 
-.option {
+.options {
+  max-height: min(16rem, calc(100dvh - 10rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.option.option {
   font-size: var(--font-sm);
   color: var(--text);
   border-radius: var(--radius-sm);
@@ -71,26 +102,31 @@
   padding: 0.25rem 0.375rem;
 }
 
-.option[data-combobox-active]:not(.optionColorHover):not(.optionPill) {
+.option.option:hover:not(.optionColorHover):not(.optionPill),
+.option.option[data-combobox-active]:not(.optionColorHover):not(.optionPill) {
   background: var(--field-bg-hover);
+  color: var(--text);
 }
 
-.option[data-combobox-selected]:not(.optionColorHover):not(.optionPill) {
+.option.option[data-combobox-selected]:not(.optionColorHover):not(.optionPill) {
   background: var(--field-bg-selected);
   color: var(--text);
 }
 
-.optionPill[data-combobox-active],
-.optionPill[data-combobox-selected] {
+.optionPill.optionPill:hover,
+.optionPill.optionPill[data-combobox-active],
+.optionPill.optionPill[data-combobox-selected] {
   background: transparent;
+  color: var(--text);
 }
 
-.optionColorHover[data-combobox-active] {
+.optionColorHover.optionColorHover:hover,
+.optionColorHover.optionColorHover[data-combobox-active] {
   background: var(--adselect-option-hover-bg);
   color: var(--adselect-option-hover-color);
 }
 
-.optionColorHover[data-combobox-selected] {
+.optionColorHover.optionColorHover[data-combobox-selected] {
   background: var(
     --adselect-option-selected-bg,
     var(--adselect-option-hover-bg)

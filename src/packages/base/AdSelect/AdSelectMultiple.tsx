@@ -242,7 +242,7 @@ const AdSelectMultiple: FC<AdSelectMultipleProps> = ({
       </Combobox.DropdownTarget>
 
       <Combobox.Dropdown className={classNames?.dropdown ?? styles.dropdown}>
-        <Combobox.Options>
+        <Combobox.Options className={styles.options}>
           {filteredOptions.map((option) => (
             <Combobox.Option
               key={option.value}

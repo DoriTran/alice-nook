@@ -129,6 +129,7 @@ export {
   formFieldStyles,
   pickerTriggerClassNames,
   type AdFieldProps,
+  type AdInputClassNames,
   type AdInputProps,
   type AdTextareaProps,
   type PickerTriggerClassNameOptions,

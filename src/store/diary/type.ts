@@ -43,6 +43,7 @@ export type DiaryStoreActions = {
   patchMessage: (messageId: string, data: MessagePatchData) => void;
   deleteMessage: (messageId: string) => void;
   moveMessage: (messageId: string, targetChatboxId: string) => void;
+  cloneMessage: (sourceMessageId: string, targetChatboxId: string) => string;
   toggleMessagePin: (messageId: string) => void;
   toggleMessageArchive: (messageId: string) => void;
   toggleMessageReaction: (messageId: string, emoji: string) => void;
@@ -275,7 +276,10 @@ export type BinaryAttachment =
 // #endregion
 
 // #region Message Decorator
-export type MessageDecorator = TicketDecorator | TimerDecorator;
+export type MessageDecorator =
+  | TicketDecorator
+  | TimerDecorator
+  | HeadingDecorator;
 
 export type TicketDecorator = {
   type: 'ticket';
@@ -300,6 +304,16 @@ export type TimerDecorator = {
   deadlineAt: string | null;
   /** ISO timestamp recording that the current deadline already raised a ring. */
   alertedAt: string | null;
+};
+
+export type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+export type HeadingDecorator = {
+  type: 'heading';
+  title: string;
+  description: string;
+  headingLevel: HeadingLevel;
+  customFontSize: number | null;
 };
 
 // #endregion

@@ -46,6 +46,100 @@
   font-size: var(--font-sm);
 }
 
+.inputShell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  background: var(--field-bg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.inputShell:hover:not([data-disabled]) {
+  border-color: var(--field-border-hover);
+  background: var(--field-bg-hover);
+}
+
+.inputShell:focus-within {
+  border-color: var(--field-border-focus);
+  box-shadow: var(--focus-ring);
+}
+
+.inputShell[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.inputElement {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--field-padding-y) var(--field-padding-x);
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-sm);
+}
+
+.inputElement:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.inputElement:disabled {
+  cursor: not-allowed;
+}
+
+.inputSuffix {
+  flex-shrink: 0;
+  padding-right: var(--field-padding-x);
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.passwordToggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--field-control-height);
+  align-self: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.passwordToggle:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--field-bg-hover-strong);
+}
+
+.passwordToggle:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.passwordToggle:disabled {
+  cursor: not-allowed;
+}
+
 .controlTextarea {
   min-height: 4.5rem;
   resize: vertical;

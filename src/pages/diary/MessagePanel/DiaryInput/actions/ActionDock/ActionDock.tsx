@@ -1,6 +1,8 @@
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import {
   CircleSlash,
+  ClipboardPaste,
+  ClipboardX,
   FolderPlus,
   ImageUp,
   SendHorizontal,
@@ -8,6 +10,7 @@ import {
   SquareCheckBig,
   Tickets,
   TimerReset,
+  TextInitial,
   Video,
   type LucideIcon,
 } from 'lucide-react';
@@ -36,6 +39,9 @@ export type ActionDockProps = {
   onSend: () => void;
   onCancelEdit?: () => void;
   onConfirmEdit?: () => void;
+  hasCopiedMessage?: boolean;
+  onClearCopiedMessage?: () => void;
+  onPasteCopiedMessage?: () => void;
 };
 
 type ActionButtonProps = {
@@ -102,6 +108,9 @@ const ActionDock: FC<ActionDockProps> = ({
   onSend,
   onCancelEdit,
   onConfirmEdit,
+  hasCopiedMessage = false,
+  onClearCopiedMessage,
+  onPasteCopiedMessage,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -109,6 +118,7 @@ const ActionDock: FC<ActionDockProps> = ({
 
   const hasTicket = decorators.some((d) => d.type === 'ticket');
   const hasTimer = decorators.some((d) => d.type === 'timer');
+  const hasHeading = decorators.some((d) => d.type === 'heading');
 
   return (
     <div className={styles.root}>
@@ -134,6 +144,28 @@ const ActionDock: FC<ActionDockProps> = ({
         <span className={styles.divider} aria-hidden />
 
         <div className={styles.group}>
+          <AdTooltip
+            label={
+              <RichTooltip
+                name="Heading"
+                description="Add a title and optional description."
+              />
+            }
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${hasHeading ? styles.btnActive : ''}`}
+              aria-label="Heading charm"
+              aria-pressed={hasHeading}
+              onClick={() => onToggleDecorator('heading')}
+            >
+              <AdIcon icon={TextInitial} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
           <AdTooltip
             label={
               <RichTooltip
@@ -280,13 +312,30 @@ const ActionDock: FC<ActionDockProps> = ({
             </AdTooltip>
           </div>
         ) : (
-          <ActionButton
-            icon={SendHorizontal}
-            label="Send message"
-            disabled={!canSend}
-            send
-            onClick={onSend}
-          />
+          <>
+            {hasCopiedMessage ? (
+              <>
+                <ActionButton
+                  icon={ClipboardX}
+                  label="Clear paste"
+                  onClick={() => onClearCopiedMessage?.()}
+                />
+                <ActionButton
+                  icon={ClipboardPaste}
+                  label="Paste copied message"
+                  onClick={() => onPasteCopiedMessage?.()}
+                />
+                <span className={styles.divider} aria-hidden />
+              </>
+            ) : null}
+            <ActionButton
+              icon={SendHorizontal}
+              label="Send message"
+              disabled={!canSend}
+              send
+              onClick={onSend}
+            />
+          </>
         )}
       </div>
 
