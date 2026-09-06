@@ -125,7 +125,11 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
   };
 
   return (
-    <form className={formStyles.form} onSubmit={handleSubmit}>
+    <form
+      className={formStyles.form}
+      autoComplete="off"
+      onSubmit={handleSubmit}
+    >
       <div className={formStyles.identityRow}>
         <div className={formStyles.identityPickers}>
           <AdIconPicker
@@ -144,6 +148,8 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
         <AdField label="Name" htmlFor="create-chatbox-name">
           <AdInput
             id="create-chatbox-name"
+            name="chatbox-name"
+            autoComplete="off"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="My chatbox"

@@ -83,7 +83,11 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
   };
 
   return (
-    <form className={formStyles.form} onSubmit={handleSubmit}>
+    <form
+      className={formStyles.form}
+      autoComplete="off"
+      onSubmit={handleSubmit}
+    >
       <div className={formStyles.identityRow}>
         <div className={formStyles.identityPickers}>
           <AdIconPicker
@@ -104,6 +108,8 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
         <AdField label="Name" htmlFor="create-group-name">
           <AdInput
             id="create-group-name"
+            name="group-name"
+            autoComplete="off"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="My group"

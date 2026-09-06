@@ -45,7 +45,17 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
   const rowViews = useFilteredSidebarRowViews(rows, searchQuery, filterTab);
   const filterCounts = countChatboxesByFilterTab(Object.values(chatboxes));
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const scrollIdleTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [isScrolling, setIsScrolling] = useState(false);
   const scrollerOffset = useScrollOffset(scrollerRef);
+
+  const revealScrollbar = () => {
+    setIsScrolling(true);
+    clearTimeout(scrollIdleTimerRef.current);
+    scrollIdleTimerRef.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 1000);
+  };
 
   useEffect(() => {
     if (!hydrated) {
@@ -54,6 +64,13 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
 
     seedIfEmpty();
   }, [hydrated, seedIfEmpty]);
+
+  useEffect(
+    () => () => {
+      clearTimeout(scrollIdleTimerRef.current);
+    },
+    [],
+  );
 
   return (
     <LayoutCard
@@ -96,7 +113,13 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
           }
         }}
       >
-        <div className={styles.scroll}>
+        <div
+          ref={scrollerRef}
+          className={`${styles.scroll} ${isScrolling ? styles.scrolling : ''}`}
+          onScroll={revealScrollbar}
+          onTouchMove={revealScrollbar}
+          onWheel={revealScrollbar}
+        >
           {hydrated
             ? rowViews.map((view) =>
                 view.type === 'group' ? (
@@ -132,16 +155,17 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
                 ),
               )
             : null}
-          <div className={styles.decorativeFooter} aria-hidden>
-            <img className={styles.wish} src={chatboxListAssets.wish} alt="" />
-            <img
-              className={styles.signature}
-              src={chatboxListAssets.signature}
-              alt=""
-            />
-          </div>
         </div>
       </AdDragDrop>
+
+      <div className={styles.decorativeFooter} aria-hidden>
+        <img className={styles.wish} src={chatboxListAssets.wish} alt="" />
+        <img
+          className={styles.signature}
+          src={chatboxListAssets.signature}
+          alt=""
+        />
+      </div>
     </LayoutCard>
   );
 };
