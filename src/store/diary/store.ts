@@ -597,7 +597,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
         set((state) => {
           const message = state.messages[messageId];
 
-          if (!message) {
+          if (!message || !state.chatboxes[targetChatboxId]) {
             return state;
           }
 
@@ -607,16 +607,32 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             return state;
           }
 
+          const updatedAt = nowIso();
+          const messages = Object.fromEntries(
+            Object.entries(state.messages).map(([id, current]) => {
+              if (id === messageId) {
+                return [
+                  id,
+                  {
+                    ...current,
+                    chatboxId: targetChatboxId,
+                    replyToMessageId: null,
+                    updatedAt,
+                  },
+                ];
+              }
+
+              if (current.replyToMessageId === messageId) {
+                return [id, { ...current, replyToMessageId: null, updatedAt }];
+              }
+
+              return [id, current];
+            }),
+          ) as Record<string, Message>;
+
           let nextState: DiaryStore = {
             ...state,
-            messages: {
-              ...state.messages,
-              [messageId]: {
-                ...message,
-                chatboxId: targetChatboxId,
-                updatedAt: nowIso(),
-              },
-            },
+            messages,
             orders: {
               ...state.orders,
               chatboxMessageOrders: {
@@ -642,6 +658,29 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
 
           return nextState;
         }),
+      cloneMessage: (sourceMessageId, targetChatboxId) => {
+        const state = get();
+        const source = state.messages[sourceMessageId];
+
+        if (!source || !state.chatboxes[targetChatboxId]) {
+          return '';
+        }
+
+        return get().createMessage({
+          chatboxId: targetChatboxId,
+          sender: source.sender,
+          variant: source.variant,
+          content: structuredClone(source.content),
+          tagIds: [...source.tagIds],
+          pinned: false,
+          archived: false,
+          replyToMessageId: null,
+          sourceMessageId: null,
+          reactions: [],
+          attachments: structuredClone(source.attachments),
+          decorators: structuredClone(source.decorators),
+        } as Partial<Message>);
+      },
       toggleMessagePin: (messageId) => {
         const current = get().messages[messageId];
 

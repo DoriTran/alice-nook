@@ -1,9 +1,32 @@
 .quickActions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    '. copy copy move move .'
+    'forward forward pin pin archive archive';
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.25rem;
   padding: 0.25rem 0.125rem 0.5rem;
   list-style: none;
+}
+
+.forwardAction {
+  grid-area: forward;
+}
+
+.moveAction {
+  grid-area: move;
+}
+
+.copyAction {
+  grid-area: copy;
+}
+
+.pinAction {
+  grid-area: pin;
+}
+
+.archiveAction {
+  grid-area: archive;
 }
 
 .quickAction {

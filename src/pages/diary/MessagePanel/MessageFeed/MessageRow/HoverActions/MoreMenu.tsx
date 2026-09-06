@@ -6,6 +6,7 @@ import {
   faEllipsisVertical,
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
+import { Copy, Hand } from 'lucide-react';
 
 import type { Message } from '@/store/diary/type';
 
@@ -51,7 +52,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
       <li role="none" className={styles.quickActions}>
         <button
           type="button"
-          className={styles.quickAction}
+          className={`${styles.quickAction} ${styles.forwardAction}`}
           aria-label="Forward"
           onClick={() => {
             onOpenChange(false);
@@ -65,7 +66,35 @@ const MoreMenu: FC<MoreMenuProps> = ({
         </button>
         <button
           type="button"
-          className={styles.quickAction}
+          className={`${styles.quickAction} ${styles.moveAction}`}
+          aria-label="Move"
+          onClick={() => {
+            onOpenChange(false);
+            actions.requestMove(message.id);
+          }}
+        >
+          <span className={styles.quickIcon}>
+            <AdIcon icon={Hand} source="lucide" size={14} />
+          </span>
+          Move
+        </button>
+        <button
+          type="button"
+          className={`${styles.quickAction} ${styles.copyAction}`}
+          aria-label="Copy"
+          onClick={() => {
+            onOpenChange(false);
+            actions.copyMessage(message.id);
+          }}
+        >
+          <span className={styles.quickIcon}>
+            <AdIcon icon={Copy} source="lucide" size={14} />
+          </span>
+          Copy
+        </button>
+        <button
+          type="button"
+          className={`${styles.quickAction} ${styles.pinAction}`}
           aria-label={message.pinned ? 'Unpin' : 'Pin'}
           data-active={message.pinned || undefined}
           onClick={() => {
@@ -80,7 +109,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
         </button>
         <button
           type="button"
-          className={styles.quickAction}
+          className={`${styles.quickAction} ${styles.archiveAction}`}
           aria-label={message.archived ? 'Unarchive' : 'Archive'}
           data-active={message.archived || undefined}
           disabled={archiveDisabled}

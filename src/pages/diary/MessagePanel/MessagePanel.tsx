@@ -10,6 +10,7 @@ import Header from './Header/Header';
 import { useMessageHeaderData } from './Header/useMessageHeaderData';
 import MessageFeed from './MessageFeed/MessageFeed';
 import ForwardModal from './MessageFeed/MessageRow/HoverActions/ForwardModal';
+import MoveModal from './MessageFeed/MessageRow/HoverActions/MoveModal';
 import { useChatboxMessages } from './MessageFeed/useChatboxMessages';
 import styles from './MessagePanel.module.css';
 
@@ -107,6 +108,9 @@ const MessagePanel: FC<MessagePanelProps> = ({
         onCancelEdit={actions.cancelEdit}
         onDirtyChange={actions.setComposerDirty}
         onNavigateToMessage={actions.navigateToMessage}
+        hasCopiedMessage={Boolean(actions.copiedMessage)}
+        onClearCopiedMessage={actions.clearCopiedMessage}
+        onPasteCopiedMessage={actions.pasteCopiedMessage}
       />
       <AdConfirmDialog
         opened={Boolean(actions.deleteTargetId)}
@@ -123,6 +127,13 @@ const MessagePanel: FC<MessagePanelProps> = ({
         currentChatboxId={chatboxId}
         onConfirm={actions.confirmForward}
         onClose={actions.cancelForward}
+      />
+      <MoveModal
+        sourceMessageId={actions.moveSourceId}
+        currentChatboxId={chatboxId}
+        onClone={actions.confirmClone}
+        onMove={actions.confirmMove}
+        onClose={actions.cancelMove}
       />
     </LayoutCard>
   );

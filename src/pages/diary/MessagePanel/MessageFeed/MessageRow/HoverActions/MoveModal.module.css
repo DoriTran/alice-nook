@@ -1,0 +1,39 @@
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid var(--border-soft);
+  background: transparent;
+}
+
+.clone {
+  border: none;
+  color: var(--primary-dark);
+  background: var(--secondary);
+}
+
+.clone:hover:not(:disabled) {
+  background: var(--secondary-dark);
+}
+
+.move {
+  border: none;
+  color: var(--on-primary, #fff);
+  background: var(--primary);
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

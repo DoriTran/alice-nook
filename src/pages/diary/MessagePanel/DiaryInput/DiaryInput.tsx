@@ -22,6 +22,9 @@ export type DiaryInputProps = {
   onCancelEdit?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
   onNavigateToMessage?: (messageId: string) => void;
+  hasCopiedMessage?: boolean;
+  onClearCopiedMessage?: () => void;
+  onPasteCopiedMessage?: () => void;
 };
 
 const DiaryInput: FC<DiaryInputProps> = ({
@@ -32,6 +35,9 @@ const DiaryInput: FC<DiaryInputProps> = ({
   onCancelEdit,
   onDirtyChange,
   onNavigateToMessage,
+  hasCopiedMessage = false,
+  onClearCopiedMessage,
+  onPasteCopiedMessage,
 }) => {
   const preferences = useSettingsStore('preferences');
   const enterKeyBehavior = preferences.composer.enterKeyBehavior;
@@ -197,6 +203,9 @@ const DiaryInput: FC<DiaryInputProps> = ({
           onSend={() => void send()}
           onCancelEdit={cancelEdit}
           onConfirmEdit={() => void send()}
+          hasCopiedMessage={hasCopiedMessage}
+          onClearCopiedMessage={onClearCopiedMessage}
+          onPasteCopiedMessage={onPasteCopiedMessage}
         />
       </div>
 
