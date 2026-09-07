@@ -1,5 +1,4 @@
 import type {
-  Attachment,
   AttachmentType,
   BinaryAttachment,
   Message,
@@ -19,7 +18,12 @@ import {
   syncLinkPreviewState,
 } from '../../LinkPreview/linkPreview.utils';
 import { createDefaultTimerDecorator } from '../decorator/timer/timer.utils';
-import { createEmptyTodoItem, type ComposerDraft } from './composer.types';
+import {
+  createEmptyTodoItem,
+  type ComposerDraft,
+  type DraftAttachment,
+  type LocalDraftAttachment,
+} from './composer.types';
 
 export const createTicketDecorator = (): MessageDecorator => ({
   type: 'ticket',
@@ -240,13 +244,20 @@ export const createTempAttachment = (
   attachmentType: Exclude<AttachmentType, 'link'>,
   tempId: string,
   blobUrl: string,
-): Attachment => {
+): LocalDraftAttachment => {
+  const localFields = {
+    file,
+    previewUrl: blobUrl,
+    status: 'local' as const,
+  };
+
   if (attachmentType === 'image') {
     return {
       id: tempId,
       type: 'image',
       url: blobUrl,
       name: file.name,
+      ...localFields,
     };
   }
 
@@ -256,6 +267,7 @@ export const createTempAttachment = (
       type: 'video',
       url: blobUrl,
       name: file.name,
+      ...localFields,
     };
   }
 
@@ -266,7 +278,35 @@ export const createTempAttachment = (
     name: file.name,
     mimeType: file.type || 'application/octet-stream',
     size: file.size,
-  } as BinaryAttachment;
+    ...localFields,
+  } as BinaryAttachment & LocalDraftAttachment;
+};
+
+export const isLocalDraftAttachment = (
+  attachment: DraftAttachment,
+): attachment is LocalDraftAttachment =>
+  'status' in attachment &&
+  attachment.status === 'local' &&
+  'file' in attachment &&
+  'previewUrl' in attachment;
+
+export const revokeDraftAttachmentUrls = (
+  attachments: DraftAttachment[],
+): void => {
+  const urls = new Set(
+    attachments
+      .filter(isLocalDraftAttachment)
+      .map((attachment) => attachment.previewUrl),
+  );
+
+  urls.forEach((url) => URL.revokeObjectURL(url));
+};
+
+export const revokeDraftObjectUrls = (draft: ComposerDraft): void => {
+  revokeDraftAttachmentUrls([
+    ...draft.attachments,
+    ...draft.todoItems.flatMap((item) => item.attachments),
+  ]);
 };
 
 export const formatFileSize = (bytes?: number): string => {

@@ -8,7 +8,11 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
-import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
+import type {
+  Attachment,
+  MessageDecorator,
+  MessageVariant,
+} from '@/store/diary/type';
 
 import {
   generateAiResponse,
@@ -28,6 +32,7 @@ import {
   createEmptyTodoItem,
   type ComposerDraft,
   type ComposerEditorRef,
+  type DraftAttachment,
   type DraftTodoItem,
   type PendingVariantSwitch,
 } from './composer.types';
@@ -42,7 +47,66 @@ import {
   draftHasVariantContent,
   fileToAttachmentType,
   hasDraftContent,
+  isLocalDraftAttachment,
+  revokeDraftAttachmentUrls,
+  revokeDraftObjectUrls,
 } from './composer.utils';
+
+const materializeDraftAttachment = async (
+  attachment: DraftAttachment,
+): Promise<Attachment> => {
+  if (!isLocalDraftAttachment(attachment)) {
+    return attachment;
+  }
+
+  const result = await uploadAttachment(attachment.file);
+  const {
+    file: localFile,
+    previewUrl,
+    status,
+    ...persistedAttachment
+  } = attachment;
+
+  void localFile;
+  void previewUrl;
+  void status;
+
+  if (
+    persistedAttachment.type === 'image' ||
+    persistedAttachment.type === 'video'
+  ) {
+    return {
+      ...persistedAttachment,
+      url: result.url,
+      name: result.name,
+    };
+  }
+
+  return {
+    ...persistedAttachment,
+    url: result.url,
+    name: result.name,
+    mimeType: result.mimeType,
+    size: result.size,
+  };
+};
+
+const materializeDraft = async (
+  draft: ComposerDraft,
+): Promise<ComposerDraft> => ({
+  ...draft,
+  attachments: await Promise.all(
+    draft.attachments.map(materializeDraftAttachment),
+  ),
+  todoItems: await Promise.all(
+    draft.todoItems.map(async (item) => ({
+      ...item,
+      attachments: await Promise.all(
+        item.attachments.map(materializeDraftAttachment),
+      ),
+    })),
+  ),
+});
 
 export const useComposerDraft = (
   chatboxId: string,
@@ -59,6 +123,8 @@ export const useComposerDraft = (
   const messages = useDiaryStore('messages');
   const initialDraftsRef = useRef<Record<string, ComposerDraft>>({});
   const [drafts, setDrafts] = useState<Record<string, ComposerDraft>>({});
+  const draftsRef = useRef(drafts);
+  draftsRef.current = drafts;
   const draft =
     drafts[chatboxId] ??
     (initialDraftsRef.current[chatboxId] ??= createInitialDraft());
@@ -71,10 +137,13 @@ export const useComposerDraft = (
         const nextDraft =
           typeof action === 'function' ? action(currentDraft) : action;
 
-        return {
+        const nextDrafts = {
           ...current,
           [chatboxId]: nextDraft,
         };
+        draftsRef.current = nextDrafts;
+
+        return nextDrafts;
       });
     },
     [chatboxId],
@@ -92,6 +161,13 @@ export const useComposerDraft = (
   onDirtyChangeRef.current = options?.onDirtyChange;
   onEditClearRef.current = options?.onEditClear;
   onReplyClearRef.current = options?.onReplyClear;
+
+  useEffect(
+    () => () => {
+      Object.values(draftsRef.current).forEach(revokeDraftObjectUrls);
+    },
+    [],
+  );
 
   useEffect(() => {
     const preview = draft.linkPreview;
@@ -136,14 +212,20 @@ export const useComposerDraft = (
       const message = messages[editMessageId];
 
       if (message && editMessageId !== previous) {
-        setDraft(buildDraftFromMessage(message));
+        setDraft((current) => {
+          revokeDraftObjectUrls(current);
+          return buildDraftFromMessage(message);
+        });
       }
 
       return;
     }
 
     if (previous) {
-      setDraft(createInitialDraft());
+      setDraft((current) => {
+        revokeDraftObjectUrls(current);
+        return createInitialDraft();
+      });
     }
     // Only re-hydrate when entering/leaving edit mode, not on every messages update.
   }, [editMessageId, setDraft]);
@@ -181,20 +263,34 @@ export const useComposerDraft = (
   );
 
   const clearAll = useCallback(() => {
-    setDraft(createInitialDraft());
+    setDraft((current) => {
+      revokeDraftObjectUrls(current);
+      return createInitialDraft();
+    });
   }, [setDraft]);
 
   const cancelEdit = useCallback(() => {
-    setDraft(createInitialDraft());
+    setDraft((current) => {
+      revokeDraftObjectUrls(current);
+      return createInitialDraft();
+    });
     onEditClearRef.current?.();
   }, [setDraft]);
 
   const applyVariantSwitch = useCallback(
     (nextVariant: MessageVariant) => {
-      setDraft((current) => ({
-        ...current,
-        ...convertDraftToVariant(current, nextVariant),
-      }));
+      setDraft((current) => {
+        if (current.variant === 'todo' && nextVariant !== 'todo') {
+          revokeDraftAttachmentUrls(
+            current.todoItems.flatMap((item) => item.attachments),
+          );
+        }
+
+        return {
+          ...current,
+          ...convertDraftToVariant(current, nextVariant),
+        };
+      });
       setPendingVariantSwitch(null);
     },
     [setDraft],
@@ -267,18 +363,26 @@ export const useComposerDraft = (
 
   const removeAttachment = useCallback(
     (attachmentId: string) => {
-      setDraft((current) => ({
-        ...current,
-        attachments: current.attachments.filter(
-          (attachment) => attachment.id !== attachmentId,
-        ),
-      }));
+      setDraft((current) => {
+        revokeDraftAttachmentUrls(
+          current.attachments.filter(
+            (attachment) => attachment.id === attachmentId,
+          ),
+        );
+
+        return {
+          ...current,
+          attachments: current.attachments.filter(
+            (attachment) => attachment.id !== attachmentId,
+          ),
+        };
+      });
     },
     [setDraft],
   );
 
   const addFiles = useCallback(
-    async (files: FileList | File[], kind: 'file' | 'image' | 'video') => {
+    (files: FileList | File[], kind: 'file' | 'image' | 'video') => {
       const fileList = Array.from(files);
 
       for (const file of fileList) {
@@ -296,34 +400,6 @@ export const useComposerDraft = (
           ...current,
           attachments: [...current.attachments, tempAttachment],
         }));
-
-        try {
-          const result = await uploadAttachment(file);
-          URL.revokeObjectURL(blobUrl);
-
-          setDraft((current) => ({
-            ...current,
-            attachments: current.attachments.map((attachment) =>
-              attachment.id === tempId
-                ? attachment.type === 'image' || attachment.type === 'video'
-                  ? {
-                      ...attachment,
-                      url: result.url,
-                      name: result.name,
-                    }
-                  : {
-                      ...attachment,
-                      url: result.url,
-                      name: result.name,
-                      mimeType: result.mimeType,
-                      size: result.size,
-                    }
-                : attachment,
-            ),
-          }));
-        } catch {
-          // Keep blob URL as fallback
-        }
       }
     },
     [setDraft],
@@ -363,6 +439,13 @@ export const useComposerDraft = (
   const removeTodoRow = useCallback(
     (itemId: string) => {
       setDraft((current) => {
+        const removedItem = current.todoItems.find(
+          (item) => item.id === itemId,
+        );
+        if (removedItem) {
+          revokeDraftAttachmentUrls(removedItem.attachments);
+        }
+
         const nextItems = current.todoItems.filter(
           (item) => item.id !== itemId,
         );
@@ -415,7 +498,7 @@ export const useComposerDraft = (
   );
 
   const addTodoRowFiles = useCallback(
-    async (itemId: string, files: FileList | File[]) => {
+    (itemId: string, files: FileList | File[]) => {
       const fileList = Array.from(files);
 
       for (const file of fileList) {
@@ -440,42 +523,6 @@ export const useComposerDraft = (
               : item,
           ),
         }));
-
-        try {
-          const result = await uploadAttachment(file);
-          URL.revokeObjectURL(blobUrl);
-
-          setDraft((current) => ({
-            ...current,
-            todoItems: current.todoItems.map((item) =>
-              item.id === itemId
-                ? {
-                    ...item,
-                    attachments: item.attachments.map((attachment) =>
-                      attachment.id === tempId
-                        ? attachment.type === 'image' ||
-                          attachment.type === 'video'
-                          ? {
-                              ...attachment,
-                              url: result.url,
-                              name: result.name,
-                            }
-                          : {
-                              ...attachment,
-                              url: result.url,
-                              name: result.name,
-                              mimeType: result.mimeType,
-                              size: result.size,
-                            }
-                        : attachment,
-                    ),
-                  }
-                : item,
-            ),
-          }));
-        } catch {
-          // Keep blob URL
-        }
       }
     },
     [setDraft],
@@ -483,33 +530,49 @@ export const useComposerDraft = (
 
   const removeTodoRowAttachment = useCallback(
     (itemId: string, attachmentId: string) => {
-      setDraft((current) => ({
-        ...current,
-        todoItems: current.todoItems.map((item) =>
-          item.id === itemId
-            ? {
-                ...item,
-                attachments: item.attachments.filter(
-                  (attachment) => attachment.id !== attachmentId,
-                ),
-              }
-            : item,
-        ),
-      }));
+      setDraft((current) => {
+        const item = current.todoItems.find((entry) => entry.id === itemId);
+        if (item) {
+          revokeDraftAttachmentUrls(
+            item.attachments.filter(
+              (attachment) => attachment.id === attachmentId,
+            ),
+          );
+        }
+
+        return {
+          ...current,
+          todoItems: current.todoItems.map((entry) =>
+            entry.id === itemId
+              ? {
+                  ...entry,
+                  attachments: entry.attachments.filter(
+                    (attachment) => attachment.id !== attachmentId,
+                  ),
+                }
+              : entry,
+          ),
+        };
+      });
     },
     [setDraft],
   );
 
   const send = useCallback(async () => {
-    const payload = buildMessagePayload(draft, chatboxId);
-
-    if (!payload || sending) {
+    if (!hasDraftContent(draft) || sending) {
       return;
     }
 
     setSending(true);
 
     try {
+      const materializedDraft = await materializeDraft(draft);
+      const payload = buildMessagePayload(materializedDraft, chatboxId);
+
+      if (!payload) {
+        return;
+      }
+
       if (editMessageId) {
         const current = messages[editMessageId];
 
@@ -523,7 +586,10 @@ export const useComposerDraft = (
             payload.replyToMessageId ?? current?.replyToMessageId ?? null,
         });
 
-        setDraft(createInitialDraft());
+        setDraft((current) => {
+          revokeDraftObjectUrls(current);
+          return createInitialDraft();
+        });
         onEditClearRef.current?.();
         return;
       }
@@ -536,6 +602,12 @@ export const useComposerDraft = (
           : '';
 
       createMessage(payload);
+
+      setDraft((current) => {
+        revokeDraftObjectUrls(current);
+        return createInitialDraft();
+      });
+      onReplyClearRef.current?.();
 
       if (payload.variant === 'ai' && prompt) {
         const response = await generateAiResponse({ chatboxId, prompt });
@@ -567,9 +639,6 @@ export const useComposerDraft = (
           reactions: [],
         });
       }
-
-      setDraft(createInitialDraft());
-      onReplyClearRef.current?.();
     } finally {
       setSending(false);
     }

@@ -10,17 +10,25 @@ import type {
 
 import { createEmptyRichTextContent } from '@/packages/base/AdRichText/richtext';
 
+export type LocalDraftAttachment = Exclude<Attachment, { type: 'link' }> & {
+  file: File;
+  previewUrl: string;
+  status: 'local';
+};
+
+export type DraftAttachment = Attachment | LocalDraftAttachment;
+
 export type DraftTodoItem = {
   id: string;
   completed: boolean;
   text: string;
-  attachments: Attachment[];
+  attachments: DraftAttachment[];
 };
 
 export type ComposerDraft = {
   variant: MessageVariant;
   decorators: MessageDecorator[];
-  attachments: Attachment[];
+  attachments: DraftAttachment[];
   /** TipTap content for text / AI variants. */
   content: RichTextContent;
   todoItems: DraftTodoItem[];

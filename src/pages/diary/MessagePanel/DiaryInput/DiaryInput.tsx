@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { ClipboardEvent, FC } from 'react';
 
 import { useSettingsStore } from '@/store';
 
@@ -102,6 +102,20 @@ const DiaryInput: FC<DiaryInputProps> = ({
     void addTodoRowFiles(itemId, files);
   };
 
+  const handlePaste = (event: ClipboardEvent<HTMLElement>) => {
+    const mediaFiles = Array.from(event.clipboardData.files).filter(
+      (file) =>
+        file.type.startsWith('image/') || file.type.startsWith('video/'),
+    );
+
+    if (mediaFiles.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    handleAddFiles(mediaFiles, 'file');
+  };
+
   const renderEditor = () => {
     if (draft.variant === 'todo') {
       return (
@@ -157,7 +171,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
   );
 
   return (
-    <footer className={styles.root}>
+    <footer className={styles.root} onPasteCapture={handlePaste}>
       <div className={styles.dock}>
         <div className={styles.editorStack}>
           <AttachmentTray
