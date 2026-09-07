@@ -64,6 +64,9 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
 
   const pipeline = useCharmPipeline(draft.decorators, ctx);
   const hasOutsideLeft = Boolean(pipeline.outsideRegionElements.left?.length);
+  const hasOutsideBottom = Boolean(
+    pipeline.outsideRegionElements.bottom?.length,
+  );
 
   useDecoratorRuntime({
     ctx,
@@ -74,6 +77,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
     composing ? styles.surfaceCard : styles.surfaceFeed,
     composing && borderless && styles.surfaceCardBorderless,
     !composing && attached && styles.surfaceFeedAttached,
+    hasOutsideBottom && styles.surfaceBottomAttached,
   );
 
   const content = (
@@ -88,11 +92,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
     </div>
   );
 
-  if (!hasOutsideLeft) {
-    return content;
-  }
-
-  return (
+  const middle = hasOutsideLeft ? (
     <div className={styles.shell} data-decorated-shell>
       <div
         className={styles.outsideLeft}
@@ -101,6 +101,22 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
         {renderOutsideRegionElements('left', ctx, pipeline)}
       </div>
       {content}
+    </div>
+  ) : (
+    content
+  );
+
+  if (!hasOutsideBottom) return middle;
+
+  return (
+    <div className={styles.outsideVertical} data-decorated-outside-bottom>
+      {middle}
+      <div
+        className={styles.outsideBottom}
+        style={pipeline.outsideRegionStyles.bottom}
+      >
+        {renderOutsideRegionElements('bottom', ctx, pipeline)}
+      </div>
     </div>
   );
 };

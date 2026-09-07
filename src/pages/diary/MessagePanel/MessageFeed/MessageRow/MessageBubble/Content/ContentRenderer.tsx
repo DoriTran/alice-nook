@@ -68,6 +68,7 @@ const ContentRenderer: FC<ContentRendererProps> = ({
                 {hasText ? (
                   <AdRichTextViewer
                     value={item.content}
+                    linkPreviewOnHover
                     className={`${styles.todoText} ${item.completed ? styles.todoTextDone : ''}`}
                   />
                 ) : null}
@@ -98,7 +99,7 @@ const ContentRenderer: FC<ContentRendererProps> = ({
 
   return (
     <div className={styles.text}>
-      <AdRichTextViewer value={message.content} />
+      <AdRichTextViewer value={message.content} linkPreviewOnHover />
     </div>
   );
 };

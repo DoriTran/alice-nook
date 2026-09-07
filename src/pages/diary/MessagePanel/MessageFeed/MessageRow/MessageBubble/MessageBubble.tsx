@@ -12,6 +12,11 @@ import type { Message } from '@/store/diary/type';
 import { AdIcon } from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
+import {
+  collectMessageUrls,
+  isLinkOnlyText,
+} from '../../../LinkPreview/linkPreview.utils';
+import LinkPreviewMessage from '../../../LinkPreview/LinkPreviewMessage';
 import { formatMessageTime } from '../../message.utils';
 import AttachmentList from './Content/AttachmentList/AttachmentList';
 import ContentRenderer from './Content/ContentRenderer';
@@ -41,8 +46,20 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const time = formatMessageTime(message.createdAt);
   const captionText =
     message.variant === 'todo' ? '' : message.content.preview.trim();
+  const previewUrls = collectMessageUrls(message);
+  const previewState = message.linkPreview;
+  const hasLinkPreview = Boolean(
+    previewState?.enabled &&
+    previewUrls.some((item) => item.normalized === previewState.normalizedUrl),
+  );
+  const hideLinkOnlyText =
+    hasLinkPreview &&
+    previewUrls.length === 1 &&
+    message.variant !== 'todo' &&
+    isLinkOnlyText(captionText);
   // Only render a body bubble when there is real content (not attachment-only empties).
-  const showBody = message.variant === 'todo' || captionText.length > 0;
+  const showBody =
+    message.variant === 'todo' || (captionText.length > 0 && !hideLinkOnlyText);
   const hasAttachments =
     !message.sourceMessageId && message.attachments.length > 0;
   const hasDecorators =
@@ -149,10 +166,39 @@ const MessageBubble: FC<MessageBubbleProps> = ({
     )
   ) : null;
 
+  const previewContent =
+    hasLinkPreview && previewState ? (
+      <LinkPreviewMessage
+        messageId={message.id}
+        preview={previewState}
+        attached={Boolean(body)}
+      />
+    ) : null;
+  const actionsBesidePreview =
+    Boolean(hoverActions) && !body && !hasAttachments && previewContent;
+  const standalonePreview = previewContent ? (
+    <div className={styles.previewStack}>{previewContent}</div>
+  ) : null;
+  const linkPreview = body
+    ? null
+    : actionsBesidePreview
+      ? withHoverActions(standalonePreview)
+      : standalonePreview;
+
+  const bodyContent =
+    body && previewContent ? (
+      <div className={styles.previewStack}>
+        {body}
+        {previewContent}
+      </div>
+    ) : (
+      body
+    );
+
   /** Actions sit beside the bubble only so reply / reaction hang don't shift them. */
-  const bubbleRow = body
-    ? withHoverActions(body)
-    : hoverActions && !hasAttachments
+  const bubbleRow = bodyContent
+    ? withHoverActions(bodyContent)
+    : hoverActions && !hasAttachments && !previewContent
       ? withHoverActions(null)
       : null;
 
@@ -178,6 +224,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
       {forward}
       {attachments}
       {bodyStack}
+      {linkPreview}
     </div>
   );
 

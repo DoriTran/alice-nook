@@ -336,6 +336,7 @@ export type MessageBase = {
   edited: boolean;
   attachments: Attachment[];
   decorators: MessageDecorator[];
+  linkPreview?: LinkPreviewState | null;
   createdAt: string;
   updatedAt: string | null;
 };
@@ -343,6 +344,25 @@ export type MessageBase = {
 export type MessageReaction = {
   emoji: string;
   count: number;
+};
+
+export type LinkPreviewMetadata = {
+  url: string;
+  normalizedUrl: string;
+  hostname: string;
+  siteName?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  faviconUrl?: string;
+  fetchedAt: string;
+};
+
+export type LinkPreviewState = {
+  enabled: boolean;
+  primaryUrl: string;
+  normalizedUrl: string;
+  metadata?: LinkPreviewMetadata;
 };
 
 export type TextMessage = MessageBase & {
@@ -399,6 +419,7 @@ export type MessagePatchData = Partial<
     | 'replyToMessageId'
     | 'sourceMessageId'
     | 'decorators'
+    | 'linkPreview'
     | 'content'
   >
 >;

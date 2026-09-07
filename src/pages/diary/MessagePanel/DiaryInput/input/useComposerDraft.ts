@@ -10,11 +10,19 @@ import { v4 as uuidv4 } from 'uuid';
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
-import { generateAiResponse, uploadAttachment } from '@/api';
+import {
+  generateAiResponse,
+  resolveLinkPreview,
+  uploadAttachment,
+} from '@/api';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
 
-import { syncLinkAttachments } from '../attachment/linkAttachments.utils';
+import {
+  collectDraftUrls,
+  extractPreviewUrls,
+  syncLinkPreviewState,
+} from '../../LinkPreview/linkPreview.utils';
 import {
   createInitialDraft,
   createEmptyTodoItem,
@@ -86,6 +94,34 @@ export const useComposerDraft = (
   onReplyClearRef.current = options?.onReplyClear;
 
   useEffect(() => {
+    const preview = draft.linkPreview;
+    if (!preview?.enabled || preview.metadata) return;
+
+    let stale = false;
+    const timer = window.setTimeout(() => {
+      void resolveLinkPreview(preview.normalizedUrl)
+        .then((metadata) => {
+          if (stale) return;
+          setDraft((current) => {
+            if (current.linkPreview?.normalizedUrl !== preview.normalizedUrl) {
+              return current;
+            }
+            return {
+              ...current,
+              linkPreview: { ...current.linkPreview, metadata },
+            };
+          });
+        })
+        .catch(() => undefined);
+    }, 1000);
+
+    return () => {
+      stale = true;
+      window.clearTimeout(timer);
+    };
+  }, [draft.linkPreview, setDraft]);
+
+  useEffect(() => {
     setDraft((current) => ({
       ...current,
       replyToMessageId: options?.replyToMessageId ?? null,
@@ -130,11 +166,16 @@ export const useComposerDraft = (
 
   const setContent = useCallback(
     (content: RichTextContent) => {
-      setDraft((current) => ({
-        ...current,
-        content,
-        attachments: syncLinkAttachments(content.preview, current.attachments),
-      }));
+      setDraft((current) => {
+        const next = { ...current, content };
+        return {
+          ...next,
+          linkPreview: syncLinkPreviewState(
+            current.linkPreview,
+            collectDraftUrls(next),
+          ),
+        };
+      });
     },
     [setDraft],
   );
@@ -297,25 +338,24 @@ export const useComposerDraft = (
 
   const updateTodoItem = useCallback(
     (itemId: string, patch: Partial<DraftTodoItem>) => {
-      setDraft((current) => ({
-        ...current,
-        todoItems: current.todoItems.map((item) => {
-          if (item.id !== itemId) {
-            return item;
-          }
-
-          const nextItem = { ...item, ...patch };
-
-          if (patch.text !== undefined) {
-            nextItem.attachments = syncLinkAttachments(
-              nextItem.text,
-              nextItem.attachments,
-            );
-          }
-
-          return nextItem;
-        }),
-      }));
+      setDraft((current) => {
+        const next = {
+          ...current,
+          todoItems: current.todoItems.map((item) => {
+            if (item.id !== itemId) {
+              return item;
+            }
+            return { ...item, ...patch };
+          }),
+        };
+        return {
+          ...next,
+          linkPreview: syncLinkPreviewState(
+            current.linkPreview,
+            collectDraftUrls(next),
+          ),
+        };
+      });
     },
     [setDraft],
   );
@@ -326,9 +366,16 @@ export const useComposerDraft = (
         const nextItems = current.todoItems.filter(
           (item) => item.id !== itemId,
         );
-        return {
+        const next = {
           ...current,
           todoItems: nextItems.length > 0 ? nextItems : [createEmptyTodoItem()],
+        };
+        return {
+          ...next,
+          linkPreview: syncLinkPreviewState(
+            current.linkPreview,
+            collectDraftUrls(next),
+          ),
         };
       });
     },
@@ -354,7 +401,14 @@ export const useComposerDraft = (
 
         const next = items.slice();
         [next[current], next[previous]] = [next[previous], next[current]];
-        return { ...draftState, todoItems: next };
+        const reordered = { ...draftState, todoItems: next };
+        return {
+          ...reordered,
+          linkPreview: syncLinkPreviewState(
+            draftState.linkPreview,
+            collectDraftUrls(reordered),
+          ),
+        };
       });
     },
     [setDraft],
@@ -464,6 +518,7 @@ export const useComposerDraft = (
           content: payload.content,
           attachments: payload.attachments ?? [],
           decorators: payload.decorators ?? [],
+          linkPreview: payload.linkPreview ?? null,
           replyToMessageId:
             payload.replyToMessageId ?? current?.replyToMessageId ?? null,
         });
@@ -484,6 +539,10 @@ export const useComposerDraft = (
 
       if (payload.variant === 'ai' && prompt) {
         const response = await generateAiResponse({ chatboxId, prompt });
+        const responsePreviewText = [
+          response.text,
+          ...(response.list ?? []),
+        ].join('\n');
 
         createMessage({
           chatboxId,
@@ -496,6 +555,10 @@ export const useComposerDraft = (
           ),
           attachments: [],
           decorators: [],
+          linkPreview: syncLinkPreviewState(
+            null,
+            extractPreviewUrls(responsePreviewText),
+          ),
           tagIds: [],
           pinned: false,
           archived: false,
@@ -545,6 +608,20 @@ export const useComposerDraft = (
     [setDraft],
   );
 
+  const toggleLinkPreview = useCallback(() => {
+    setDraft((current) =>
+      current.linkPreview
+        ? {
+            ...current,
+            linkPreview: {
+              ...current.linkPreview,
+              enabled: !current.linkPreview.enabled,
+            },
+          }
+        : current,
+    );
+  }, [setDraft]);
+
   return {
     draft,
     editorRef,
@@ -561,6 +638,7 @@ export const useComposerDraft = (
     toggleDecorator,
     updateDecorator,
     updateDraft,
+    toggleLinkPreview,
     removeAttachment,
     addFiles,
     addTodoRow,

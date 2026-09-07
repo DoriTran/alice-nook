@@ -477,6 +477,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           reactions: data.reactions ?? [],
           attachments: data.attachments ?? [],
           decorators: data.decorators ?? [],
+          linkPreview: data.linkPreview ?? null,
           edited: false,
           createdAt: nowIso(),
           updatedAt: null,
@@ -679,6 +680,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           reactions: [],
           attachments: structuredClone(source.attachments),
           decorators: structuredClone(source.decorators),
+          linkPreview: structuredClone(source.linkPreview),
         } as Partial<Message>);
       },
       toggleMessagePin: (messageId) => {

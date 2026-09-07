@@ -7,6 +7,7 @@ export {
 } from './upload/resolveAttachmentUrl';
 export type { UploadResult } from './upload/types';
 export { generateAiResponse } from './ai/generateAiResponse';
+export { resolveLinkPreview } from './linkPreview/resolveLinkPreview';
 export type {
   GenerateAiResponseInput,
   GenerateAiResponseResult,

@@ -1,11 +1,13 @@
 import type { Editor, JSONContent } from '@tiptap/core';
 
+import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEditor, type EditorOptions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 
 import { EmojiConvertExtension, EmojiExtension } from './extensions/emoji';
+import { LinkBoundaryExtension } from './extensions/linkBoundary';
 import { EMPTY_DOC } from './richtext/createRichTextContent';
 
 export const createAdRichTextExtensions = (placeholder?: string) => [
@@ -18,7 +20,20 @@ export const createAdRichTextExtensions = (placeholder?: string) => [
     orderedList: false,
     listItem: false,
     code: false,
+    link: false,
   }),
+  Link.extend({ inclusive: false }).configure({
+    autolink: true,
+    linkOnPaste: true,
+    defaultProtocol: 'https',
+    openOnClick: 'whenNotEditable',
+    shouldAutoLink: (url) => /^(?:https?:\/\/|www\.)/i.test(url),
+    HTMLAttributes: {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+  }),
+  LinkBoundaryExtension,
   Placeholder.configure({
     placeholder: placeholder ?? '',
     emptyEditorClass: 'is-editor-empty',

@@ -1,0 +1,122 @@
+.card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 5.25rem;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--surface-soft) 88%, var(--primary-light));
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border-soft));
+  transform: translateY(-1px);
+}
+
+.card:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.image {
+  width: 50%;
+  min-height: 5.25rem;
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--surface-soft);
+}
+
+.body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.domain {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.favicon {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--font-sm);
+  font-weight: var(--font-semibold);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.composer {
+  max-height: 7.8125rem;
+}
+
+.composer .image {
+  width: min(13.8889rem, 50%);
+  height: 7.8125rem;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+}
+
+.composer .description {
+  -webkit-line-clamp: 1;
+}
+
+.attached {
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.attached:hover {
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .card {
+    min-height: 4.5rem;
+  }
+
+  .image {
+    width: 5rem;
+    min-height: 4.5rem;
+  }
+
+  .description {
+    -webkit-line-clamp: 1;
+  }
+}

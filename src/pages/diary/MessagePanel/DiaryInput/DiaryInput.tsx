@@ -56,6 +56,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     applyVariantSwitch,
     cancelVariantSwitch,
     toggleDecorator,
+    toggleLinkPreview,
     updateDecorator,
     updateDraft,
     removeAttachment,
@@ -194,6 +195,8 @@ const DiaryInput: FC<DiaryInputProps> = ({
           onClear={clearAll}
           onAddFiles={handleAddFiles}
           onToggleDecorator={toggleDecorator}
+          linkPreview={draft.linkPreview}
+          onToggleLinkPreview={toggleLinkPreview}
           onVariantSwitch={requestVariantSwitch}
           reactionPicker={
             draft.variant === 'text' || draft.variant === 'ai' ? (

@@ -25,14 +25,32 @@
 .bubbleRow {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.35rem;
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: auto;
+}
+
+.bubbleSlot {
+  flex: 0 1 fit-content;
+  width: fit-content;
   min-width: 0;
   max-width: 100%;
 }
 
-.bubbleSlot {
-  min-width: 0;
-  max-width: 100%;
+.previewStack {
+  width: fit-content;
+  min-width: 22rem;
+  max-width: 28rem;
+}
+
+.previewStack > [data-message-surface] {
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .core {
@@ -133,4 +151,11 @@
   display: inline-flex;
   margin-top: -1px;
   color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .previewStack {
+    width: 100%;
+    min-width: 0;
+  }
 }

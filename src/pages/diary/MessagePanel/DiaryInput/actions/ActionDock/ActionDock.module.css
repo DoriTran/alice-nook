@@ -14,7 +14,14 @@
 }
 
 .leftActions {
+  flex: 1;
   min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.leftActions::-webkit-scrollbar {
+  display: none;
 }
 
 .rightActions {

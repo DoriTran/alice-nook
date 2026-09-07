@@ -83,3 +83,11 @@
 .viewer :global(.ad-richtext-prose p + p) {
   margin-top: 0.15em;
 }
+
+.composer :global(.ad-richtext-prose a),
+.viewer :global(.ad-richtext-prose a) {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+  text-underline-offset: 0.14em;
+}

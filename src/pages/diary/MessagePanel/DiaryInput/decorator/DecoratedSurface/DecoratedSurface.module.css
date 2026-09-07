@@ -14,6 +14,22 @@
   align-self: stretch;
 }
 
+.outsideVertical {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.outsideBottom {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  margin-top: -1px;
+}
+
 .surfaceCard {
   flex: 1;
   align-self: stretch;
@@ -37,6 +53,11 @@
 .surfaceCardBorderless:focus-within {
   border-color: var(--border-soft);
   box-shadow: var(--shadow-md);
+}
+
+.surfaceBottomAttached {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .surfacePassThrough {

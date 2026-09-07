@@ -14,6 +14,10 @@ import {
 } from '@/packages/base/AdRichText/richtext';
 import { classifyAttachmentType } from '@/store/diary/attachment.registry';
 
+import {
+  collectDraftUrls,
+  syncLinkPreviewState,
+} from '../../LinkPreview/linkPreview.utils';
 import { createDefaultTimerDecorator } from '../decorator/timer/timer.utils';
 import { createEmptyTodoItem, type ComposerDraft } from './composer.types';
 
@@ -123,6 +127,7 @@ export const buildMessagePayload = (
     sender: 'user' as const,
     attachments: draft.attachments,
     decorators: draft.decorators,
+    linkPreview: draft.linkPreview,
     tagIds: [],
     pinned: false,
     archived: false,
@@ -178,6 +183,7 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     todoItems: [createEmptyTodoItem()],
     focused: false,
     replyToMessageId: message.replyToMessageId,
+    linkPreview: message.linkPreview ?? null,
   };
 
   if (message.variant === 'todo') {
@@ -188,17 +194,29 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
       attachments: item.attachments,
     }));
 
-    return {
+    const draft = {
       ...base,
       content: migratePlainTextToRichText(''),
       todoItems: items.length > 0 ? items : [createEmptyTodoItem()],
     };
+    return {
+      ...draft,
+      linkPreview:
+        message.linkPreview ??
+        syncLinkPreviewState(null, collectDraftUrls(draft)),
+    };
   }
 
-  return {
+  const draft = {
     ...base,
     content: message.content,
     todoItems: [createEmptyTodoItem()],
+  };
+  return {
+    ...draft,
+    linkPreview:
+      message.linkPreview ??
+      syncLinkPreviewState(null, collectDraftUrls(draft)),
   };
 };
 

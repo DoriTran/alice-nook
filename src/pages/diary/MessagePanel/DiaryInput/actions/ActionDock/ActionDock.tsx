@@ -5,6 +5,7 @@ import {
   ClipboardX,
   FolderPlus,
   ImageUp,
+  Link2,
   SendHorizontal,
   Sparkles,
   SquareCheckBig,
@@ -16,7 +17,11 @@ import {
 } from 'lucide-react';
 import { useRef, type FC, type ReactNode } from 'react';
 
-import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
+import type {
+  LinkPreviewState,
+  MessageDecorator,
+  MessageVariant,
+} from '@/store/diary/type';
 
 import { AdIcon, AdTooltip } from '@/packages/base';
 
@@ -34,6 +39,8 @@ export type ActionDockProps = {
     kind: 'file' | 'image' | 'video',
   ) => void;
   onToggleDecorator: (type: MessageDecorator['type']) => void;
+  linkPreview: LinkPreviewState | null;
+  onToggleLinkPreview: () => void;
   onVariantSwitch: (variant: MessageVariant) => void;
   reactionPicker?: ReactNode;
   onSend: () => void;
@@ -103,6 +110,8 @@ const ActionDock: FC<ActionDockProps> = ({
   onClear,
   onAddFiles,
   onToggleDecorator,
+  linkPreview,
+  onToggleLinkPreview,
   onVariantSwitch,
   reactionPicker,
   onSend,
@@ -210,6 +219,30 @@ const ActionDock: FC<ActionDockProps> = ({
               <AdIcon icon={TimerReset} source="lucide" size={16} />
             </button>
           </AdTooltip>
+          {linkPreview ? (
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="Link Preview"
+                  description="Show a rich preview for the first link."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${linkPreview.enabled ? styles.btnActive : ''}`}
+                aria-label="Link preview charm"
+                aria-pressed={linkPreview.enabled}
+                onClick={onToggleLinkPreview}
+              >
+                <AdIcon icon={Link2} source="lucide" size={16} />
+              </button>
+            </AdTooltip>
+          ) : null}
         </div>
 
         <span className={styles.divider} aria-hidden />

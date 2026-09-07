@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type {
   Attachment,
+  LinkPreviewState,
   MessageDecorator,
   MessageVariant,
 } from '@/store/diary/type';
@@ -25,6 +26,7 @@ export type ComposerDraft = {
   todoItems: DraftTodoItem[];
   focused: boolean;
   replyToMessageId: string | null;
+  linkPreview: LinkPreviewState | null;
 };
 
 export type ComposerEditorRef = {
@@ -47,6 +49,7 @@ export const createInitialDraft = (): ComposerDraft => ({
   todoItems: [createEmptyTodoItem()],
   focused: false,
   replyToMessageId: null,
+  linkPreview: null,
 });
 
 export type PendingVariantSwitch = {
