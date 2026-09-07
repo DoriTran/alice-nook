@@ -1,6 +1,7 @@
 .root {
   display: flex;
   justify-content: flex-end;
+  min-width: 0;
   max-width: 85%;
   margin-left: auto;
 }
@@ -23,6 +24,7 @@
 }
 
 .bubbleRow {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -153,7 +155,7 @@
   color: var(--primary);
 }
 
-@media (max-width: 640px) {
+@container (max-width: 40rem) {
   .previewStack {
     width: 100%;
     min-width: 0;

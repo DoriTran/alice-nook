@@ -3,6 +3,7 @@
   flex: 1;
   flex-direction: column-reverse;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   container-type: inline-size;
 }
@@ -10,12 +11,16 @@
 .inner {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
   padding: 1rem 1.25rem 1.25rem;
+  box-sizing: border-box;
 }
 
 .messageGroups {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 1.25rem;
 }
 
@@ -38,11 +43,13 @@
 .dayGroup {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 0.85rem;
 }
 
 .messages {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 1rem;
 }

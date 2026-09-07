@@ -1,8 +1,32 @@
 .root {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 0.2rem;
   flex-shrink: 0;
+  transform: translateY(-50%);
+}
+
+.root[data-side='right'] {
+  right: calc(100% + 0.35rem);
+}
+
+.root[data-side='left'] {
+  left: calc(100% + 0.35rem);
+}
+
+@container (max-width: 40rem) {
+  .root[data-side='right'] {
+    right: auto;
+    left: 0.35rem;
+  }
+
+  .root[data-side='left'] {
+    right: 0.35rem;
+    left: auto;
+  }
 }
 
 .tagPopover {
