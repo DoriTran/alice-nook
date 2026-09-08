@@ -21,13 +21,16 @@ const LinkPreviewPopover: FC<LinkPreviewPopoverProps> = ({
   dismissOnBackdrop = false,
   onDismiss,
 }) => {
-  const [metadata, setMetadata] = useState<LinkPreviewMetadata>();
+  const [resolved, setResolved] = useState<{
+    url: string;
+    metadata: LinkPreviewMetadata;
+  }>();
 
   useEffect(() => {
     let stale = false;
     void resolveLinkPreview(url)
       .then((next) => {
-        if (!stale) setMetadata(next);
+        if (!stale) setResolved({ url, metadata: next });
       })
       .catch(() => undefined);
     return () => {
@@ -42,6 +45,7 @@ const LinkPreviewPopover: FC<LinkPreviewPopoverProps> = ({
     Math.min(centeredLeft, window.innerWidth - width - 12),
   );
   const placeAbove = anchorRect.top > 180;
+  const metadata = resolved?.url === url ? resolved.metadata : undefined;
 
   return createPortal(
     <>

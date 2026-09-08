@@ -4,8 +4,13 @@ import type { LinkPreviewState, Message } from '@/store/diary/type';
 
 import type { ComposerDraft } from '../DiaryInput/input/composer.types';
 
-const URL_PATTERN = /(?<![\w@])(?:https?:\/\/|www\.)[^\s<>"']+/gi;
+const URL_PATTERN = /(?<![\w@])(?:https?:\/\/|www\.)[^\s\uFFFC<>"']+/gi;
 const TRAILING_PUNCTUATION = /[.,;:!?)}\]]+$/;
+const BROKEN_INLINE_SEPARATOR =
+  /(?:%EF%BF%BC|\uFFFC)(?=(?:https?:\/\/|www\.))/gi;
+
+const repairBrokenUrlSeparators = (text: string): string =>
+  text.replace(BROKEN_INLINE_SEPARATOR, '\n');
 
 export type DetectedUrl = {
   raw: string;
@@ -31,8 +36,9 @@ export const normalizeLinkPreviewUrl = (raw: string): string | null => {
 export const extractPreviewUrls = (text: string): DetectedUrl[] => {
   const found: DetectedUrl[] = [];
   const seen = new Set<string>();
+  const repairedText = repairBrokenUrlSeparators(text);
 
-  for (const match of text.matchAll(URL_PATTERN)) {
+  for (const match of repairedText.matchAll(URL_PATTERN)) {
     const raw = match[0].replace(TRAILING_PUNCTUATION, '');
     const normalized = normalizeLinkPreviewUrl(raw);
     if (!normalized || seen.has(normalized)) continue;
@@ -80,39 +86,51 @@ export const syncLinkPreviewState = (
 
 export const isLinkOnlyText = (text: string): boolean => {
   let found = false;
-  const remainder = text.replace(URL_PATTERN, (match) => {
-    const raw = match.replace(TRAILING_PUNCTUATION, '');
-    if (!normalizeLinkPreviewUrl(raw)) return match;
-    found = true;
-    return match.slice(raw.length);
-  });
+  const remainder = repairBrokenUrlSeparators(text).replace(
+    URL_PATTERN,
+    (match) => {
+      const raw = match.replace(TRAILING_PUNCTUATION, '');
+      if (!normalizeLinkPreviewUrl(raw)) return match;
+      found = true;
+      return match.slice(raw.length);
+    },
+  );
   if (!found) return false;
   return !remainder.replace(/[\s.,;:!?()[\]{}|-]+/g, '');
 };
 
 const linkifyTextNode = (node: JSONContent): JSONContent[] => {
   if (node.type !== 'text' || !node.text) return [node];
-  if (node.marks?.some((mark) => mark.type === 'link')) return [node];
+
+  const repairedText = repairBrokenUrlSeparators(node.text);
+  const matches = [...repairedText.matchAll(URL_PATTERN)];
+  if (!matches.length) return [node];
+
+  // Rebuild URL marks from the visible text. Older documents may contain one
+  // inclusive link mark spanning adjacent URLs, which makes every anchor point
+  // to the first URL even though their labels differ.
+  const nonLinkMarks = node.marks?.filter((mark) => mark.type !== 'link') ?? [];
+  const unlinkedNode = { ...node, marks: nonLinkMarks };
 
   const parts: JSONContent[] = [];
   let cursor = 0;
-  for (const match of node.text.matchAll(URL_PATTERN)) {
+  for (const match of matches) {
     const index = match.index ?? 0;
     const raw = match[0].replace(TRAILING_PUNCTUATION, '');
     const href = normalizeLinkPreviewUrl(raw);
     if (!href) continue;
     if (index > cursor) {
-      parts.push({ ...node, text: node.text.slice(cursor, index) });
+      parts.push({ ...unlinkedNode, text: repairedText.slice(cursor, index) });
     }
     parts.push({
-      ...node,
+      ...unlinkedNode,
       text: raw,
-      marks: [...(node.marks ?? []), { type: 'link', attrs: { href } }],
+      marks: [...nonLinkMarks, { type: 'link', attrs: { href } }],
     });
     cursor = index + raw.length;
   }
-  if (cursor < node.text.length) {
-    parts.push({ ...node, text: node.text.slice(cursor) });
+  if (cursor < repairedText.length) {
+    parts.push({ ...unlinkedNode, text: repairedText.slice(cursor) });
   }
   return parts.length ? parts : [node];
 };

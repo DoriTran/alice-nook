@@ -91,3 +91,11 @@
   text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
   text-underline-offset: 0.14em;
 }
+
+@media (max-width: 639px) {
+  .viewer :global(.ad-richtext-prose a) {
+    -webkit-touch-callout: none;
+    touch-action: pan-y;
+    user-select: none;
+  }
+}

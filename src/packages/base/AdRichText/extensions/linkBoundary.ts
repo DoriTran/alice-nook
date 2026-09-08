@@ -3,7 +3,7 @@ import type { MarkType, Node } from '@tiptap/pm/model';
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-const LINK_PATTERN = /(?<![\w@])(?:https?:\/\/|www\.)[^\s<>"']+/gi;
+const LINK_PATTERN = /(?<![\w@])(?:https?:\/\/|www\.)[^\s\uFFFC<>"']+/gi;
 const TRAILING_PUNCTUATION = /[.,;:!?)}\]]+$/;
 const pluginKey = new PluginKey('boundary-safe-autolink');
 
@@ -28,7 +28,9 @@ const normalizeUrl = (raw: string): string | null => {
 };
 
 const desiredLinkRanges = (node: Node, position: number): LinkRange[] => {
-  const text = node.textBetween(0, node.content.size, '\n', '\uFFFC');
+  // A whitespace leaf separator keeps adjacent URLs distinct. U+FFFC becomes
+  // `%EF%BF%BC` when passed through `new URL()` and used to corrupt href marks.
+  const text = node.textBetween(0, node.content.size, '\n', '\n');
   const ranges: LinkRange[] = [];
 
   for (const match of text.matchAll(LINK_PATTERN)) {
