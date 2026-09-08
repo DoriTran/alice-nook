@@ -283,7 +283,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           pinned: false,
           archived: false,
           hasUnread: false,
-          notificationEnabled: false,
+          notificationEnabled: true,
           notificationRinging: false,
           tags: data.tags ?? [],
           totalMessage: 0,
@@ -307,11 +307,11 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
 
           if (groupId) {
             orders.groupChatboxOrders[groupId] = [
-              ...(orders.groupChatboxOrders[groupId] ?? []),
               id,
+              ...(orders.groupChatboxOrders[groupId] ?? []),
             ];
           } else {
-            orders.rootOrders.push(id);
+            orders.rootOrders.unshift(id);
           }
 
           orders.chatboxMessageOrders[id] = [];
