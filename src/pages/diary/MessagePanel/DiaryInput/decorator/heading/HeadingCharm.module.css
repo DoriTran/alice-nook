@@ -159,3 +159,27 @@
     padding-right: 1.85rem;
   }
 }
+
+@container message-panel (max-width: 22rem) {
+  .editor[data-custom] {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.35rem;
+  }
+
+  .editor[data-custom] .titleInput {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .editor[data-custom] .headingControls {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+    margin-top: 0;
+  }
+
+  .editor[data-custom] .descriptionInput {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}

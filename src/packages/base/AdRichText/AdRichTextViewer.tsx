@@ -1,5 +1,12 @@
 import { EditorContent } from '@tiptap/react';
-import { useMemo, useState, type FC, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type PointerEvent,
+} from 'react';
 
 import {
   linkifyRichTextDocument,
@@ -23,9 +30,11 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
   className,
   linkPreviewOnHover = false,
 }) => {
+  const rootRef = useRef<HTMLDivElement>(null);
   const [popover, setPopover] = useState<{
     url: string;
     rect: DOMRect;
+    touch: boolean;
   } | null>(null);
   const linkedValue = useMemo(
     () => ({ ...value, json: linkifyRichTextDocument(value.json) }),
@@ -38,21 +47,56 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
 
   const rootClass = [styles.viewer, className ?? ''].filter(Boolean).join(' ');
 
-  const showForTarget = (target: EventTarget | null): boolean => {
+  useEffect(() => {
+    if (!popover) return;
+
+    const handleOutsidePointerDown = (event: globalThis.PointerEvent) => {
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest('a[href]') &&
+        rootRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setPopover(null);
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true);
+    return () =>
+      document.removeEventListener(
+        'pointerdown',
+        handleOutsidePointerDown,
+        true,
+      );
+  }, [popover]);
+
+  const showForTarget = (
+    target: EventTarget | null,
+    touch = false,
+  ): boolean => {
     if (!linkPreviewOnHover || !(target instanceof Element)) return false;
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
     if (!anchor) return false;
     const url = normalizeLinkPreviewUrl(anchor.href);
     if (!url) return false;
-    setPopover({ url, rect: anchor.getBoundingClientRect() });
+    setPopover((current) => ({
+      url,
+      rect: anchor.getBoundingClientRect(),
+      touch: touch || (current?.url === url && current.touch),
+    }));
     return true;
   };
 
   return (
     <div
+      ref={rootRef}
       className={rootClass}
       onPointerOver={(event: PointerEvent<HTMLDivElement>) => {
-        if (!showForTarget(event.target)) setPopover(null);
+        if (!showForTarget(event.target, event.pointerType !== 'mouse')) {
+          setPopover(null);
+        }
       }}
       onMouseLeave={() => setPopover(null)}
       onFocusCapture={(event) => showForTarget(event.target)}
@@ -60,7 +104,12 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
     >
       <EditorContent editor={editor} />
       {popover ? (
-        <LinkPreviewPopover url={popover.url} anchorRect={popover.rect} />
+        <LinkPreviewPopover
+          url={popover.url}
+          anchorRect={popover.rect}
+          dismissOnBackdrop={popover.touch}
+          onDismiss={() => setPopover(null)}
+        />
       ) : null}
     </div>
   );

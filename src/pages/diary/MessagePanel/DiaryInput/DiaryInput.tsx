@@ -1,4 +1,4 @@
-import type { ClipboardEvent, FC } from 'react';
+import { useRef, type ClipboardEvent, type FC } from 'react';
 
 import { useSettingsStore } from '@/store';
 
@@ -11,7 +11,9 @@ import ReplyPreviewInput from './input/ReplyPreviewInput';
 import { useComposerDraft } from './input/useComposerDraft';
 import AIEditor from './variant/editors/AIEditor';
 import TextEditor from './variant/editors/TextEditor';
-import TodoEditor from './variant/editors/TodoEditor';
+import TodoEditor, {
+  type TodoEditorHandle,
+} from './variant/editors/TodoEditor';
 import TypeSwitchModal from './variant/TypeSwitchModal';
 
 export type DiaryInputProps = {
@@ -42,6 +44,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
   const preferences = useSettingsStore('preferences');
   const enterKeyBehavior = preferences.composer.enterKeyBehavior;
   const todoEnterKeyBehavior = preferences.decorations.todo.enterKeyBehavior;
+  const todoEditorRef = useRef<TodoEditorHandle>(null);
 
   const {
     draft,
@@ -121,6 +124,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
       return (
         <TodoEditor
           key={chatboxId}
+          ref={todoEditorRef}
           items={draft.todoItems}
           onUpdateItem={updateTodoItem}
           onRemoveItem={removeTodoRow}
@@ -170,6 +174,15 @@ const DiaryInput: FC<DiaryInputProps> = ({
     (item) => item.type !== 'link',
   );
 
+  const handleInsertReactionIcon = (icon: string) => {
+    if (draft.variant === 'todo') {
+      todoEditorRef.current?.insertAtLatestInput(icon);
+      return;
+    }
+
+    insertReactionIcon(icon);
+  };
+
   return (
     <footer className={styles.root} onPasteCapture={handlePaste}>
       <div className={styles.dock}>
@@ -213,9 +226,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
           onToggleLinkPreview={toggleLinkPreview}
           onVariantSwitch={requestVariantSwitch}
           reactionPicker={
-            draft.variant === 'text' || draft.variant === 'ai' ? (
-              <ReactionIconPicker onSelect={insertReactionIcon} />
-            ) : null
+            <ReactionIconPicker onSelect={handleInsertReactionIcon} />
           }
           onSend={() => void send()}
           onCancelEdit={cancelEdit}

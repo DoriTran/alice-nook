@@ -40,6 +40,8 @@ export type TagSelectProps = {
   stackedPalette?: boolean;
   /** Render dropdown in a portal (avoids clipping inside modals). */
   withinPortal?: boolean;
+  /** Match the dropdown to a narrow containing menu instead of the desktop minimum. */
+  compactDropdown?: boolean;
 };
 
 type EditDraft = {
@@ -79,6 +81,7 @@ const TagSelect: FC<TagSelectProps> = ({
   disabled,
   stackedPalette = false,
   withinPortal = false,
+  compactDropdown = false,
 }) => {
   const tags = useDiaryStore('tags');
   const createTag = useDiaryStore('createTag');
@@ -408,7 +411,11 @@ const TagSelect: FC<TagSelectProps> = ({
   const emptyMessage = hasExactLabelMatch ? 'Already selected' : emptyLabel;
 
   return (
-    <div className={styles.root} data-tag-select-root>
+    <div
+      className={styles.root}
+      data-tag-select-root
+      data-compact-dropdown={compactDropdown || undefined}
+    >
       {label ? <span className={styles.label}>{label}</span> : null}
       <Combobox
         store={combobox}

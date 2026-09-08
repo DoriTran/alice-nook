@@ -11,11 +11,15 @@ import styles from './LinkPreviewPopover.module.css';
 export type LinkPreviewPopoverProps = {
   url: string;
   anchorRect: DOMRect;
+  dismissOnBackdrop?: boolean;
+  onDismiss?: () => void;
 };
 
 const LinkPreviewPopover: FC<LinkPreviewPopoverProps> = ({
   url,
   anchorRect,
+  dismissOnBackdrop = false,
+  onDismiss,
 }) => {
   const [metadata, setMetadata] = useState<LinkPreviewMetadata>();
 
@@ -40,18 +44,30 @@ const LinkPreviewPopover: FC<LinkPreviewPopoverProps> = ({
   const placeAbove = anchorRect.top > 180;
 
   return createPortal(
-    <div
-      className={styles.popover}
-      style={{
-        width,
-        left,
-        top: placeAbove ? anchorRect.top - 8 : anchorRect.bottom + 8,
-        transform: placeAbove ? 'translateY(-100%)' : undefined,
-      }}
-      role="tooltip"
-    >
-      <LinkPreviewCard url={url} metadata={metadata} interactive={false} />
-    </div>,
+    <>
+      {dismissOnBackdrop ? (
+        <div
+          className={styles.dismissBackdrop}
+          aria-hidden
+          onPointerDown={(event) => {
+            event.preventDefault();
+            onDismiss?.();
+          }}
+        />
+      ) : null}
+      <div
+        className={styles.popover}
+        style={{
+          width,
+          left,
+          top: placeAbove ? anchorRect.top - 8 : anchorRect.bottom + 8,
+          transform: placeAbove ? 'translateY(-100%)' : undefined,
+        }}
+        role="tooltip"
+      >
+        <LinkPreviewCard url={url} metadata={metadata} interactive={false} />
+      </div>
+    </>,
     document.body,
   );
 };

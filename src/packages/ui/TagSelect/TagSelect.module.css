@@ -78,6 +78,11 @@
   padding: 0.25rem;
 }
 
+.root[data-compact-dropdown] .dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
 .list {
   display: flex;
   flex-direction: column;

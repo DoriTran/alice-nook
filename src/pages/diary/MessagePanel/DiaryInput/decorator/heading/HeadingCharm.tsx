@@ -149,6 +149,7 @@ const HeadingCharm: FC<HeadingCharmProps> = ({ decoratorIndex, ctx }) => {
           styles.withPreviousCharm,
       )}
       style={titleStyle}
+      data-custom={isCustom || undefined}
     >
       <input
         className={styles.titleInput}

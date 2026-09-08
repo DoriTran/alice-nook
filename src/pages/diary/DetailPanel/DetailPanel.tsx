@@ -19,6 +19,8 @@ import { useDetailPanelData } from './useDetailPanelData';
 export type DetailPanelProps = {
   chatboxId: string;
   collapsed: boolean;
+  presentation?: 'desktop' | 'overlay' | 'screen';
+  onBack?: () => void;
   onJumpToMessage: (messageId: string) => void;
   onFocusTimelineSearch: () => void;
   onEditChatbox: (chatboxId: string) => void;
@@ -28,6 +30,8 @@ export type DetailPanelProps = {
 const DetailPanel: FC<DetailPanelProps> = ({
   chatboxId,
   collapsed,
+  presentation = 'desktop',
+  onBack,
   onJumpToMessage,
   onFocusTimelineSearch,
   onEditChatbox,
@@ -68,11 +72,13 @@ const DetailPanel: FC<DetailPanelProps> = ({
       tag="aside"
       className={styles.root}
       data-collapsed={collapsed || undefined}
+      data-presentation={presentation}
       aria-label={`${data.identity.name} details`}
       aria-hidden={collapsed}
     >
       <Header
         identity={data.identity}
+        onBack={presentation === 'desktop' ? undefined : onBack}
         onSearch={onFocusTimelineSearch}
         onEdit={() => onEditChatbox(chatboxId)}
         onToggleNotification={handleToggleNotification}

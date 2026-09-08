@@ -15,9 +15,213 @@
   min-width: 0;
 }
 
-@media (max-width: 1400px) {
+.listSlot,
+.detailSlot {
+  display: flex;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.listSlot {
+  flex-basis: calc(var(--diary-chatbox-width, 380px) + 12px);
+  width: calc(var(--diary-chatbox-width, 380px) + 12px);
+}
+
+.detailBackdrop {
+  display: none;
+}
+
+@media (max-width: 1535px) {
   .rootPage {
-    --diary-chatbox-width: 300px;
-    --detail-panel-width: 280px;
+    --detail-panel-width: 360px;
+  }
+  .detailSlot {
+    display: none;
+  }
+  .rootPage[data-overlay-mounted][data-mode='overlay-detail'] .detailSlot {
+    position: fixed;
+    z-index: 301;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    animation: detail-slot-in 260ms ease-out both;
+  }
+  .rootPage[data-overlay-mounted][data-mode='overlay-detail'] .detailBackdrop {
+    position: fixed;
+    z-index: 300;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: var(--overlay);
+    backdrop-filter: blur(1px);
+    animation: detail-backdrop-in 260ms ease-out both;
+  }
+  .rootPage[data-overlay-closing][data-mode='overlay-detail'] .detailSlot {
+    pointer-events: none;
+    animation: detail-slot-out 260ms ease-in both;
+  }
+  .rootPage[data-overlay-closing][data-mode='overlay-detail'] .detailBackdrop {
+    pointer-events: none;
+    animation: detail-backdrop-out 260ms ease-in both;
+  }
+}
+
+@media (max-width: 1299px) {
+  .rootPage {
+    --diary-chatbox-width: clamp(300px, calc(28.9855vw + 3.1884px), 380px);
+  }
+}
+
+@keyframes detail-slot-in {
+  from {
+    transform: translateX(calc(100% + 1rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes detail-slot-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100% + 1rem));
+  }
+}
+
+@keyframes detail-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes detail-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1279px) {
+  .rootPage {
+    display: grid;
+    grid-template-columns:
+      calc(var(--diary-chatbox-width) + 12px)
+      minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .listSlot {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .messageColumn,
+  .detailSlot {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    min-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 180ms ease,
+      visibility 0s linear 180ms;
+  }
+
+  .rootPage:not([data-view='details']) .messageColumn,
+  .rootPage[data-view='details'] .detailSlot {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 180ms ease,
+      visibility 0s;
+  }
+}
+
+@media (max-width: 1023px) {
+  .rootPage {
+    --diary-chatbox-width: clamp(260px, calc(32.2581vw - 30.3226px), 300px);
+  }
+}
+
+@media (max-width: 899px) {
+  .rootPage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .listSlot,
+  .messageColumn,
+  .detailSlot {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 180ms ease,
+      visibility 0s linear 180ms;
+  }
+
+  .rootPage[data-view='list'] .listSlot,
+  .rootPage[data-view='chat'] .messageColumn,
+  .rootPage[data-view='details'] .detailSlot {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 180ms ease,
+      visibility 0s;
+  }
+
+  .rootPage[data-view='list'] .messageColumn {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 180ms ease,
+      visibility 0s linear 180ms;
+  }
+}
+
+@media (max-width: 639px) {
+  .rootPage {
+    flex: 0 0 auto;
+    width: 100%;
+    height: calc(
+      var(--app-viewport-height) - 4.1rem - env(safe-area-inset-bottom)
+    );
+    max-height: calc(
+      var(--app-viewport-height) - 4.1rem - env(safe-area-inset-bottom)
+    );
+    padding: 0;
+  }
+
+  .rootPage[data-view='chat'],
+  .rootPage[data-view='details'] {
+    height: var(--app-viewport-height);
+    max-height: var(--app-viewport-height);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messageColumn,
+  .listSlot,
+  .detailSlot,
+  .detailBackdrop {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
   }
 }

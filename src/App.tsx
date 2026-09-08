@@ -28,7 +28,7 @@ const App = () => {
           />
           <Route path="dev" element={<Dev />} />
           <Route
-            path="diary"
+            path="diary/*"
             element={
               <ProtectedRoute>
                 <Diary />

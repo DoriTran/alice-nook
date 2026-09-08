@@ -3,8 +3,26 @@
   flex: 1;
   flex-direction: column;
   min-width: 0;
+  container-name: message-panel;
+  container-type: inline-size;
   min-height: calc(var(--app-viewport-height) - 24px);
   max-height: calc(var(--app-viewport-height) - 24px);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 899px) {
+  .root {
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .root {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }

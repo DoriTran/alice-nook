@@ -7,16 +7,22 @@
   min-height: 40px;
 }
 
+.modePanel > svg {
+  flex-shrink: 0;
+}
+
 .displayText {
   font-size: 28px;
   font-weight: 700;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .displayTextSlot {
   display: inline-grid;
+  flex-shrink: 0;
   justify-items: center;
 }
 
@@ -31,6 +37,7 @@
 
 .datetimeStack {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
@@ -117,4 +124,13 @@
 .controlBtnDisabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+@container message-panel (max-width: 22rem) {
+  .controls {
+    flex: 0 0 100%;
+    justify-content: flex-end;
+    width: 100%;
+    margin-left: 0;
+  }
 }

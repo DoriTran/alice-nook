@@ -107,16 +107,36 @@
 }
 
 @media (max-width: 640px) {
-  .card {
-    min-height: 4.5rem;
+  .card:not(.composer) {
+    flex-direction: column;
+    min-height: 0;
   }
 
-  .image {
-    width: 5rem;
-    min-height: 4.5rem;
+  .card:not(.composer) .image {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
   }
 
-  .description {
-    -webkit-line-clamp: 1;
+  .card:not(.composer) .body {
+    width: 100%;
+    padding: 0.65rem 0.75rem 0.7rem;
+  }
+
+  .card:not(.composer) .title {
+    order: 1;
+  }
+
+  .card:not(.composer) .description {
+    order: 2;
+  }
+
+  .card:not(.composer) .domain {
+    order: 3;
+  }
+
+  .card:not(.composer) .description {
+    -webkit-line-clamp: 2;
   }
 }

@@ -4,6 +4,7 @@
   faPen,
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
+import { useMediaQuery } from '@mantine/hooks';
 import { BellOff, BellRing, EyeClosed } from 'lucide-react';
 import { useState, type CSSProperties, type FC } from 'react';
 
@@ -53,6 +54,7 @@ const Chatbox: FC<ChatboxProps> = ({
   } = data;
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const mobileTooltip = useMediaQuery('(max-width: 639px)');
   const updateChatbox = useDiaryStore('updateChatbox');
   const formattedTime = formatChatboxTime(lastMessageAt);
   const statusIcon = hasUnread
@@ -89,11 +91,12 @@ const Chatbox: FC<ChatboxProps> = ({
     <AdTooltip
       label={tooltipLabel}
       openDelay={500}
-      position="right"
+      position={mobileTooltip ? 'bottom' : 'right'}
       withArrow={false}
       multiline
       withinPortal
       floatingStrategy="fixed"
+      middlewares={{ flip: true, shift: { padding: 8 } }}
       disabled={suppressTooltip}
       classNames={{
         tooltip: styles.tooltip,

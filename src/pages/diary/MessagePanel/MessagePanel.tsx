@@ -18,6 +18,9 @@ export type MessagePanelProps = {
   chatboxId: string;
   detailPanelCollapsed: boolean;
   onToggleDetailPanel: () => void;
+  onBack?: () => void;
+  onOpenDetails?: () => void;
+  compactHeader?: boolean;
   pendingScrollMessageId?: string | null;
   onPendingScrollHandled?: () => void;
   onNavigateToChatbox?: (chatboxId: string, messageId: string) => void;
@@ -33,6 +36,9 @@ const MessagePanel: FC<MessagePanelProps> = ({
   chatboxId,
   detailPanelCollapsed,
   onToggleDetailPanel,
+  onBack,
+  onOpenDetails,
+  compactHeader = false,
   pendingScrollMessageId,
   onPendingScrollHandled,
   onNavigateToChatbox,
@@ -48,7 +54,7 @@ const MessagePanel: FC<MessagePanelProps> = ({
     searchQuery: messageSearchQuery,
     forceVisibleMessageIds,
   });
-  const scroll = useMessageScroll();
+  const scroll = useMessageScroll(chatboxId);
   const actions = useMessageActions({
     chatboxId,
     scroll,
@@ -87,6 +93,9 @@ const MessagePanel: FC<MessagePanelProps> = ({
         data={headerData}
         detailPanelCollapsed={detailPanelCollapsed}
         onToggleDetailPanel={onToggleDetailPanel}
+        onBack={onBack}
+        onOpenDetails={onOpenDetails}
+        compact={compactHeader}
         searchQuery={messageSearchQuery}
         searchActive={timelineSearchActive}
         searchInputRef={searchInputRef}

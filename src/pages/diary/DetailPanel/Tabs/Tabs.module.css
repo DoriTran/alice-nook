@@ -6,6 +6,17 @@
   border-bottom: 1px solid var(--detail-border);
 }
 
+@media (max-width: 899px) {
+  .root {
+    position: sticky;
+    top: 0;
+    background: var(--detail-surface);
+  }
+  .tab {
+    min-height: 2.75rem;
+  }
+}
+
 .tabList {
   display: flex;
   width: 100%;

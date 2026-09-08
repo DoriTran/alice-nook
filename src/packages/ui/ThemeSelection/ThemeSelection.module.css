@@ -172,7 +172,7 @@
 .menuCheck {
   display: flex;
   margin-left: auto;
-  color: var(--accent-purple);
+  color: var(--theme-accent, var(--primary));
 }
 
 .menuDivider {

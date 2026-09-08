@@ -161,3 +161,9 @@
     min-width: 0;
   }
 }
+
+@container (max-width: 28rem) {
+  .root {
+    max-width: 75%;
+  }
+}

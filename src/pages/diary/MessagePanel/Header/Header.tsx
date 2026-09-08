@@ -1,6 +1,7 @@
 import {
   faBoxArchive,
   faClock,
+  faChevronLeft,
   faColumns,
   faComment,
   faFolder,
@@ -29,6 +30,9 @@ export type HeaderProps = {
   data: MessageHeaderData;
   detailPanelCollapsed: boolean;
   onToggleDetailPanel: () => void;
+  onBack?: () => void;
+  onOpenDetails?: () => void;
+  compact?: boolean;
   searchQuery: string;
   searchActive: boolean;
   searchInputRef: RefObject<HTMLInputElement | null>;
@@ -40,6 +44,9 @@ const Header: FC<HeaderProps> = ({
   data,
   detailPanelCollapsed,
   onToggleDetailPanel,
+  onBack,
+  onOpenDetails,
+  compact = false,
   searchQuery,
   searchActive,
   searchInputRef,
@@ -130,54 +137,73 @@ const Header: FC<HeaderProps> = ({
           '--header-strong': paletteStrong,
         } as CSSProperties
       }
+      data-compact={compact || undefined}
     >
       <div className={styles.topRow}>
-        <div className={styles.identityBlock}>
-          <div className={styles.iconArea}>
-            <span
-              className={styles.iconWrap}
-              style={{ background: iconBg }}
-              aria-hidden
-            >
-              <AdIcon icon={icon} source="lucide" size={36} />
-            </span>
-            {pinned ? (
-              <span className={styles.overlayPin} aria-label="Pinned">
-                <AdIcon icon={faThumbtack} size={17.5} />
+        {onBack ? (
+          <button
+            type="button"
+            className={styles.backBtn}
+            aria-label="Back to Diary list"
+            onClick={onBack}
+          >
+            <AdIcon icon={faChevronLeft} size={16} />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={styles.identityButton}
+          disabled={!compact || !onOpenDetails}
+          aria-label={`Open ${name} details`}
+          onClick={onOpenDetails}
+        >
+          <div className={styles.identityBlock}>
+            <div className={styles.iconArea}>
+              <span
+                className={styles.iconWrap}
+                style={{ background: iconBg }}
+                aria-hidden
+              >
+                <AdIcon icon={icon} source="lucide" size={36} />
               </span>
-            ) : null}
-          </div>
-
-          <div className={styles.textBlock}>
-            <h1 className={styles.name}>
-              {archived ? (
-                <span className={styles.titleArchive} aria-label="Archived">
-                  <AdIcon icon={faBoxArchive} size="1em" />
+              {pinned ? (
+                <span className={styles.overlayPin} aria-label="Pinned">
+                  <AdIcon icon={faThumbtack} size={17.5} />
                 </span>
               ) : null}
-              <span className={styles.nameText}>{name}</span>
-            </h1>
+            </div>
 
-            {description ? (
-              <p className={styles.description}>{description}</p>
-            ) : null}
+            <div className={styles.textBlock}>
+              <h1 className={styles.name}>
+                {archived ? (
+                  <span className={styles.titleArchive} aria-label="Archived">
+                    <AdIcon icon={faBoxArchive} size="1em" />
+                  </span>
+                ) : null}
+                <span className={styles.nameText}>{name}</span>
+              </h1>
 
-            {metaItems.length > 0 ? (
-              <div className={styles.metadataRow}>
-                {metaItems.map((item, index) => (
-                  <Fragment key={item.key}>
-                    {index > 0 ? (
-                      <span className={styles.metaDot} aria-hidden>
-                        •
-                      </span>
-                    ) : null}
-                    {item.node}
-                  </Fragment>
-                ))}
-              </div>
-            ) : null}
+              {description ? (
+                <p className={styles.description}>{description}</p>
+              ) : null}
+
+              {metaItems.length > 0 ? (
+                <div className={styles.metadataRow}>
+                  {metaItems.map((item, index) => (
+                    <Fragment key={item.key}>
+                      {index > 0 ? (
+                        <span className={styles.metaDot} aria-hidden>
+                          •
+                        </span>
+                      ) : null}
+                      {item.node}
+                    </Fragment>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </button>
 
         <button
           type="button"

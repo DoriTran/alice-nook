@@ -1,5 +1,5 @@
 import { faReply, faSmile, faTags } from '@fortawesome/free-solid-svg-icons';
-import { useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
@@ -36,6 +36,9 @@ const HoverActions: FC<HoverActionsProps> = ({
   const [fullPickerOpen, setFullPickerOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [compactActions, setCompactActions] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const expandedActionsWidthRef = useRef(0);
   const popupOpen = reactionOpen || tagOpen || menuOpen;
 
   const handleReactionSelect = (emoji: string) => {
@@ -48,10 +51,44 @@ const HoverActions: FC<HoverActionsProps> = ({
     actions.replyToMessageId === message.id ||
     actions.editTargetId === message.id;
 
+  useEffect(() => {
+    const row = rootRef.current?.closest<HTMLElement>('[data-message-id]');
+    const bubbleRow = rootRef.current?.parentElement;
+    const bubbleSlot = (
+      side === 'right'
+        ? rootRef.current?.nextElementSibling
+        : rootRef.current?.previousElementSibling
+    ) as HTMLElement | null;
+    if (!row || !bubbleRow || !bubbleSlot || !rootRef.current) return;
+
+    const update = () => {
+      if (!compactActions) {
+        expandedActionsWidthRef.current = Math.max(
+          expandedActionsWidthRef.current,
+          rootRef.current?.scrollWidth ?? 0,
+        );
+      }
+      const rowRect = row.getBoundingClientRect();
+      const bubbleRect = bubbleSlot.getBoundingClientRect();
+      const available =
+        side === 'right'
+          ? bubbleRect.left - rowRect.left
+          : rowRect.right - bubbleRect.right;
+      setCompactActions(available < expandedActionsWidthRef.current + 8);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(row);
+    observer.observe(bubbleSlot);
+    return () => observer.disconnect();
+  }, [compactActions, side]);
+
   return (
     <div
+      ref={rootRef}
       className={mergeClass(styles.root, className)}
       data-side={side}
+      data-compact={compactActions || undefined}
       data-open={popupOpen || undefined}
     >
       <MoreMenu
@@ -59,41 +96,47 @@ const HoverActions: FC<HoverActionsProps> = ({
         actions={actions}
         opened={menuOpen}
         onOpenChange={setMenuOpen}
+        compactActions={compactActions}
+        replyDisabled={replyDisabled}
       />
-      <AdActionButton
-        icon={faReply}
-        label="Reply"
-        disabled={replyDisabled}
-        onClick={() => actions.startReply(message.id)}
-      />
-      <AdPopover
-        opened={tagOpen}
-        onChange={setTagOpen}
-        position="top"
-        width={450}
-        classNames={{ dropdown: styles.tagDropdown }}
-        anchor={
-          <AdActionButton
-            icon={faTags}
-            label="Add tags"
-            tooltip={false}
-            active={message.tagIds.length > 0}
-            onClick={() => setTagOpen((value) => !value)}
-          />
-        }
-      >
-        <div className={styles.tagPopover}>
-          <TagSelect
-            placeholder="Search or create tags..."
-            emptyLabel="No tags found"
-            value={message.tagIds}
-            stackedPalette
-            onChange={(tagIds) => {
-              actions.setTags(message.id, tagIds);
-            }}
-          />
-        </div>
-      </AdPopover>
+      {!compactActions ? (
+        <AdActionButton
+          icon={faReply}
+          label="Reply"
+          disabled={replyDisabled}
+          onClick={() => actions.startReply(message.id)}
+        />
+      ) : null}
+      {!compactActions ? (
+        <AdPopover
+          opened={tagOpen}
+          onChange={setTagOpen}
+          position="top"
+          width={450}
+          classNames={{ dropdown: styles.tagDropdown }}
+          anchor={
+            <AdActionButton
+              icon={faTags}
+              label="Add tags"
+              tooltip={false}
+              active={message.tagIds.length > 0}
+              onClick={() => setTagOpen((value) => !value)}
+            />
+          }
+        >
+          <div className={styles.tagPopover}>
+            <TagSelect
+              placeholder="Search or create tags..."
+              emptyLabel="No tags found"
+              value={message.tagIds}
+              stackedPalette
+              onChange={(tagIds) => {
+                actions.setTags(message.id, tagIds);
+              }}
+            />
+          </div>
+        </AdPopover>
+      ) : null}
       <AdPopover
         opened={reactionOpen}
         onChange={(opened) => {

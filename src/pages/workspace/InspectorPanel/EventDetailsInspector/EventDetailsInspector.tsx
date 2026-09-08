@@ -59,7 +59,7 @@ const EventDetailsInspector: FC<EventDetailsInspectorProps> = ({ record }) => {
     }
 
     selectChatbox(record.source.chatboxId);
-    void navigate('/diary');
+    void navigate(`/diary/${record.source.chatboxId}`);
   };
 
   const handleDelete = () => {

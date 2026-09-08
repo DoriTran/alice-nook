@@ -17,18 +17,6 @@
   left: calc(100% + 0.35rem);
 }
 
-@container (max-width: 40rem) {
-  .root[data-side='right'] {
-    right: auto;
-    left: 0.35rem;
-  }
-
-  .root[data-side='left'] {
-    right: 0.35rem;
-    left: auto;
-  }
-}
-
 .tagPopover {
   min-width: 450px;
 }

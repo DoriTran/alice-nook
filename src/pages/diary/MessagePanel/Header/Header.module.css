@@ -17,6 +17,75 @@
   gap: 0.75rem;
 }
 
+.identityButton {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.identityButton:not(:disabled) {
+  cursor: pointer;
+}
+
+.backBtn {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.backBtn:hover {
+  color: var(--header-strong);
+  background: color-mix(in srgb, var(--header-soft) 60%, transparent);
+}
+
+@media (max-width: 899px) {
+  .root {
+    padding: calc(0.65rem + env(safe-area-inset-top)) 0.75rem 0.65rem;
+  }
+  .topRow {
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .backBtn {
+    display: inline-flex;
+  }
+  .textBlock {
+    min-height: 0;
+    justify-content: center;
+  }
+  .name {
+    font-size: var(--font-lg);
+  }
+  .description {
+    font-size: var(--font-xs);
+  }
+  .metadataRow {
+    display: none;
+  }
+  .toggleBtn {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+  }
+}
+
 .identityBlock {
   display: grid;
   flex: 1;
@@ -28,6 +97,9 @@
 
 .iconArea {
   position: relative;
+  flex-shrink: 0;
+  width: auto;
+  min-width: 4.375rem;
   height: 100%;
   aspect-ratio: 1;
 }
@@ -111,24 +183,27 @@
 }
 
 .metadataRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
+  display: block;
+  min-width: 0;
   margin-top: 0.1rem;
   font-size: var(--font-xs);
   color: var(--text-soft);
   line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metaItem {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  margin-right: 0.35rem;
   white-space: nowrap;
 }
 
 .metaDot {
+  margin-right: 0.35rem;
   color: var(--text-soft);
   opacity: 0.7;
 }

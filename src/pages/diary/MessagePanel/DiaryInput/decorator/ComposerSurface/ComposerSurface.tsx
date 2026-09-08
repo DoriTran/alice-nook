@@ -84,6 +84,9 @@ const ComposerSurface: FC<ComposerSurfaceProps> = ({
   const hasTop = Boolean(pipeline.regionElements.top?.length);
   const hasLeft = Boolean(pipeline.regionElements.left?.length);
   const hasRight = Boolean(pipeline.regionElements.right?.length);
+  const hasTimer = ctx.decorators.some(
+    (decorator) => decorator.type === 'timer',
+  );
 
   return (
     <div
@@ -91,6 +94,7 @@ const ComposerSurface: FC<ComposerSurfaceProps> = ({
       className={shellClass}
       style={containerStyle}
       data-composer-surface
+      data-has-timer={hasTimer || undefined}
     >
       {renderRegionElements(pipeline, 'header', ctx) ? (
         <div

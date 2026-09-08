@@ -1,8 +1,23 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 
-export const useMessageScroll = () => {
+export const useMessageScroll = (chatboxId?: string) => {
   const refs = useRef(new Map<string, HTMLElement>());
   const feedRef = useRef<HTMLDivElement | null>(null);
+  const offsetsRef = useRef(new Map<string, number>());
+
+  useLayoutEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (chatboxId && feedRef.current && offsetsRef.current.has(chatboxId)) {
+        feedRef.current.scrollTop = offsetsRef.current.get(chatboxId) ?? 0;
+      }
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      if (chatboxId && feedRef.current) {
+        offsetsRef.current.set(chatboxId, feedRef.current.scrollTop);
+      }
+    };
+  }, [chatboxId]);
 
   const registerRef = useCallback(
     (messageId: string, element: HTMLElement | null) => {

@@ -134,7 +134,7 @@
 }
 
 .totalLeftDecoration {
-  bottom: -0.3rem;
+  bottom: 0.1rem;
   left: -0.25rem;
   width: clamp(4.2rem, 28%, 5.25rem);
 }
@@ -390,6 +390,10 @@
   min-width: 0;
 }
 
+.tagFormItemExpanded {
+  background: var(--detail-surface);
+}
+
 .newTagButton {
   display: flex;
   align-items: center;
@@ -492,5 +496,11 @@
   .totalLeftDecoration,
   .totalRightDecoration {
     display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .categoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

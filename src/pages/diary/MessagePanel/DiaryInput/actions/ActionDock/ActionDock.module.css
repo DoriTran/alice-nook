@@ -1,4 +1,5 @@
 .root {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -13,15 +14,75 @@
   gap: 0.35rem;
 }
 
-.leftActions {
-  flex: 1;
+.compactActions {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.2rem;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.leftActions::-webkit-scrollbar {
+.compactTrigger {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 0;
+  height: 1.85rem;
+  padding: 0 0.45rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.compactTrigger:hover,
+.compactTrigger[aria-expanded='true'] {
+  color: var(--text);
+  background: var(--field-bg-hover-strong);
+}
+
+.compactTriggerActive {
+  color: var(--text);
+  background: var(--field-bg-hover-strong);
+}
+
+.compactTrigger:focus-visible,
+.pickerOption:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.pickerChevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.pickerTriggerIcon {
   display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.pickerTriggerIconVisible {
+  display: inline-flex;
+}
+
+.leftActions {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: visible;
 }
 
 .rightActions {
@@ -131,6 +192,159 @@
   line-height: 1.35;
 }
 
+.pickerDropdown.pickerDropdown {
+  padding: 0.25rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.pickerOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  max-height: min(16rem, calc(100dvh - 10rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pickerOption {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) 1.25rem;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pickerOption:hover,
+.pickerOption:focus-visible {
+  background: var(--field-bg-hover);
+}
+
+.pickerOption[data-selected] {
+  color: var(--primary);
+  background: var(--field-bg-selected);
+}
+
+.pickerOptionIcon,
+.pickerOptionCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pickerOptionIcon {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: var(--surface-muted);
+}
+
+.pickerOption[data-selected] .pickerOptionIcon {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+}
+
+.pickerOptionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-sm);
+}
+
+.pickerOptionCheck {
+  color: var(--primary);
+}
+
+.measureLayer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.measureCandidate {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: max-content;
+}
+
+.measureCandidate[data-compact] {
+  gap: 0.2rem;
+}
+
 .hiddenInput {
   display: none;
+}
+
+@media (hover: none), (max-width: 639px) {
+  .btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .compactTrigger {
+    min-height: 2.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .root {
+    gap: 0.25rem;
+  }
+  .leftActions .divider {
+    display: none;
+  }
+  .editLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .root {
+    gap: 0.1rem;
+    padding-inline: 0;
+  }
+
+  .compactActions,
+  .rightActions {
+    gap: 0.05rem;
+  }
+
+  .group {
+    gap: 0;
+  }
+
+  .compactTrigger {
+    gap: 0.2rem;
+    padding-inline: 0.3rem;
+  }
+}
+
+@media (max-width: 329px) {
+  .pickerTriggerIcon {
+    display: inline-flex;
+  }
+
+  .pickerTriggerLabel {
+    display: none;
+  }
 }

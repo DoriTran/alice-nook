@@ -3,6 +3,7 @@ import type { FC, CSSProperties } from 'react';
 import {
   faBell,
   faBellSlash,
+  faChevronLeft,
   faMagnifyingGlass,
   faPen,
 } from '@fortawesome/free-solid-svg-icons';
@@ -21,6 +22,7 @@ export type HeaderProps = {
   onSearch: () => void;
   onEdit: () => void;
   onToggleNotification: () => void;
+  onBack?: () => void;
 };
 
 const Header: FC<HeaderProps> = ({
@@ -28,6 +30,7 @@ const Header: FC<HeaderProps> = ({
   onSearch,
   onEdit,
   onToggleNotification,
+  onBack,
 }) => {
   const {
     name,
@@ -51,6 +54,16 @@ const Header: FC<HeaderProps> = ({
         } as CSSProperties
       }
     >
+      {onBack ? (
+        <button
+          type="button"
+          className={styles.backBtn}
+          aria-label="Back to chat"
+          onClick={onBack}
+        >
+          <AdIcon icon={faChevronLeft} size={16} />
+        </button>
+      ) : null}
       <div className={styles.decorations} aria-hidden>
         <DetailDecoration
           src={topLeftDecoration}

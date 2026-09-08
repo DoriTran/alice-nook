@@ -1,5 +1,3 @@
-import type { FC } from 'react';
-
 import {
   faArrowUpRightFromSquare,
   faBoxArchive,
@@ -7,10 +5,12 @@ import {
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
 import { Copy, Hand } from 'lucide-react';
+import { useState, type FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
 import { AdActionButton, AdIcon, AdMenu, AdMenuItem } from '@/packages/base';
+import { TagSelect } from '@/packages/ui';
 
 import type { MessageActionsAPI } from '../../../.hooks/useMessageActions';
 
@@ -21,6 +21,8 @@ export type MoreMenuProps = {
   actions: MessageActionsAPI;
   opened: boolean;
   onOpenChange: (opened: boolean) => void;
+  compactActions?: boolean;
+  replyDisabled?: boolean;
 };
 
 const MoreMenu: FC<MoreMenuProps> = ({
@@ -28,7 +30,10 @@ const MoreMenu: FC<MoreMenuProps> = ({
   actions,
   opened,
   onOpenChange,
+  compactActions = false,
+  replyDisabled = false,
 }) => {
+  const [tagEditorOpen, setTagEditorOpen] = useState(false);
   const isUserMessage = (message.sender ?? 'user') === 'user';
   const isEditingThis = actions.editTargetId === message.id;
   const editDisabled = actions.editTargetId !== null || actions.composerDirty;
@@ -37,9 +42,12 @@ const MoreMenu: FC<MoreMenuProps> = ({
   return (
     <AdMenu
       opened={opened}
-      onChange={onOpenChange}
+      onChange={(nextOpened) => {
+        onOpenChange(nextOpened);
+        if (!nextOpened) setTagEditorOpen(false);
+      }}
       position="top"
-      width={180}
+      width={compactActions ? 220 : 180}
       anchor={
         <AdActionButton
           icon={faEllipsisVertical}
@@ -125,33 +133,95 @@ const MoreMenu: FC<MoreMenuProps> = ({
         </button>
       </li>
 
-      {isUserMessage ? (
+      {compactActions ? (
         <>
           <li role="separator" className={styles.divider} />
           <AdMenuItem
             centered
-            disabled={editDisabled}
+            onClick={() => setTagEditorOpen((value) => !value)}
+          >
+            Tag
+          </AdMenuItem>
+          {tagEditorOpen ? (
+            <li role="none" className={styles.tagEditor}>
+              <TagSelect
+                placeholder="Search or create tags..."
+                emptyLabel="No tags found"
+                value={message.tagIds}
+                stackedPalette
+                compactDropdown
+                onChange={(tagIds) => actions.setTags(message.id, tagIds)}
+              />
+            </li>
+          ) : null}
+          <li role="separator" className={styles.divider} />
+          <AdMenuItem
+            centered
+            disabled={replyDisabled}
             onClick={() => {
               onOpenChange(false);
-              actions.startEdit(message.id);
+              actions.startReply(message.id);
             }}
           >
-            Edit
+            Reply
+          </AdMenuItem>
+          <li role="separator" className={styles.divider} />
+          {isUserMessage ? (
+            <>
+              <AdMenuItem
+                centered
+                disabled={editDisabled}
+                onClick={() => {
+                  onOpenChange(false);
+                  actions.startEdit(message.id);
+                }}
+              >
+                Edit
+              </AdMenuItem>
+              <li role="separator" className={styles.divider} />
+            </>
+          ) : null}
+          <AdMenuItem
+            centered
+            destructive
+            onClick={() => {
+              onOpenChange(false);
+              actions.requestDelete(message.id);
+            }}
+          >
+            Delete
           </AdMenuItem>
         </>
-      ) : null}
-
-      <li role="separator" className={styles.divider} />
-      <AdMenuItem
-        centered
-        destructive
-        onClick={() => {
-          onOpenChange(false);
-          actions.requestDelete(message.id);
-        }}
-      >
-        Delete
-      </AdMenuItem>
+      ) : (
+        <>
+          {isUserMessage ? (
+            <>
+              <li role="separator" className={styles.divider} />
+              <AdMenuItem
+                centered
+                disabled={editDisabled}
+                onClick={() => {
+                  onOpenChange(false);
+                  actions.startEdit(message.id);
+                }}
+              >
+                Edit
+              </AdMenuItem>
+            </>
+          ) : null}
+          <li role="separator" className={styles.divider} />
+          <AdMenuItem
+            centered
+            destructive
+            onClick={() => {
+              onOpenChange(false);
+              actions.requestDelete(message.id);
+            }}
+          >
+            Delete
+          </AdMenuItem>
+        </>
+      )}
     </AdMenu>
   );
 };

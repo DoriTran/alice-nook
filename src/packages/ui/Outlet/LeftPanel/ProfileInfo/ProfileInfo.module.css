@@ -1,5 +1,6 @@
 .profileInfo {
   position: relative;
+  flex-shrink: 0;
   align-self: stretch;
   display: flex;
   flex-direction: column;

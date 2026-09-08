@@ -23,6 +23,7 @@ import styles from './ProfileInfo.module.css';
 type ProfileInfoProps = {
   collapsed: boolean;
   onToggleCollapse: () => void;
+  showCollapse?: boolean;
 };
 
 const STORAGE_USED_GB = 1.2;
@@ -40,7 +41,11 @@ const formatCompactCount = (value: number) => {
   return String(value);
 };
 
-const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
+const ProfileInfo: FC<ProfileInfoProps> = ({
+  collapsed,
+  onToggleCollapse,
+  showCollapse = true,
+}) => {
   const navigate = useNavigate();
   const { data: session } = useSession();
   const [signingOut, setSigningOut] = useState(false);
@@ -70,14 +75,16 @@ const ProfileInfo: FC<ProfileInfoProps> = ({ collapsed, onToggleCollapse }) => {
 
   return (
     <footer className={clsx(styles.profileInfo, collapsed && styles.collapsed)}>
-      <button
-        aria-label={collapsed ? 'Expand profile' : 'Collapse profile'}
-        className={styles.foldBtn}
-        onClick={onToggleCollapse}
-        type="button"
-      >
-        <AdIcon icon={collapsed ? faChevronRight : faChevronLeft} size={12} />
-      </button>
+      {showCollapse ? (
+        <button
+          aria-label={collapsed ? 'Expand profile' : 'Collapse profile'}
+          className={styles.foldBtn}
+          onClick={onToggleCollapse}
+          type="button"
+        >
+          <AdIcon icon={collapsed ? faChevronRight : faChevronLeft} size={12} />
+        </button>
+      ) : null}
 
       <div className={styles.header}>
         <div className={styles.avatarWrap}>

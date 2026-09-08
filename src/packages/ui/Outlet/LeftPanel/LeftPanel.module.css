@@ -196,6 +196,61 @@
   padding: 1rem 0.5rem;
 }
 
+.panel[data-presentation='drawer'] {
+  z-index: 3;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.navigationScroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel[data-presentation='drawer'] .navigationScroll {
+  margin-top: 2rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.panel[data-presentation='drawer'] .header {
+  position: absolute;
+  z-index: 3;
+  top: -125px;
+  right: 0;
+  left: 0;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.panel[data-presentation='drawer'] .nav {
+  flex: none;
+  width: 100%;
+  margin-inline: 0;
+  padding-inline: 0;
+  overflow: visible;
+}
+
+.panel[data-presentation='drawer'] .themeSection {
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .panel[data-presentation='desktop'] {
+    display: none;
+  }
+}
+
 .panel[data-collapsed]::after {
   width: 280px;
 }

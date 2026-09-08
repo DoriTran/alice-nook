@@ -112,7 +112,7 @@ const TagFormRow: FC<TagFormRowProps> = ({ onCreated }) => {
   }
 
   return (
-    <li className={styles.tagFormItem}>
+    <li className={`${styles.tagFormItem} ${styles.tagFormItemExpanded}`}>
       <form className={styles.tagForm} onSubmit={handleSubmit}>
         <PalettePicker
           value={colorId}

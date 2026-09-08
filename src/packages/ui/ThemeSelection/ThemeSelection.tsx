@@ -15,13 +15,15 @@ import { THEME_OPTIONS } from '@/store/settings/constants';
 
 import styles from './ThemeSelection.module.css';
 
-const MENU_WIDTH = 200;
-
 type ThemeSelectionProps = {
   collapsed?: boolean;
+  popoverZIndex?: number;
 };
 
-const ThemeSelection: FC<ThemeSelectionProps> = ({ collapsed = false }) => {
+const ThemeSelection: FC<ThemeSelectionProps> = ({
+  collapsed = false,
+  popoverZIndex,
+}) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const { theme, mode, setTheme, setMode } = useSettingsStore([
@@ -55,7 +57,9 @@ const ThemeSelection: FC<ThemeSelectionProps> = ({ collapsed = false }) => {
             opened={isMenuOpen}
             position="top-start"
             targetPopupType="listbox"
-            width={MENU_WIDTH}
+            withinPortal
+            width="target"
+            zIndex={popoverZIndex}
             anchor={
               <button
                 aria-expanded={isMenuOpen}
