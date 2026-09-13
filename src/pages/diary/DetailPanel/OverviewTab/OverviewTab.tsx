@@ -1,10 +1,8 @@
 import { Archive, Pin } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
+import { useCallback, useMemo, useState, type FC } from 'react';
 
 import type { ColorId } from '@/packages/color';
 import type { Message } from '@/store/diary/type';
-
-import { useDiaryStore } from '@/store';
 
 import type { MediaFilter } from '../../types';
 import type { DetailPanelStats, DetailPanelTag } from '../detailPanel.utils';
@@ -16,7 +14,6 @@ import { filterMessagesByTags } from '../detailPanel.utils';
 import CollapsibleSection from './CollapsibleSection';
 import styles from './OverviewTab.module.css';
 import StatisticsSection from './StatisticsSection';
-import TagFormRow from './TagFormRow';
 import TagRibbonRow from './TagRibbonRow';
 
 type MessageDialogState =
@@ -46,40 +43,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
   onJumpToMessage,
   onOpenMedia,
 }) => {
-  const storeTags = useDiaryStore('tags');
-
   const [messageDialog, setMessageDialog] = useState<MessageDialogState>(null);
-  const [createdTagIds, setCreatedTagIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    setCreatedTagIds([]);
-  }, [chatboxId]);
-
-  const displayTags = useMemo(() => {
-    const usedIds = new Set(tags.map((tag) => tag.tagId));
-    const extras: DetailPanelTag[] = [];
-
-    for (const tagId of createdTagIds) {
-      if (usedIds.has(tagId)) {
-        continue;
-      }
-
-      const tag = storeTags[tagId];
-
-      if (!tag) {
-        continue;
-      }
-
-      extras.push({
-        tagId: tag.id,
-        label: tag.label,
-        count: 0,
-        colorId: tag.colorId,
-      });
-    }
-
-    return [...extras, ...tags];
-  }, [createdTagIds, storeTags, tags]);
 
   const dialogMessages = useMemo(() => {
     if (!messageDialog) {
@@ -113,18 +77,9 @@ const OverviewTab: FC<OverviewTabProps> = ({
     return `#${messageDialog.label}`;
   }, [messageDialog]);
 
-  const handleTagCreated = useCallback(
-    (tag: { tagId: string; label: string; colorId: ColorId }) => {
-      setCreatedTagIds((current) =>
-        current.includes(tag.tagId) ? current : [tag.tagId, ...current],
-      );
-    },
-    [],
-  );
-
   const handleTagClick = useCallback(
     (tagId: string) => {
-      const match = displayTags.find((entry) => entry.tagId === tagId);
+      const match = tags.find((entry) => entry.tagId === tagId);
 
       if (!match) {
         return;
@@ -137,7 +92,7 @@ const OverviewTab: FC<OverviewTabProps> = ({
         colorId: match.colorId,
       });
     },
-    [displayTags],
+    [tags],
   );
 
   const tagDialog = messageDialog?.kind === 'tag' ? messageDialog : null;
@@ -169,14 +124,13 @@ const OverviewTab: FC<OverviewTabProps> = ({
       </CollapsibleSection>
 
       <CollapsibleSection title="Tags">
-        {displayTags.length === 0 ? (
+        {tags.length === 0 ? (
           <p className={styles.emptyTags}>No tags in this chat yet.</p>
         ) : null}
         <ul className={styles.tagRibbonList}>
-          {displayTags.map((tag) => (
+          {tags.map((tag) => (
             <TagRibbonRow key={tag.tagId} tag={tag} onClick={handleTagClick} />
           ))}
-          <TagFormRow onCreated={handleTagCreated} />
         </ul>
       </CollapsibleSection>
 

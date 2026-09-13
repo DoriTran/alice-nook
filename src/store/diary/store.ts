@@ -15,6 +15,7 @@ import type {
   DiaryStoreActions,
   Group,
   Chatbox,
+  CreateChatboxData,
   ChatboxUpdateData,
   Message,
   MessageUpdateData,
@@ -84,17 +85,27 @@ const normalizeNotificationState = <T extends DiaryStore & DiaryStoreActions>(
   return { ...state, chatboxes, messages } as T;
 };
 
-const recalculateChatboxMetadata = (
+const resolveChatboxMessageIds = (
   state: DiaryStore,
   chatboxId: string,
-): DiaryStore => {
+): string[] =>
+  state.orders.chatboxMessageOrders[chatboxId] ??
+  Object.values(state.messages)
+    .filter((message) => message.chatboxId === chatboxId)
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+    .map((message) => message.id);
+
+const recalculateChatboxDerivedFields = <T extends DiaryStore>(
+  state: T,
+  chatboxId: string,
+): T => {
   const chatbox = state.chatboxes[chatboxId];
 
   if (!chatbox) {
     return state;
   }
 
-  const messageIds = state.orders.chatboxMessageOrders[chatboxId] ?? [];
+  const messageIds = resolveChatboxMessageIds(state, chatboxId);
 
   const totalMessage = messageIds.length;
 
@@ -104,33 +115,7 @@ const recalculateChatboxMetadata = (
     ? (state.messages[lastMessageId]?.createdAt ?? null)
     : null;
 
-  return {
-    ...state,
-    chatboxes: {
-      ...state.chatboxes,
-      [chatboxId]: {
-        ...chatbox,
-        totalMessage,
-        lastMessageId,
-        lastMessageAt,
-      },
-    },
-  };
-};
-
-const recalculateChatboxTags = (
-  state: DiaryStore,
-  chatboxId: string,
-): DiaryStore => {
-  const chatbox = state.chatboxes[chatboxId];
-
-  if (!chatbox) {
-    return state;
-  }
-
   const counts = new Map<string, number>();
-
-  const messageIds = state.orders.chatboxMessageOrders[chatboxId] ?? [];
 
   messageIds.forEach((messageId) => {
     const message = state.messages[messageId];
@@ -155,10 +140,13 @@ const recalculateChatboxTags = (
       ...state.chatboxes,
       [chatboxId]: {
         ...chatbox,
+        totalMessage,
+        lastMessageId,
+        lastMessageAt,
         tags,
       },
     },
-  };
+  } as T;
 };
 
 // #endregion
@@ -266,7 +254,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
       // #endregion
 
       // #region Chatbox
-      createChatbox: (data: Partial<Chatbox> = {}) => {
+      createChatbox: (data: CreateChatboxData = {}) => {
         const id = data.id ?? `cb:${uuidv4()}`;
 
         const now = nowIso();
@@ -285,7 +273,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           hasUnread: false,
           notificationEnabled: true,
           notificationRinging: false,
-          tags: data.tags ?? [],
+          tags: [],
           totalMessage: 0,
           lastMessageId: null,
           lastMessageAt: null,
@@ -335,17 +323,15 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             return state;
           }
 
-          const { tags: nextTags, ...rest } = data;
-
           return {
             chatboxes: {
               ...state.chatboxes,
               [chatboxId]: {
                 ...current,
-                ...rest,
+                ...data,
                 id: chatboxId,
                 groupId: current.groupId,
-                tags: nextTags ?? current.tags,
+                tags: current.tags,
                 totalMessage: current.totalMessage,
                 lastMessageId: current.lastMessageId,
                 lastMessageAt: current.lastMessageAt,
@@ -502,9 +488,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             },
           };
 
-          nextState = recalculateChatboxMetadata(nextState, chatboxId);
-
-          nextState = recalculateChatboxTags(nextState, chatboxId);
+          nextState = recalculateChatboxDerivedFields(nextState, chatboxId);
 
           return nextState;
         });
@@ -534,7 +518,10 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             },
           };
 
-          nextState = recalculateChatboxTags(nextState, current.chatboxId);
+          nextState = recalculateChatboxDerivedFields(
+            nextState,
+            current.chatboxId,
+          );
 
           return nextState;
         }),
@@ -560,7 +547,10 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             },
           };
 
-          nextState = recalculateChatboxTags(nextState, current.chatboxId);
+          nextState = recalculateChatboxDerivedFields(
+            nextState,
+            current.chatboxId,
+          );
 
           return nextState;
         }),
@@ -588,9 +578,10 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             },
           };
 
-          nextState = recalculateChatboxMetadata(nextState, current.chatboxId);
-
-          nextState = recalculateChatboxTags(nextState, current.chatboxId);
+          nextState = recalculateChatboxDerivedFields(
+            nextState,
+            current.chatboxId,
+          );
 
           return nextState;
         }),
@@ -649,13 +640,15 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             },
           };
 
-          nextState = recalculateChatboxMetadata(nextState, sourceChatboxId);
+          nextState = recalculateChatboxDerivedFields(
+            nextState,
+            sourceChatboxId,
+          );
 
-          nextState = recalculateChatboxMetadata(nextState, targetChatboxId);
-
-          nextState = recalculateChatboxTags(nextState, sourceChatboxId);
-
-          nextState = recalculateChatboxTags(nextState, targetChatboxId);
+          nextState = recalculateChatboxDerivedFields(
+            nextState,
+            targetChatboxId,
+          );
 
           return nextState;
         }),
@@ -823,7 +816,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           };
 
           affectedChatboxIds.forEach((chatboxId) => {
-            nextState = recalculateChatboxTags(nextState, chatboxId);
+            nextState = recalculateChatboxDerivedFields(nextState, chatboxId);
           });
 
           return nextState;
@@ -860,7 +853,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             return state;
           }
 
-          return recalculateChatboxTags(
+          return recalculateChatboxDerivedFields(
             {
               ...state,
               messages,
@@ -1040,10 +1033,16 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           },
         };
 
-        return normalizeNotificationState(
+        const hydrated = normalizeNotificationState(
           migrateDiaryRichTextState(
             migrateDiaryIconState(migrateDiaryPersistedState(merged)),
           ),
+        );
+
+        return Object.keys(hydrated.chatboxes).reduce(
+          (state, chatboxId) =>
+            recalculateChatboxDerivedFields(state, chatboxId),
+          hydrated,
         );
       },
     },

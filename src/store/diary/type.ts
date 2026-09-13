@@ -29,7 +29,7 @@ export type DiaryStoreActions = {
 
   // #region Chatbox
 
-  createChatbox: (data?: Partial<Chatbox>) => string;
+  createChatbox: (data?: CreateChatboxData) => string;
   updateChatbox: (chatboxId: string, data: ChatboxUpdateData) => void;
   moveChatboxToGroup: (chatboxId: string, targetGroupId: string | null) => void;
   deleteChatbox: (chatboxId: string) => void;
@@ -153,6 +153,10 @@ export type ChatboxTagStatistic = {
   count: number;
 };
 
+export type CreateChatboxData = Partial<
+  Pick<Chatbox, 'id' | 'groupId' | 'name' | 'description' | 'icon' | 'colorId'>
+>;
+
 export type ChatboxUpdateData = Partial<
   Pick<
     Chatbox,
@@ -166,9 +170,7 @@ export type ChatboxUpdateData = Partial<
     | 'notificationEnabled'
     | 'notificationRinging'
   >
-> & {
-  tags?: ChatboxTagStatistic[];
-};
+>;
 
 // #endregion
 

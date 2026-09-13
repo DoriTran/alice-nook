@@ -13,7 +13,7 @@ import {
 } from '@/packages/base';
 import { DEFAULT_COLOR_ID } from '@/packages/color';
 import { DEFAULT_ICON_ID, normalizeIconId } from '@/packages/icon';
-import { PalettePicker, TagSelect } from '@/packages/ui';
+import { PalettePicker } from '@/packages/ui';
 import { useAppStore, useDiaryStore } from '@/store';
 
 import { resolveCreateIconId } from './create.constants';
@@ -58,9 +58,6 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
     existing?.colorId ?? DEFAULT_COLOR_ID,
   );
   const [groupId, setGroupId] = useState(existing?.groupId ?? '');
-  const [tagIds, setTagIds] = useState<string[]>(
-    existing?.tags.map((stat) => stat.tagId) ?? [],
-  );
 
   const groupSelectOptions = useMemo(
     () => [
@@ -85,20 +82,11 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
     }
 
     if (isEdit && chatboxId && existing) {
-      const countByTagId = new Map(
-        existing.tags.map((stat) => [stat.tagId, stat.count]),
-      );
-      const nextTags = tagIds.map((tagId) => ({
-        tagId,
-        count: countByTagId.get(tagId) ?? 0,
-      }));
-
       updateChatbox(chatboxId, {
         name: trimmedName,
         description: description.trim(),
         icon,
         colorId,
-        tags: nextTags,
       });
 
       const nextGroupId = groupId || null;
@@ -117,7 +105,6 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
       icon,
       colorId,
       groupId: groupId || null,
-      tags: tagIds.map((tagId) => ({ tagId, count: 0 })),
     });
 
     selectChatbox(newId);
@@ -169,15 +156,6 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
           placeholder="What is this chatbox about?"
         />
       </AdField>
-
-      <TagSelect
-        label="Tags (optional)"
-        placeholder="Search or create tags..."
-        emptyLabel="No tags found"
-        value={tagIds}
-        onChange={setTagIds}
-        withinPortal
-      />
 
       <AdSelect
         label="Group (optional)"
