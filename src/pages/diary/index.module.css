@@ -31,71 +31,71 @@
   display: none;
 }
 
+.sourceFrame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sourceGate {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+}
+
+.sourceGateCard {
+  width: min(440px, 100%);
+  padding: 32px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.sourceGateEyebrow {
+  color: var(--primary-dark);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sourceGateCard h1 {
+  margin: 10px 0 8px;
+  color: var(--text);
+  font-size: var(--font-2xl);
+}
+
+.sourceGateCard p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.sourceGateActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.sourceGatePrimary {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: white;
+  font: inherit;
+  font-size: var(--font-sm);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+  cursor: pointer;
+}
+
 @media (max-width: 1535px) {
-  .sourceFrame {
-    position: relative;
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .sourceGate {
-    display: grid;
-    flex: 1;
-    place-items: center;
-    padding: 24px;
-  }
-
-  .sourceGateCard {
-    width: min(440px, 100%);
-    padding: 32px;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-xl);
-    background: var(--surface);
-    box-shadow: var(--shadow-lg);
-    text-align: center;
-  }
-
-  .sourceGateEyebrow {
-    color: var(--primary-dark);
-    font-size: var(--font-xs);
-    font-weight: var(--font-bold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .sourceGateCard h1 {
-    margin: 10px 0 8px;
-    color: var(--text);
-    font-size: var(--font-2xl);
-  }
-
-  .sourceGateCard p {
-    margin: 0;
-    color: var(--text-muted);
-    line-height: 1.6;
-  }
-
-  .sourceGateActions {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-
-  .sourceGatePrimary {
-    padding: 9px 18px;
-    border: 0;
-    border-radius: 999px;
-    background: var(--primary);
-    color: white;
-    font: inherit;
-    font-size: var(--font-sm);
-    font-weight: var(--font-semibold);
-    text-decoration: none;
-    cursor: pointer;
-  }
-
   .rootPage {
     --detail-panel-width: 360px;
   }
