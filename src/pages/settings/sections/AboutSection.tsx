@@ -49,6 +49,21 @@ const AboutSection: FC = () => {
           </a>
         }
       />
+      <SettingRow
+        title="External apps"
+        description="Explore more from Alice Nook."
+        control={
+          <a
+            className={styles.aboutLink}
+            href={APP_INFO.kanaFlip}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Kana Flip
+            <AdIcon icon={faArrowUpRightFromSquare} size={11} />
+          </a>
+        }
+      />
     </SettingCard>
   );
 };

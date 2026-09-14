@@ -40,13 +40,6 @@
     min-height: 0;
   }
 
-  .sourceBadge {
-    position: absolute;
-    z-index: 50;
-    top: 18px;
-    left: calc(var(--diary-chatbox-width, 380px) - 114px);
-  }
-
   .sourceGate {
     display: grid;
     flex: 1;

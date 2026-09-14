@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useSession } from '@/auth';
 import { createAuthURL } from '@/auth/redirects';
-import DiaryDataSourceControl from '@/packages/ui/DiaryDataSourceControl';
-import { useAppStore, useDiaryHydrated, useDiaryStore } from '@/store';
-import { useSettingsStore } from '@/store';
+import {
+  useAppStore,
+  useDiaryHydrated,
+  useDiaryStore,
+  useSettingsStore,
+} from '@/store';
 import { hydrateCloudDiary, useDiarySourceRuntime } from '@/store/diary/source';
 
 import ChatboxSidebar from './ChatboxSidebar/ChatboxSidebar';
@@ -334,9 +336,6 @@ const Diary: FC = () => {
 
   return (
     <div className={styles.sourceFrame}>
-      <div className={styles.sourceBadge}>
-        <DiaryDataSourceControl compact />
-      </div>
       {cloudReady ? (
         <DiaryContent />
       ) : (
@@ -355,7 +354,7 @@ const Diary: FC = () => {
             </h1>
             <p>
               {effectiveCloudStatus === 'auth-required'
-                ? 'Your Local Diary is still safe on this device. Sign in, or switch back to Local above.'
+                ? 'Your Local Diary is still safe on this device. Sign in, or change the active source in Settings.'
                 : effectiveCloudStatus === 'error'
                   ? error ||
                     'Cloud Diary could not be loaded. Your Local Diary was not changed.'

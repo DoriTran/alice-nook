@@ -325,6 +325,13 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     description: 'Version, license and links.',
     keywords: ['version', 'license', 'github'],
   },
+  {
+    category: 'about',
+    subSection: 'about',
+    title: 'Kana Flip',
+    description: 'Open the Kana Flip learning app.',
+    keywords: ['external app', 'kana', 'japanese'],
+  },
 ];
 
 export const APP_INFO = {
@@ -332,4 +339,5 @@ export const APP_INFO = {
   version: '0.1.0',
   license: 'MIT',
   repository: 'https://github.com/',
+  kanaFlip: 'https://alicenook.me/kanaflip/',
 } as const;
