@@ -5,7 +5,13 @@ import type { DiaryDataSource } from '@/store/settings/type';
 
 import { ApiError, diaryApi } from '@/api';
 import { mapDiarySnapshot } from '@/api/diary/mapper';
-import { getDiaryDataSource, setDiaryDataSource } from '@/store/settings/store';
+import {
+  getDiaryDataSource,
+  getDiaryLocalExplicit,
+  setDiaryDataSource,
+  setDiaryDataSourcePreference,
+  useSettingsStore,
+} from '@/store/settings/store';
 
 import { clearCloudDiary, replaceCloudDiary } from './cloudStore';
 
@@ -31,6 +37,7 @@ export const useDiarySourceRuntime = create<DiarySourceRuntime>()(() => ({
 let requestGeneration = 0;
 let hydrationController: AbortController | null = null;
 let activeUserId: string | null = null;
+let sessionInitialized = false;
 
 const setRuntime = (
   patch:
@@ -59,25 +66,26 @@ const applyCloudError = (error: unknown, hydration = false) => {
 };
 
 export const setDiarySessionUser = (userId: string | null) => {
-  if (activeUserId === userId) {
+  if (sessionInitialized && activeUserId === userId) {
     if (getDiaryDataSource() === 'cloud' && !userId) {
       setRuntime({ cloudStatus: 'auth-required', error: null });
     }
     return;
   }
+  sessionInitialized = true;
   activeUserId = userId;
   requestGeneration += 1;
   hydrationController?.abort();
   hydrationController = null;
   clearCloudDiary();
 
-  if (getDiaryDataSource() === 'cloud') {
-    setRuntime(
-      userId
-        ? { cloudStatus: 'idle', error: null }
-        : { cloudStatus: 'auth-required', error: null },
-    );
-  }
+  const nextSource: DiaryDataSource = userId
+    ? getDiaryLocalExplicit()
+      ? 'local'
+      : 'cloud'
+    : 'local';
+  setDiaryDataSource(nextSource);
+  setRuntime({ cloudStatus: 'idle', error: null });
 };
 
 export const hydrateCloudDiary = async (): Promise<void> => {
@@ -123,7 +131,7 @@ export const switchDiaryDataSource = async (
   requestGeneration += 1;
   hydrationController?.abort();
   hydrationController = null;
-  setDiaryDataSource(source);
+  setDiaryDataSourcePreference(source);
 
   if (source === 'local') {
     setRuntime({ cloudStatus: 'idle', error: null });
@@ -167,7 +175,7 @@ export const runCloudMutation = async <T>(
 export const getActiveDiaryUserId = () => activeUserId;
 
 export const useDiarySourceLifecycle = (userId: string | null | undefined) => {
-  const source = getDiaryDataSource();
+  const source = useSettingsStore('diaryDataSource');
 
   useEffect(() => {
     if (userId === undefined) return;

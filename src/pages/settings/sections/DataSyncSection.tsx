@@ -168,14 +168,14 @@ const DataSyncSection: FC = () => {
           }
         />
         <SettingRow
-          title="Clear all data"
-          description="Erase all local diary data, including messages and settings."
+          title="Clear local diary data"
+          description="Erase this browser's Local diary data and settings. Cloud data is not affected."
           control={
             <ActionButton
               onClick={() => setConfirm('allData')}
               variant="danger"
             >
-              Clear everything
+              Clear Local
             </ActionButton>
           }
         />
@@ -191,13 +191,13 @@ const DataSyncSection: FC = () => {
         title="Reset local storage?"
       />
       <AdConfirmDialog
-        confirmLabel="Erase everything"
+        confirmLabel="Erase Local data"
         destructive
-        message="This permanently deletes all local data — messages, chatboxes, palettes and settings. This cannot be undone."
+        message="This permanently deletes this browser's Local messages, chatboxes, palettes and settings. Your Cloud Diary is not affected."
         onClose={() => setConfirm(null)}
         onConfirm={() => void handleClearAllData()}
         opened={confirm === 'allData'}
-        title="Clear all data?"
+        title="Clear Local diary data?"
       />
     </>
   );

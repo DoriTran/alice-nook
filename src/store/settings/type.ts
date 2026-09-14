@@ -108,6 +108,7 @@ export type SettingsStoreState = {
   theme: AppTheme;
   mode: AppMode;
   diaryDataSource: DiaryDataSource;
+  diaryLocalExplicit: boolean;
   preferences: SettingsPreferences;
 };
 
@@ -115,6 +116,7 @@ export type SettingsStoreActions = {
   setTheme: (theme: AppTheme) => void;
   setMode: (mode: AppMode) => void;
   setDiaryDataSource: (source: DiaryDataSource) => void;
+  setDiaryDataSourcePreference: (source: DiaryDataSource) => void;
   updatePreferences: (patch: DeepPartial<SettingsPreferences>) => void;
   resetToDefaults: () => void;
 };

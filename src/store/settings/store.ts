@@ -53,6 +53,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
       theme: DEFAULT_THEME,
       mode: DEFAULT_MODE,
       diaryDataSource: 'local',
+      diaryLocalExplicit: false,
       preferences: DEFAULT_PREFERENCES,
 
       setTheme: (theme) =>
@@ -68,6 +69,11 @@ const useSettingsStoreBase = create<SettingsStore>()(
         }),
 
       setDiaryDataSource: (diaryDataSource) => set({ diaryDataSource }),
+      setDiaryDataSourcePreference: (diaryDataSource) =>
+        set({
+          diaryDataSource,
+          diaryLocalExplicit: diaryDataSource === 'local',
+        }),
 
       updatePreferences: (patch) =>
         set((state) => ({
@@ -81,6 +87,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
             theme: DEFAULT_THEME,
             mode: DEFAULT_MODE,
             diaryDataSource: 'local',
+            diaryLocalExplicit: false,
             preferences: DEFAULT_PREFERENCES,
           };
         }),
@@ -92,6 +99,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
         theme: state.theme,
         mode: state.mode,
         diaryDataSource: state.diaryDataSource,
+        diaryLocalExplicit: state.diaryLocalExplicit,
         preferences: state.preferences,
       }),
       merge: (persistedState, currentState) => {
@@ -99,6 +107,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
           theme: AppTheme;
           mode: AppMode;
           diaryDataSource: 'local' | 'cloud';
+          diaryLocalExplicit: boolean;
           preferences: DeepPartial<SettingsPreferences>;
         }>;
 
@@ -108,6 +117,8 @@ const useSettingsStoreBase = create<SettingsStore>()(
           mode: persisted.mode ?? currentState.mode,
           diaryDataSource:
             persisted.diaryDataSource ?? currentState.diaryDataSource,
+          diaryLocalExplicit:
+            persisted.diaryLocalExplicit ?? currentState.diaryLocalExplicit,
           preferences: mergePreferences(
             currentState.preferences,
             persisted.preferences ?? {},
@@ -125,6 +136,12 @@ export const getDiaryDataSource = () =>
 
 export const setDiaryDataSource = (source: 'local' | 'cloud') =>
   useSettingsStoreBase.getState().setDiaryDataSource(source);
+
+export const getDiaryLocalExplicit = () =>
+  useSettingsStoreBase.getState().diaryLocalExplicit;
+
+export const setDiaryDataSourcePreference = (source: 'local' | 'cloud') =>
+  useSettingsStoreBase.getState().setDiaryDataSourcePreference(source);
 
 const { theme, mode } = useSettingsStoreBase.getState();
 applyAppTheme(theme, mode);
