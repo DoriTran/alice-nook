@@ -576,7 +576,7 @@ export const useComposerDraft = (
       if (editMessageId) {
         const current = messages[editMessageId];
 
-        updateMessage(editMessageId, {
+        await updateMessage(editMessageId, {
           variant: payload.variant,
           content: payload.content,
           attachments: payload.attachments ?? [],
@@ -601,7 +601,7 @@ export const useComposerDraft = (
           ? payload.content.preview
           : '';
 
-      createMessage(payload);
+      await createMessage(payload);
 
       setDraft((current) => {
         revokeDraftObjectUrls(current);
@@ -616,7 +616,7 @@ export const useComposerDraft = (
           ...(response.list ?? []),
         ].join('\n');
 
-        createMessage({
+        await createMessage({
           chatboxId,
           sender: 'assistant',
           variant: 'text',
@@ -639,6 +639,8 @@ export const useComposerDraft = (
           reactions: [],
         });
       }
+    } catch {
+      // The shared Cloud repository reports the error. Keep the draft for retry.
     } finally {
       setSending(false);
     }

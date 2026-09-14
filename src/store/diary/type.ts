@@ -98,6 +98,16 @@ export type DiaryStoreActions = {
   // #endregion
 };
 
+type AsyncAction<T> = T extends (...args: infer Args) => infer Result
+  ? (...args: Args) => Promise<Awaited<Result>>
+  : never;
+
+export type DiaryAsyncStoreActions = {
+  [Key in keyof DiaryStoreActions]: AsyncAction<DiaryStoreActions[Key]>;
+};
+
+export type ActiveDiaryStore = DiaryStore & DiaryAsyncStoreActions;
+
 // #endregion
 
 // #endregion

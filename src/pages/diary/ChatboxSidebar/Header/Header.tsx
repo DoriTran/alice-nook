@@ -15,11 +15,11 @@ const Header: FC<HeaderProps> = ({ onOpenCreate }) => {
   useEffect(() => {
     let active = true;
 
-    rabbitLoader?.().then((module) => {
-      if (active) {
-        setRabbitUrl(module.default);
-      }
-    });
+    void rabbitLoader?.()
+      .then((module) => {
+        if (active) setRabbitUrl(module.default);
+      })
+      .catch(() => undefined);
 
     return () => {
       active = false;

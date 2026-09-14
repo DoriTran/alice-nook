@@ -107,7 +107,7 @@ export const useMessageActions = ({
       return;
     }
 
-    createMessage({
+    void createMessage({
       chatboxId,
       sender: copiedMessage.sender,
       variant: copiedMessage.variant,
@@ -120,9 +120,12 @@ export const useMessageActions = ({
       reactions: [],
       attachments: structuredClone(copiedMessage.attachments),
       decorators: structuredClone(copiedMessage.decorators),
-    } as Partial<Message>);
-    setCopiedMessage(null);
-    clearSystemClipboard();
+    } as Partial<Message>)
+      .then(() => {
+        setCopiedMessage(null);
+        clearSystemClipboard();
+      })
+      .catch(() => undefined);
   }, [chatboxId, clearSystemClipboard, copiedMessage, createMessage]);
 
   const navigateToMessage = useCallback(
@@ -178,14 +181,16 @@ export const useMessageActions = ({
     cancelReply,
     startEdit,
     cancelEdit,
-    toggleReaction: toggleMessageReaction,
-    togglePin: toggleMessagePin,
-    toggleArchive: toggleMessageArchive,
-    setTags: setMessageTags,
+    toggleReaction: (id, emoji) =>
+      void toggleMessageReaction(id, emoji).catch(() => undefined),
+    togglePin: (id) => void toggleMessagePin(id).catch(() => undefined),
+    toggleArchive: (id) => void toggleMessageArchive(id).catch(() => undefined),
+    setTags: (id, tagIds) =>
+      void setMessageTags(id, tagIds).catch(() => undefined),
     requestDelete: setDeleteTargetId,
     confirmDelete: () => {
       if (deleteTargetId) {
-        deleteMessage(deleteTargetId);
+        void deleteMessage(deleteTargetId).catch(() => undefined);
       }
 
       setDeleteTargetId(null);
@@ -194,7 +199,9 @@ export const useMessageActions = ({
     requestForward: setForwardSourceId,
     confirmForward: (targetChatboxId, caption) => {
       if (forwardSourceId) {
-        forwardMessage(forwardSourceId, targetChatboxId, caption);
+        void forwardMessage(forwardSourceId, targetChatboxId, caption).catch(
+          () => undefined,
+        );
       }
 
       setForwardSourceId(null);
@@ -206,14 +213,14 @@ export const useMessageActions = ({
     requestMove: setMoveSourceId,
     confirmClone: (targetChatboxId) => {
       if (moveSourceId) {
-        cloneMessage(moveSourceId, targetChatboxId);
+        void cloneMessage(moveSourceId, targetChatboxId).catch(() => undefined);
       }
 
       setMoveSourceId(null);
     },
     confirmMove: (targetChatboxId) => {
       if (moveSourceId) {
-        moveMessage(moveSourceId, targetChatboxId);
+        void moveMessage(moveSourceId, targetChatboxId).catch(() => undefined);
 
         if (replyToMessageId === moveSourceId) {
           setReplyToMessageId(null);

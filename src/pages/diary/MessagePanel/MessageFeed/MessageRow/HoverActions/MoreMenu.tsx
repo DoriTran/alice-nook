@@ -9,8 +9,15 @@ import { useState, type FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
-import { AdActionButton, AdIcon, AdMenu, AdMenuItem } from '@/packages/base';
+import {
+  AdActionButton,
+  AdIcon,
+  AdMenu,
+  AdMenuItem,
+  showAdNotification,
+} from '@/packages/base';
 import { TagSelect } from '@/packages/ui';
+import { useSettingsStore } from '@/store';
 
 import type { MessageActionsAPI } from '../../../.hooks/useMessageActions';
 
@@ -34,6 +41,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
   replyDisabled = false,
 }) => {
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
+  const dataSource = useSettingsStore('diaryDataSource');
   const isUserMessage = (message.sender ?? 'user') === 'user';
   const isEditingThis = actions.editTargetId === message.id;
   const editDisabled = actions.editTargetId !== null || actions.composerDirty;
@@ -76,7 +84,15 @@ const MoreMenu: FC<MoreMenuProps> = ({
           type="button"
           className={`${styles.quickAction} ${styles.moveAction}`}
           aria-label="Move"
+          aria-disabled={dataSource === 'cloud'}
           onClick={() => {
+            if (dataSource === 'cloud') {
+              showAdNotification({
+                title: 'Move is local-only for now',
+                message: 'The Cloud API does not support moving messages yet.',
+              });
+              return;
+            }
             onOpenChange(false);
             actions.requestMove(message.id);
           }}

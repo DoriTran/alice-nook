@@ -51,8 +51,8 @@ const ContentRenderer: FC<ContentRendererProps> = ({
                       ? `Mark ${item.content.preview} complete`
                       : 'Mark todo complete'
                   }
-                  onChange={() =>
-                    patchMessage(message.id, {
+                  onChange={() => {
+                    void patchMessage(message.id, {
                       content: {
                         items: message.content.items.map((entry) =>
                           entry.id === item.id
@@ -60,8 +60,8 @@ const ContentRenderer: FC<ContentRendererProps> = ({
                             : entry,
                         ),
                       },
-                    })
-                  }
+                    }).catch(() => undefined);
+                  }}
                 />
               </div>
               <div className={styles.todoBody}>

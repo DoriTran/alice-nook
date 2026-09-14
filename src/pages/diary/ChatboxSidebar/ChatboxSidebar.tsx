@@ -62,7 +62,7 @@ const ChatboxSidebar: FC<ChatboxSidebarProps> = ({
       return;
     }
 
-    seedIfEmpty();
+    void seedIfEmpty();
   }, [hydrated, seedIfEmpty]);
 
   useEffect(

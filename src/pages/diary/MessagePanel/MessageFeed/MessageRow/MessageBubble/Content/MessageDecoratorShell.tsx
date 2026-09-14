@@ -27,11 +27,11 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
   const patchMessage = useDiaryStore('patchMessage');
 
   const updateDecorator = (index: number, decoration: MessageDecorator) => {
-    patchMessage(messageId, {
+    void patchMessage(messageId, {
       decorators: decorators.map((item, itemIndex) =>
         itemIndex === index ? decoration : item,
       ),
-    });
+    }).catch(() => undefined);
   };
 
   const updateDraft = (
@@ -45,7 +45,9 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
     });
 
     if (next.decorators !== decorators) {
-      patchMessage(messageId, { decorators: next.decorators });
+      void patchMessage(messageId, { decorators: next.decorators }).catch(
+        () => undefined,
+      );
     }
   };
 

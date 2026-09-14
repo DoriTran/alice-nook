@@ -157,7 +157,7 @@ export const useSidebarDnD = () => {
       const nextLayout = rowsToOrders(rowsRef.current);
 
       if (!layoutsEqual(persistedLayoutRef.current, nextLayout)) {
-        syncSidebarLayout(nextLayout);
+        void syncSidebarLayout(nextLayout).catch(() => undefined);
         persistedLayoutRef.current = nextLayout;
       }
 

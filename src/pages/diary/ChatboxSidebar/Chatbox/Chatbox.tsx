@@ -218,7 +218,9 @@ const Chatbox: FC<ChatboxProps> = ({
             onClick={(event) => {
               event.stopPropagation();
               setMenuOpen(false);
-              updateChatbox(id, { hasUnread: true });
+              void updateChatbox(id, { hasUnread: true }).catch(
+                () => undefined,
+              );
             }}
           >
             <AdIcon icon={EyeClosed} source="lucide" size={12} />

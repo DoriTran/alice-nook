@@ -274,7 +274,7 @@ const TagSelect: FC<TagSelectProps> = ({
   }, [clearEditState, combobox]);
 
   const saveEdit = useCallback(
-    (event?: MouseEvent) => {
+    async (event?: MouseEvent) => {
       event?.preventDefault();
       event?.stopPropagation();
 
@@ -293,17 +293,23 @@ const TagSelect: FC<TagSelectProps> = ({
         return;
       }
 
-      updateTag(editingTagId, {
-        label: nextLabel,
-        colorId: editDraft.colorId,
-      });
-      clearEditState();
+      try {
+        await updateTag(editingTagId, {
+          label: nextLabel,
+          colorId: editDraft.colorId,
+        });
+        clearEditState();
+      } catch (error) {
+        setEditError(
+          error instanceof Error ? error.message : 'Could not update this tag',
+        );
+      }
     },
     [clearEditState, editDraft, editingTagId, isDuplicateLabel, updateTag],
   );
 
   const saveCreate = useCallback(
-    (event?: MouseEvent) => {
+    async (event?: MouseEvent) => {
       event?.preventDefault();
       event?.stopPropagation();
 
@@ -320,15 +326,21 @@ const TagSelect: FC<TagSelectProps> = ({
         return;
       }
 
-      const id = createTag({
-        label: trimmedSearch,
-        colorId: createColorId,
-      });
-      onChange([...value, id]);
-      setSearchValue('');
-      setCreateColorId(DEFAULT_COLOR_ID);
-      setCreateError(null);
-      setCreatePaletteOpen(false);
+      try {
+        const id = await createTag({
+          label: trimmedSearch,
+          colorId: createColorId,
+        });
+        onChange([...value, id]);
+        setSearchValue('');
+        setCreateColorId(DEFAULT_COLOR_ID);
+        setCreateError(null);
+        setCreatePaletteOpen(false);
+      } catch (error) {
+        setCreateError(
+          error instanceof Error ? error.message : 'Could not create this tag',
+        );
+      }
     },
     [
       createColorId,
@@ -369,7 +381,7 @@ const TagSelect: FC<TagSelectProps> = ({
 
       if (event.key === 'Enter' && shouldShowCreate && !editingTagId) {
         event.preventDefault();
-        saveCreate();
+        void saveCreate();
       }
     },
     [editingTagId, onChange, saveCreate, searchValue, shouldShowCreate, value],
@@ -379,7 +391,7 @@ const TagSelect: FC<TagSelectProps> = ({
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        saveEdit();
+        void saveEdit();
       }
 
       if (event.key === 'Escape') {
@@ -528,7 +540,7 @@ const TagSelect: FC<TagSelectProps> = ({
                           className={styles.iconBtn}
                           aria-label="Save tag"
                           onMouseDown={stopRow}
-                          onClick={saveEdit}
+                          onClick={(event) => void saveEdit(event)}
                         >
                           <AdIcon icon={faCheck} size={11} />
                         </button>
@@ -610,7 +622,7 @@ const TagSelect: FC<TagSelectProps> = ({
                     aria-label={`Create tag ${trimmedSearch}`}
                     onClick={(event) => {
                       event.stopPropagation();
-                      saveCreate(event);
+                      void saveCreate(event);
                     }}
                   >
                     <AdChip
@@ -626,7 +638,7 @@ const TagSelect: FC<TagSelectProps> = ({
                       aria-label="Create tag"
                       onClick={(event) => {
                         event.stopPropagation();
-                        saveCreate(event);
+                        void saveCreate(event);
                       }}
                     >
                       <AdIcon icon={faPlus} size={11} />

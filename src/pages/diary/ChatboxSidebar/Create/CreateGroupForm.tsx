@@ -50,10 +50,12 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
   const [colorId, setColorId] = useState<ColorId>(
     existing?.colorId ?? DEFAULT_COLOR_ID,
   );
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const pickerOffset = useNegativeVhOffset(PICKER_OFFSET_VH);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -62,31 +64,32 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
       return;
     }
 
-    if (isEdit && groupId) {
-      updateGroup(groupId, {
-        name: trimmedName,
-        icon,
-        colorId,
-      });
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      if (isEdit && groupId) {
+        await updateGroup(groupId, { name: trimmedName, icon, colorId });
+        onSaved();
+        return;
+      }
+      const newId = await createGroup({ name: trimmedName, icon, colorId });
+      if (!newId) return;
+      expandGroup(newId);
       onSaved();
-      return;
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Could not save this group.',
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    const newId = createGroup({
-      name: trimmedName,
-      icon,
-      colorId,
-    });
-
-    expandGroup(newId);
-    onSaved();
   };
 
   return (
     <form
       className={formStyles.form}
       autoComplete="off"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => void handleSubmit(event)}
     >
       <div className={formStyles.identityRow}>
         <div className={formStyles.identityPickers}>
@@ -119,6 +122,9 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
       </div>
 
       <div className={formStyles.actions}>
+        {submitError ? (
+          <p className={formStyles.formError}>{submitError}</p>
+        ) : null}
         <button
           type="button"
           className={formStyles.btnSecondary}
@@ -129,9 +135,9 @@ const CreateGroupForm: FC<CreateGroupFormProps> = ({
         <button
           type="submit"
           className={formStyles.btnPrimary}
-          disabled={!name.trim()}
+          disabled={!name.trim() || submitting}
         >
-          {isEdit ? 'Save changes' : 'Create group'}
+          {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create group'}
         </button>
       </div>
     </form>

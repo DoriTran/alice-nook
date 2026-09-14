@@ -10,7 +10,7 @@ import { isValidIconId, RECENT_ICON_LIMIT } from '@/packages/icon';
 
 import type { AppStore, ColorPickerPrefs } from './type';
 
-import { getDiaryCustomPalettes } from '../diary/store';
+import { getDiaryCustomPalettes } from '../diary/facade';
 import shallow from '../shallow';
 import {
   DEFAULT_COLOR_PICKER_PREFS,

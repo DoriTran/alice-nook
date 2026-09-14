@@ -151,7 +151,7 @@ const recalculateChatboxDerivedFields = <T extends DiaryStore>(
 
 // #endregion
 
-const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
+export const useLocalDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
   persist(
     (set, get) => ({
       ...diaryInitialState,
@@ -991,7 +991,7 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
           ...diaryInitialState,
         })),
       seedIfEmpty: () => {
-        if (!useDiaryStoreBase.persist.hasHydrated()) {
+        if (!useLocalDiaryStoreBase.persist.hasHydrated()) {
           return;
         }
 
@@ -1049,22 +1049,22 @@ const useDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
   ),
 );
 
-export const useDiaryStore = shallow(useDiaryStoreBase);
+export const useLocalDiaryStore = shallow(useLocalDiaryStoreBase);
 
-export const getDiaryCustomPalettes = () =>
-  useDiaryStoreBase.getState().customPalettes;
+export const getLocalDiaryCustomPalettes = () =>
+  useLocalDiaryStoreBase.getState().customPalettes;
 
 export const useDiaryHydrated = () => {
   const [hydrated, setHydrated] = useState(() =>
-    useDiaryStoreBase.persist.hasHydrated(),
+    useLocalDiaryStoreBase.persist.hasHydrated(),
   );
 
   useEffect(() => {
-    const unsub = useDiaryStoreBase.persist.onFinishHydration(() => {
+    const unsub = useLocalDiaryStoreBase.persist.onFinishHydration(() => {
       setHydrated(true);
     });
 
-    setHydrated(useDiaryStoreBase.persist.hasHydrated());
+    setHydrated(useLocalDiaryStoreBase.persist.hasHydrated());
 
     return unsub;
   }, []);

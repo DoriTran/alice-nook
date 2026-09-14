@@ -53,9 +53,9 @@ const DetailPanel: FC<DetailPanelProps> = ({
       return;
     }
 
-    updateChatbox(chatboxId, {
+    void updateChatbox(chatboxId, {
       notificationEnabled: !data.identity.notificationEnabled,
-    });
+    }).catch(() => undefined);
   }, [chatboxId, data.identity, updateChatbox]);
 
   const handleOpenMedia = useCallback((filter: MediaFilter) => {

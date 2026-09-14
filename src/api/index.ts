@@ -1,4 +1,5 @@
-export { delay, ApiError, MOCK_API_DELAY_MS } from './client';
+export { apiRequest, delay, ApiError, MOCK_API_DELAY_MS } from './client';
+export { diaryApi } from './diary/diaryApi';
 export { uploadAttachment } from './upload/uploadAttachment';
 export {
   isDummyAttachmentUrl,

@@ -83,7 +83,7 @@ const TagsSection: FC = () => {
     );
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const nextLabel = createLabel.trim();
 
     if (!nextLabel) {
@@ -96,14 +96,17 @@ const TagsSection: FC = () => {
       return;
     }
 
-    createTag({
-      label: nextLabel,
-      colorId: createColorId,
-    });
-    setCreateLabel('');
-    setCreateColorId(DEFAULT_COLOR_ID);
-    setCreateError(null);
-    setCreatePaletteOpen(false);
+    try {
+      await createTag({ label: nextLabel, colorId: createColorId });
+      setCreateLabel('');
+      setCreateColorId(DEFAULT_COLOR_ID);
+      setCreateError(null);
+      setCreatePaletteOpen(false);
+    } catch (error) {
+      setCreateError(
+        error instanceof Error ? error.message : 'Could not create this tag',
+      );
+    }
   };
 
   const startEdit = (tag: Tag) => {
@@ -123,7 +126,7 @@ const TagsSection: FC = () => {
     setEditPaletteOpen(false);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingTagId || !editDraft) {
       return;
     }
@@ -140,11 +143,17 @@ const TagsSection: FC = () => {
       return;
     }
 
-    updateTag(editingTagId, {
-      label: nextLabel,
-      colorId: editDraft.colorId,
-    });
-    cancelEdit();
+    try {
+      await updateTag(editingTagId, {
+        label: nextLabel,
+        colorId: editDraft.colorId,
+      });
+      cancelEdit();
+    } catch (error) {
+      setEditError(
+        error instanceof Error ? error.message : 'Could not update this tag',
+      );
+    }
   };
 
   return (
@@ -182,7 +191,7 @@ const TagsSection: FC = () => {
                 placeholder="Tag name"
                 aria-label="New tag name"
               />
-              <ActionButton onClick={handleCreate}>
+              <ActionButton onClick={() => void handleCreate()}>
                 <AdIcon icon={faPlus} size={12} />
                 <span>Create</span>
               </ActionButton>
@@ -240,7 +249,7 @@ const TagsSection: FC = () => {
                         type="button"
                         className={styles.iconBtn}
                         aria-label="Save tag"
-                        onClick={saveEdit}
+                        onClick={() => void saveEdit()}
                       >
                         <AdIcon icon={faCheck} size={12} />
                       </button>
@@ -300,11 +309,10 @@ const TagsSection: FC = () => {
         opened={pendingDeleteTag !== null}
         onClose={() => setPendingDeleteId(null)}
         onConfirm={() => {
-          if (pendingDeleteId) {
-            deleteTag(pendingDeleteId);
-          }
-
-          setPendingDeleteId(null);
+          if (!pendingDeleteId) return;
+          void deleteTag(pendingDeleteId)
+            .then(() => setPendingDeleteId(null))
+            .catch(() => undefined);
         }}
         title="Delete tag?"
         message={

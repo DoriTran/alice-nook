@@ -27,14 +27,7 @@ const App = () => {
             }
           />
           <Route path="dev" element={<Dev />} />
-          <Route
-            path="diary/*"
-            element={
-              <ProtectedRoute>
-                <Diary />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="diary/*" element={<Diary />} />
           <Route
             path="workspace"
             element={

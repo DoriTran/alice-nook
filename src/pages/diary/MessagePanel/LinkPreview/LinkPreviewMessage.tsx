@@ -33,9 +33,9 @@ const LinkPreviewMessage: FC<LinkPreviewMessageProps> = ({
       .then((next) => {
         if (!stale) {
           setMetadata(next);
-          patchMessage(messageId, {
+          void patchMessage(messageId, {
             linkPreview: { ...preview, metadata: next },
-          });
+          }).catch(() => undefined);
         }
       })
       .catch(() => undefined);

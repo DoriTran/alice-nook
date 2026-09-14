@@ -50,12 +50,14 @@ export const useTimerNotificationCoordinator = (enabled: boolean): void => {
         });
 
         if (changed) {
-          patchMessage(message.id, { decorators });
+          void patchMessage(message.id, { decorators }).catch(() => undefined);
         }
       });
 
       ringingChatboxIds.forEach((chatboxId) => {
-        updateChatbox(chatboxId, { notificationRinging: true });
+        void updateChatbox(chatboxId, { notificationRinging: true }).catch(
+          () => undefined,
+        );
       });
 
       if (Number.isFinite(nearestDeadline)) {

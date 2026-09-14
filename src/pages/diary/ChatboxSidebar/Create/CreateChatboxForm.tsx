@@ -58,6 +58,8 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
     existing?.colorId ?? DEFAULT_COLOR_ID,
   );
   const [groupId, setGroupId] = useState(existing?.groupId ?? '');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const groupSelectOptions = useMemo(
     () => [
@@ -72,7 +74,7 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
     [groupOptions],
   );
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -81,41 +83,46 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
       return;
     }
 
-    if (isEdit && chatboxId && existing) {
-      updateChatbox(chatboxId, {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      if (isEdit && chatboxId && existing) {
+        await updateChatbox(chatboxId, {
+          name: trimmedName,
+          description: description.trim(),
+          icon,
+          colorId,
+        });
+        const nextGroupId = groupId || null;
+        if (nextGroupId !== existing.groupId)
+          await moveChatboxToGroup(chatboxId, nextGroupId);
+        onSaved();
+        return;
+      }
+      const newId = await createChatbox({
         name: trimmedName,
         description: description.trim(),
         icon,
         colorId,
+        groupId: groupId || null,
       });
-
-      const nextGroupId = groupId || null;
-
-      if (nextGroupId !== existing.groupId) {
-        moveChatboxToGroup(chatboxId, nextGroupId);
-      }
-
+      if (!newId) return;
+      selectChatbox(newId);
       onSaved();
-      return;
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Could not save this chatbox.',
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    const newId = createChatbox({
-      name: trimmedName,
-      description: description.trim(),
-      icon,
-      colorId,
-      groupId: groupId || null,
-    });
-
-    selectChatbox(newId);
-    onSaved();
   };
 
   return (
     <form
       className={formStyles.form}
       autoComplete="off"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => void handleSubmit(event)}
     >
       <div className={formStyles.identityRow}>
         <div className={formStyles.identityPickers}>
@@ -168,6 +175,9 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
       />
 
       <div className={formStyles.actions}>
+        {submitError ? (
+          <p className={formStyles.formError}>{submitError}</p>
+        ) : null}
         <button
           type="button"
           className={formStyles.btnSecondary}
@@ -178,9 +188,9 @@ const CreateChatboxForm: FC<CreateChatboxFormProps> = ({
         <button
           type="submit"
           className={formStyles.btnPrimary}
-          disabled={!name.trim()}
+          disabled={!name.trim() || submitting}
         >
-          {isEdit ? 'Save' : 'Create'}
+          {submitting ? 'Saving…' : isEdit ? 'Save' : 'Create'}
         </button>
       </div>
     </form>

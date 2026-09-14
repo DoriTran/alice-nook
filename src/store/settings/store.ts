@@ -52,6 +52,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
     (set) => ({
       theme: DEFAULT_THEME,
       mode: DEFAULT_MODE,
+      diaryDataSource: 'local',
       preferences: DEFAULT_PREFERENCES,
 
       setTheme: (theme) =>
@@ -66,6 +67,8 @@ const useSettingsStoreBase = create<SettingsStore>()(
           return { mode };
         }),
 
+      setDiaryDataSource: (diaryDataSource) => set({ diaryDataSource }),
+
       updatePreferences: (patch) =>
         set((state) => ({
           preferences: mergePreferences(state.preferences, patch),
@@ -77,6 +80,7 @@ const useSettingsStoreBase = create<SettingsStore>()(
           return {
             theme: DEFAULT_THEME,
             mode: DEFAULT_MODE,
+            diaryDataSource: 'local',
             preferences: DEFAULT_PREFERENCES,
           };
         }),
@@ -87,12 +91,14 @@ const useSettingsStoreBase = create<SettingsStore>()(
       partialize: (state) => ({
         theme: state.theme,
         mode: state.mode,
+        diaryDataSource: state.diaryDataSource,
         preferences: state.preferences,
       }),
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<{
           theme: AppTheme;
           mode: AppMode;
+          diaryDataSource: 'local' | 'cloud';
           preferences: DeepPartial<SettingsPreferences>;
         }>;
 
@@ -100,6 +106,8 @@ const useSettingsStoreBase = create<SettingsStore>()(
           ...currentState,
           theme: persisted.theme ?? currentState.theme,
           mode: persisted.mode ?? currentState.mode,
+          diaryDataSource:
+            persisted.diaryDataSource ?? currentState.diaryDataSource,
           preferences: mergePreferences(
             currentState.preferences,
             persisted.preferences ?? {},
@@ -111,6 +119,12 @@ const useSettingsStoreBase = create<SettingsStore>()(
 );
 
 export const useSettingsStore = shallow(useSettingsStoreBase);
+
+export const getDiaryDataSource = () =>
+  useSettingsStoreBase.getState().diaryDataSource;
+
+export const setDiaryDataSource = (source: 'local' | 'cloud') =>
+  useSettingsStoreBase.getState().setDiaryDataSource(source);
 
 const { theme, mode } = useSettingsStoreBase.getState();
 applyAppTheme(theme, mode);

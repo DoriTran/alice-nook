@@ -243,10 +243,10 @@ const TagMessagesDialog: FC<TagMessagesDialogProps> = ({
                   onClose();
                 }}
                 onRemove={() => {
-                  setMessageTags(
+                  void setMessageTags(
                     message.id,
                     message.tagIds.filter((id) => id !== tagId),
-                  );
+                  ).catch(() => undefined);
                 }}
               />
             ))
@@ -263,15 +263,18 @@ const TagMessagesDialog: FC<TagMessagesDialogProps> = ({
           setPendingLabel(null);
         }}
         onConfirm={() => {
-          updateTag(tagId, {
+          void updateTag(tagId, {
             label: confirmLabel,
             colorId: draftColorId,
-          });
-          setConfirmEditOpen(false);
-          setPendingLabel(null);
-          setEditing(false);
-          setError(null);
-          setPaletteOpen(false);
+          })
+            .then(() => {
+              setConfirmEditOpen(false);
+              setPendingLabel(null);
+              setEditing(false);
+              setError(null);
+              setPaletteOpen(false);
+            })
+            .catch(() => undefined);
         }}
         title="Edit tag everywhere?"
         message={`Changes to “#${confirmLabel}” will update this tag across the whole app — every chat and message that uses it.`}
@@ -282,9 +285,12 @@ const TagMessagesDialog: FC<TagMessagesDialogProps> = ({
         opened={confirmClearOpen}
         onClose={() => setConfirmClearOpen(false)}
         onConfirm={() => {
-          removeTagFromChatbox(chatboxId, tagId);
-          setConfirmClearOpen(false);
-          onClose();
+          void removeTagFromChatbox(chatboxId, tagId)
+            .then(() => {
+              setConfirmClearOpen(false);
+              onClose();
+            })
+            .catch(() => undefined);
         }}
         title="Remove tag from this chat?"
         message={`“#${currentLabel}” will be removed from all messages in this chat. The tag itself stays available elsewhere.`}

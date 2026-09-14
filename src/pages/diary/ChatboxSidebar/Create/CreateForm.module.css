@@ -72,3 +72,9 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+.formError {
+  flex: 1;
+  margin: 0;
+  color: var(--danger, #c45c5c);
+  font-size: var(--font-xs);
+}

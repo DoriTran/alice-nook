@@ -84,29 +84,36 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
     };
   }, [baseColor, description, generated.dark, lightPalette, paletteName]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const payload = buildPalettePayload();
 
     if (!payload) {
       return;
     }
 
-    createCustomPalette(payload);
-    setPaletteName('');
-    setDescription('');
+    try {
+      await createCustomPalette(payload);
+      setPaletteName('');
+      setDescription('');
+    } catch {
+      // The shared Cloud repository reports the error. Keep the form for retry.
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const payload = buildPalettePayload();
 
     if (!payload) {
       return;
     }
 
-    const colorId = createCustomPalette(payload);
-
-    addRecentColor(colorId);
-    onSaved(colorId);
+    try {
+      const colorId = await createCustomPalette(payload);
+      addRecentColor(colorId);
+      onSaved(colorId);
+    } catch {
+      // The shared Cloud repository reports the error. Keep the form for retry.
+    }
   };
 
   const canSave = paletteName.trim().length > 0;
@@ -227,7 +234,7 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
             <button
               type="button"
               className={styles.createBtn}
-              onClick={handleCreate}
+              onClick={() => void handleCreate()}
             >
               Create Palette
             </button>
@@ -236,7 +243,7 @@ const CreatePalettePanel: FC<CreatePalettePanelProps> = ({
             type="button"
             className={styles.primaryBtn}
             disabled={!canSave}
-            onClick={handleSave}
+            onClick={() => void handleSave()}
           >
             <AdIcon icon={faCheck} size={12} />
             Save Palette

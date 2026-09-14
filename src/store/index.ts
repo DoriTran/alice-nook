@@ -1,4 +1,4 @@
-export { useDiaryStore, useDiaryHydrated } from './diary/store';
+export { useDiaryStore, useDiaryHydrated } from './diary/facade';
 export { useWorkspaceStore, useWorkspaceHydrated } from './workspace/store';
 export { useAppStore } from './app/store';
 export { useSettingsStore, applyAppTheme } from './settings/store';
@@ -16,4 +16,5 @@ export type {
   SettingsStoreActions,
   SettingsStoreState,
   SettingsPreferences,
+  DiaryDataSource,
 } from './settings/type';

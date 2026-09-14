@@ -2,6 +2,8 @@ import type { FC, PropsWithChildren } from 'react';
 
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { useSettingsStore } from '@/store/settings/store';
+
 import { useSession } from './auth-client';
 import styles from './AuthGuards.module.css';
 import {
@@ -41,6 +43,18 @@ export const PublicAuthRoute: FC<PropsWithChildren> = ({ children }) => {
 
 export const RootRoute: FC = () => {
   const { data: session, isPending } = useSession();
+  const source = useSettingsStore('diaryDataSource');
   if (isPending) return <SessionLoading />;
-  return <Navigate replace to={session ? DEFAULT_AUTH_DESTINATION : '/auth'} />;
+  return (
+    <Navigate
+      replace
+      to={
+        session
+          ? DEFAULT_AUTH_DESTINATION
+          : source === 'local'
+            ? '/diary'
+            : '/auth'
+      }
+    />
+  );
 };

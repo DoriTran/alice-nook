@@ -132,7 +132,9 @@ const MessageBubble: FC<MessageBubbleProps> = ({
       messageId={message.id}
       reactions={message.reactions}
       align={reactionAlign}
-      onToggle={toggleMessageReaction}
+      onToggle={(id, emoji) =>
+        void toggleMessageReaction(id, emoji).catch(() => undefined)
+      }
     />
   ) : null;
 

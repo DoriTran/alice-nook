@@ -1,5 +1,7 @@
 import type { AppMode, AppTheme } from '../app/type';
 
+export type DiaryDataSource = 'local' | 'cloud';
+
 /**
  * Appearance extras. These are persisted as the future home for global
  * look-and-feel tokens but are NOT applied to the app yet (suggested).
@@ -105,12 +107,14 @@ export type SettingsPreferences = {
 export type SettingsStoreState = {
   theme: AppTheme;
   mode: AppMode;
+  diaryDataSource: DiaryDataSource;
   preferences: SettingsPreferences;
 };
 
 export type SettingsStoreActions = {
   setTheme: (theme: AppTheme) => void;
   setMode: (mode: AppMode) => void;
+  setDiaryDataSource: (source: DiaryDataSource) => void;
   updatePreferences: (patch: DeepPartial<SettingsPreferences>) => void;
   resetToDefaults: () => void;
 };

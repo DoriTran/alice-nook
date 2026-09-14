@@ -154,7 +154,10 @@ const LibrarySection: FC = () => {
                       title: 'Delete palette',
                       message: `Delete "${palette.name}"? This cannot be undone.`,
                       confirmLabel: 'Delete',
-                      onConfirm: () => deleteCustomPalette(palette.id),
+                      onConfirm: () =>
+                        void deleteCustomPalette(palette.id).catch(
+                          () => undefined,
+                        ),
                     })
                   }
                   variant="danger"

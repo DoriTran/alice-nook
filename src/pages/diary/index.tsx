@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
+import { useSession } from '@/auth';
+import { createAuthURL } from '@/auth/redirects';
+import DiaryDataSourceControl from '@/packages/ui/DiaryDataSourceControl';
 import { useAppStore, useDiaryHydrated, useDiaryStore } from '@/store';
+import { useSettingsStore } from '@/store';
+import { hydrateCloudDiary, useDiarySourceRuntime } from '@/store/diary/source';
 
 import ChatboxSidebar from './ChatboxSidebar/ChatboxSidebar';
 import DiaryFormModal, {
@@ -17,7 +23,7 @@ const DEFAULT_CHATBOX_ID = 'cb:study';
 const FOCUSABLE =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const Diary: FC = () => {
+const DiaryContent: FC = () => {
   const hydrated = useDiaryHydrated();
   const diaryPage = useAppStore('diaryPage');
   const selectChatbox = useAppStore('selectChatbox');
@@ -128,10 +134,10 @@ const Diary: FC = () => {
       if (chatboxId) {
         const chatbox = chatboxes[chatboxId];
         if (chatbox && (chatbox.hasUnread || chatbox.notificationRinging)) {
-          updateChatbox(chatboxId, {
+          void updateChatbox(chatboxId, {
             hasUnread: false,
             notificationRinging: false,
-          });
+          }).catch(() => undefined);
         }
       }
       selectChatbox(chatboxId);
@@ -193,14 +199,18 @@ const Diary: FC = () => {
   }, [isWide, openChat]);
 
   const handleDeleteChatbox = useCallback(
-    (chatboxId: string) => {
+    async (chatboxId: string) => {
       const nextId =
         orders.rootOrders.find(
           (id) => id !== chatboxId && Boolean(chatboxes[id]),
         ) ??
         Object.keys(chatboxes).find((id) => id !== chatboxId) ??
         null;
-      deleteChatbox(chatboxId);
+      try {
+        await deleteChatbox(chatboxId);
+      } catch {
+        return;
+      }
       if (
         nextId &&
         responsiveMode !== 'mobile' &&
@@ -307,10 +317,72 @@ const Diary: FC = () => {
           onEditChatbox={(id) =>
             setFormModal({ action: 'edit', entity: 'chatbox', id })
           }
-          onDeleteChatbox={handleDeleteChatbox}
+          onDeleteChatbox={(id) => void handleDeleteChatbox(id)}
         />
       </div>
       <DiaryFormModal state={formModal} onClose={() => setFormModal(null)} />
+    </div>
+  );
+};
+
+const Diary: FC = () => {
+  const source = useSettingsStore('diaryDataSource');
+  const { data: session, isPending } = useSession();
+  const { cloudStatus, error } = useDiarySourceRuntime();
+  const effectiveCloudStatus = isPending ? 'loading' : cloudStatus;
+  const cloudReady = source === 'local' || effectiveCloudStatus === 'ready';
+
+  return (
+    <div className={styles.sourceFrame}>
+      <div className={styles.sourceBadge}>
+        <DiaryDataSourceControl compact />
+      </div>
+      {cloudReady ? (
+        <DiaryContent />
+      ) : (
+        <main
+          className={styles.sourceGate}
+          aria-busy={effectiveCloudStatus === 'loading'}
+        >
+          <div className={styles.sourceGateCard}>
+            <span className={styles.sourceGateEyebrow}>Cloud Diary</span>
+            <h1>
+              {effectiveCloudStatus === 'auth-required'
+                ? 'Sign in to open your cloud'
+                : effectiveCloudStatus === 'error'
+                  ? 'Your cloud is taking a little nap'
+                  : 'Opening your cloud…'}
+            </h1>
+            <p>
+              {effectiveCloudStatus === 'auth-required'
+                ? 'Your Local Diary is still safe on this device. Sign in, or switch back to Local above.'
+                : effectiveCloudStatus === 'error'
+                  ? error ||
+                    'Cloud Diary could not be loaded. Your Local Diary was not changed.'
+                  : 'Fetching the Diary saved with your Alice Nook account.'}
+            </p>
+            <div className={styles.sourceGateActions}>
+              {effectiveCloudStatus === 'auth-required' && !session ? (
+                <Link
+                  className={styles.sourceGatePrimary}
+                  to={createAuthURL('/diary')}
+                >
+                  Sign in
+                </Link>
+              ) : null}
+              {effectiveCloudStatus === 'error' ? (
+                <button
+                  type="button"
+                  className={styles.sourceGatePrimary}
+                  onClick={() => void hydrateCloudDiary()}
+                >
+                  Try again
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </main>
+      )}
     </div>
   );
 };

@@ -78,7 +78,7 @@ const PaletteSelectionPanel: FC<PaletteSelectionPanelProps> = ({
   ) => {
     event.preventDefault();
     event.stopPropagation();
-    deleteCustomPalette(paletteId);
+    void deleteCustomPalette(paletteId).catch(() => undefined);
     removeRecentColor(colorId);
 
     if (value === colorId) {

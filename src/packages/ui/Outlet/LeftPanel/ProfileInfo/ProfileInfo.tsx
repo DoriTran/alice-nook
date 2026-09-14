@@ -65,7 +65,7 @@ const ProfileInfo: FC<ProfileInfoProps> = ({
         setSignOutError('Could not sign out. Please try again.');
         return;
       }
-      void navigate('/auth', { replace: true });
+      void navigate('/diary', { replace: true });
     } catch {
       setSignOutError('Could not sign out. Please try again.');
     } finally {

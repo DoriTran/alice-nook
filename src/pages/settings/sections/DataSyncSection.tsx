@@ -7,6 +7,7 @@ import { clear as idbClear } from 'idb-keyval';
 import { useEffect, useState, type FC } from 'react';
 
 import { AdConfirmDialog } from '@/packages/base';
+import DiaryDataSourceControl from '@/packages/ui/DiaryDataSourceControl';
 import { useDiaryStore } from '@/store';
 
 import { ActionButton, SettingCard, SettingRow } from '../components';
@@ -68,6 +69,21 @@ const DataSyncSection: FC = () => {
 
   return (
     <>
+      <SettingCard
+        id="diary-source"
+        icon={faCloudArrowUp}
+        title="Diary data source"
+        description="Choose which independent Diary dataset you want to use. Switching never copies or merges data."
+      >
+        <SettingRow
+          title="Active source"
+          description="Local stays on this device. Cloud belongs to your signed-in account."
+          stacked
+        >
+          <DiaryDataSourceControl />
+        </SettingRow>
+      </SettingCard>
+
       <SettingCard
         id="storage"
         icon={faHardDrive}
