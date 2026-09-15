@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { DiaryStore } from './type';
+import type { DiaryStore, Message } from './type';
 
 import { diaryInitialState } from './constants';
 
@@ -28,3 +28,40 @@ export const updateCloudDiary = (
 
 export const clearCloudDiary = () =>
   useCloudDiaryStoreBase.getState().clearSnapshot();
+
+export type MessageSyncStatus = 'pending' | 'failed';
+export type CloudMessagePayload = Omit<
+  Message,
+  'edited' | 'createdAt' | 'updatedAt'
+>;
+export type MessageSyncEntry = {
+  status: MessageSyncStatus;
+  payload: CloudMessagePayload;
+  attempt: number;
+};
+
+type CloudMessageSyncStore = {
+  entries: Record<string, MessageSyncEntry>;
+};
+
+export const useCloudMessageSyncStore = create<CloudMessageSyncStore>()(() => ({
+  entries: {},
+}));
+
+export const setCloudMessageSyncEntry = (
+  messageId: string,
+  entry: MessageSyncEntry | null,
+) =>
+  useCloudMessageSyncStore.setState((state) => {
+    if (entry) {
+      return { entries: { ...state.entries, [messageId]: entry } };
+    }
+    const { [messageId]: _removed, ...entries } = state.entries;
+    return { entries };
+  });
+
+export const getCloudMessageSyncEntry = (messageId: string) =>
+  useCloudMessageSyncStore.getState().entries[messageId];
+
+export const clearCloudMessageSync = () =>
+  useCloudMessageSyncStore.setState({ entries: {} });

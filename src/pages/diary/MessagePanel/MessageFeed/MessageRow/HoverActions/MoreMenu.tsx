@@ -30,6 +30,7 @@ export type MoreMenuProps = {
   onOpenChange: (opened: boolean) => void;
   compactActions?: boolean;
   replyDisabled?: boolean;
+  disabled?: boolean;
 };
 
 const MoreMenu: FC<MoreMenuProps> = ({
@@ -39,6 +40,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
   onOpenChange,
   compactActions = false,
   replyDisabled = false,
+  disabled = false,
 }) => {
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
   const dataSource = useSettingsStore('diaryDataSource');
@@ -61,6 +63,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           icon={faEllipsisVertical}
           label="Message options"
           tooltip={false}
+          disabled={disabled}
           onClick={() => onOpenChange(!opened)}
         />
       }
@@ -70,6 +73,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           type="button"
           className={`${styles.quickAction} ${styles.forwardAction}`}
           aria-label="Forward"
+          disabled={disabled}
           onClick={() => {
             onOpenChange(false);
             actions.requestForward(message.id);
@@ -84,6 +88,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           type="button"
           className={`${styles.quickAction} ${styles.moveAction}`}
           aria-label="Move"
+          disabled={disabled}
           aria-disabled={dataSource === 'cloud'}
           onClick={() => {
             if (dataSource === 'cloud') {
@@ -120,6 +125,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           type="button"
           className={`${styles.quickAction} ${styles.pinAction}`}
           aria-label={message.pinned ? 'Unpin' : 'Pin'}
+          disabled={disabled}
           data-active={message.pinned || undefined}
           onClick={() => {
             onOpenChange(false);
@@ -136,7 +142,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           className={`${styles.quickAction} ${styles.archiveAction}`}
           aria-label={message.archived ? 'Unarchive' : 'Archive'}
           data-active={message.archived || undefined}
-          disabled={archiveDisabled}
+          disabled={disabled || archiveDisabled}
           onClick={() => {
             onOpenChange(false);
             actions.toggleArchive(message.id);
@@ -154,6 +160,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           <li role="separator" className={styles.divider} />
           <AdMenuItem
             centered
+            disabled={disabled}
             onClick={() => setTagEditorOpen((value) => !value)}
           >
             Tag
@@ -173,7 +180,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           <li role="separator" className={styles.divider} />
           <AdMenuItem
             centered
-            disabled={replyDisabled}
+            disabled={disabled || replyDisabled}
             onClick={() => {
               onOpenChange(false);
               actions.startReply(message.id);
@@ -186,7 +193,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
             <>
               <AdMenuItem
                 centered
-                disabled={editDisabled}
+                disabled={disabled || editDisabled}
                 onClick={() => {
                   onOpenChange(false);
                   actions.startEdit(message.id);
@@ -200,6 +207,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           <AdMenuItem
             centered
             destructive
+            disabled={disabled}
             onClick={() => {
               onOpenChange(false);
               actions.requestDelete(message.id);
@@ -215,7 +223,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
               <li role="separator" className={styles.divider} />
               <AdMenuItem
                 centered
-                disabled={editDisabled}
+                disabled={disabled || editDisabled}
                 onClick={() => {
                   onOpenChange(false);
                   actions.startEdit(message.id);
@@ -229,6 +237,7 @@ const MoreMenu: FC<MoreMenuProps> = ({
           <AdMenuItem
             centered
             destructive
+            disabled={disabled}
             onClick={() => {
               onOpenChange(false);
               actions.requestDelete(message.id);

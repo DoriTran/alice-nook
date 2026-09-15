@@ -95,7 +95,7 @@ const resolveChatboxMessageIds = (
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
     .map((message) => message.id);
 
-const recalculateChatboxDerivedFields = <T extends DiaryStore>(
+export const recalculateChatboxDerivedFields = <T extends DiaryStore>(
   state: T,
   chatboxId: string,
 ): T => {

@@ -1,4 +1,9 @@
-export { useDiaryStore, useDiaryHydrated } from './diary/facade';
+export {
+  retryMessage,
+  useDiaryStore,
+  useDiaryHydrated,
+  useMessageSyncStatus,
+} from './diary/facade';
 export { useWorkspaceStore, useWorkspaceHydrated } from './workspace/store';
 export { useAppStore } from './app/store';
 export { useSettingsStore, applyAppTheme } from './settings/store';

@@ -15,6 +15,7 @@ export type MessageDecoratorShellProps = {
   /** When false, jump-to highlight targets attachments instead of an empty shell. */
   messageSurface?: boolean;
   children: ReactNode;
+  disabled?: boolean;
 };
 
 const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
@@ -23,10 +24,12 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
   attached = false,
   messageSurface = true,
   children,
+  disabled = false,
 }) => {
   const patchMessage = useDiaryStore('patchMessage');
 
   const updateDecorator = (index: number, decoration: MessageDecorator) => {
+    if (disabled) return;
     void patchMessage(messageId, {
       decorators: decorators.map((item, itemIndex) =>
         itemIndex === index ? decoration : item,
@@ -39,6 +42,7 @@ const MessageDecoratorShell: FC<MessageDecoratorShellProps> = ({
       draft: ReturnType<typeof input.createInitialDraft>,
     ) => ReturnType<typeof input.createInitialDraft>,
   ) => {
+    if (disabled) return;
     const next = updater({
       ...input.createInitialDraft(),
       decorators,

@@ -601,13 +601,16 @@ export const useComposerDraft = (
           ? payload.content.preview
           : '';
 
-      await createMessage(payload);
+      const createPromise = createMessage(payload);
 
       setDraft((current) => {
         revokeDraftObjectUrls(current);
         return createInitialDraft();
       });
       onReplyClearRef.current?.();
+      setSending(false);
+
+      await createPromise;
 
       if (payload.variant === 'ai' && prompt) {
         const response = await generateAiResponse({ chatboxId, prompt });
@@ -640,7 +643,7 @@ export const useComposerDraft = (
         });
       }
     } catch {
-      // The shared Cloud repository reports the error. Keep the draft for retry.
+      // Cloud failures remain recoverable from the optimistic message bubble.
     } finally {
       setSending(false);
     }

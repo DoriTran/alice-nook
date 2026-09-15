@@ -21,13 +21,18 @@ import type {
 } from './type';
 
 import {
+  getCloudMessageSyncEntry,
   getCloudDiaryState,
+  setCloudMessageSyncEntry,
   updateCloudDiary,
   useCloudDiaryStoreBase,
+  useCloudMessageSyncStore,
+  type CloudMessagePayload,
 } from './cloudStore';
 import { reconcileCloudDiary, runCloudMutation } from './source';
 import {
   getLocalDiaryCustomPalettes,
+  recalculateChatboxDerivedFields,
   useDiaryHydrated,
   useLocalDiaryStoreBase,
 } from './store';
@@ -126,6 +131,51 @@ const buildCloudMessage = (data: Partial<Message>, id: string): Message => ({
   createdAt: new Date().toISOString(),
   updatedAt: null,
 });
+
+const persistOptimisticMessage = async (
+  id: string,
+  payload: CloudMessagePayload,
+  attempt: number,
+) => {
+  try {
+    const canonical = await runCloudMutation(() =>
+      diaryApi.createMessage(payload),
+    );
+    if (getCloudMessageSyncEntry(id)?.attempt !== attempt) return;
+    updateCloudDiary((state) => {
+      const optimistic = state.messages[id];
+      if (!optimistic) return state;
+      return recalculateChatboxDerivedFields(
+        {
+          ...state,
+          messages: {
+            ...state.messages,
+            [id]: { ...optimistic, ...canonical, id },
+          },
+        },
+        optimistic.chatboxId,
+      );
+    });
+    setCloudMessageSyncEntry(id, null);
+  } catch (error) {
+    const current = getCloudMessageSyncEntry(id);
+    if (!current || current.attempt !== attempt) throw error;
+    if (attempt > 1) {
+      try {
+        await reconcileCloudDiary();
+        if (cloudState().messages[id]) {
+          setCloudMessageSyncEntry(id, null);
+          return;
+        }
+      } catch {
+        // Keep the original POST error as the retry result.
+      }
+    }
+    notifyFailure(error);
+    setCloudMessageSyncEntry(id, { ...current, status: 'failed' });
+    throw error;
+  }
+};
 
 const unsupportedMessageMove = () => {
   const error = new ApiError('Moving messages is not available in Cloud yet.');
@@ -230,10 +280,27 @@ const facadeActions: DiaryAsyncStoreActions = {
       updatedAt: _updatedAt,
       ...request
     } = message;
-    await cloud(async () => {
-      await diaryApi.createMessage(sanitizeMessageForCloud(request));
-      await reconcileCloudDiary();
+    const payload = sanitizeMessageForCloud(request) as CloudMessagePayload;
+    const attempt = 1;
+    setCloudMessageSyncEntry(id, { status: 'pending', payload, attempt });
+    updateCloudDiary((state) => {
+      const ids = state.orders.chatboxMessageOrders[message.chatboxId] ?? [];
+      return recalculateChatboxDerivedFields(
+        {
+          ...state,
+          messages: { ...state.messages, [id]: message },
+          orders: {
+            ...state.orders,
+            chatboxMessageOrders: {
+              ...state.orders.chatboxMessageOrders,
+              [message.chatboxId]: ids.includes(id) ? ids : [...ids, id],
+            },
+          },
+        },
+        message.chatboxId,
+      );
     });
+    await persistOptimisticMessage(id, payload, attempt);
     return id;
   },
   updateMessage: async (id, data) => {
@@ -499,3 +566,26 @@ export const getDiaryCustomPalettes = () =>
   getDiaryDataSource() === 'local'
     ? getLocalDiaryCustomPalettes()
     : getCloudDiaryState().customPalettes;
+
+export const useMessageSyncStatus = (
+  messageId: string,
+): 'pending' | 'sent' | 'failed' => {
+  const source = useSettingsStore('diaryDataSource');
+  const status = useCloudMessageSyncStore(
+    (state) => state.entries[messageId]?.status,
+  );
+  return source === 'cloud' ? (status ?? 'sent') : 'sent';
+};
+
+export const retryMessage = async (messageId: string): Promise<void> => {
+  if (isLocal()) return;
+  const current = getCloudMessageSyncEntry(messageId);
+  if (!current || current.status !== 'failed') return;
+  const attempt = current.attempt + 1;
+  setCloudMessageSyncEntry(messageId, {
+    ...current,
+    status: 'pending',
+    attempt,
+  });
+  await persistOptimisticMessage(messageId, current.payload, attempt);
+};

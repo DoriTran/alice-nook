@@ -17,11 +17,13 @@ import styles from './MessageContent.module.css';
 export type ContentRendererProps = {
   message: Message;
   mode?: 'feed' | 'preview';
+  disabled?: boolean;
 };
 
 const ContentRenderer: FC<ContentRendererProps> = ({
   message,
   mode = 'feed',
+  disabled = false,
 }) => {
   const patchMessage = useDiaryStore('patchMessage');
   const align = message.sender === 'assistant' ? 'start' : 'end';
@@ -46,6 +48,7 @@ const ContentRenderer: FC<ContentRendererProps> = ({
               <div className={styles.checkbox}>
                 <AdCheckbox
                   checked={item.completed}
+                  disabled={disabled}
                   aria-label={
                     hasText
                       ? `Mark ${item.content.preview} complete`

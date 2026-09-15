@@ -2,6 +2,8 @@ import { memo, useEffect, useRef, type FC } from 'react';
 
 import type { Message } from '@/store/diary/type';
 
+import { useMessageSyncStatus } from '@/store';
+
 import type { MessageActionsAPI } from '../../.hooks/useMessageActions';
 
 import HoverActions from './HoverActions/HoverActions';
@@ -17,6 +19,8 @@ export type MessageRowProps = {
 const MessageRow: FC<MessageRowProps> = ({ message, registerRef, actions }) => {
   const rootRef = useRef<HTMLElement>(null);
   const isAssistant = (message.sender ?? 'user') === 'assistant';
+  const syncStatus = useMessageSyncStatus(message.id);
+  const interactionsLocked = syncStatus !== 'sent';
 
   useEffect(() => {
     registerRef(message.id, rootRef.current);
@@ -33,6 +37,7 @@ const MessageRow: FC<MessageRowProps> = ({ message, registerRef, actions }) => {
     >
       <MessageBubble
         message={message}
+        syncStatus={syncStatus}
         onNavigateToMessage={actions.navigateToMessage}
         hoverActions={
           <HoverActions
@@ -40,6 +45,7 @@ const MessageRow: FC<MessageRowProps> = ({ message, registerRef, actions }) => {
             actions={actions}
             side={isAssistant ? 'left' : 'right'}
             className={styles.hoverActions}
+            disabled={interactionsLocked}
           />
         }
       />

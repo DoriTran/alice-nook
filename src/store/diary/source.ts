@@ -13,7 +13,11 @@ import {
   useSettingsStore,
 } from '@/store/settings/store';
 
-import { clearCloudDiary, replaceCloudDiary } from './cloudStore';
+import {
+  clearCloudDiary,
+  clearCloudMessageSync,
+  replaceCloudDiary,
+} from './cloudStore';
 
 export type DiaryCloudStatus =
   | 'idle'
@@ -78,6 +82,7 @@ export const setDiarySessionUser = (userId: string | null) => {
   hydrationController?.abort();
   hydrationController = null;
   clearCloudDiary();
+  clearCloudMessageSync();
 
   const nextSource: DiaryDataSource = userId
     ? getDiaryLocalExplicit()
@@ -134,6 +139,7 @@ export const switchDiaryDataSource = async (
   setDiaryDataSourcePreference(source);
 
   if (source === 'local') {
+    clearCloudMessageSync();
     setRuntime({ cloudStatus: 'idle', error: null });
     return;
   }

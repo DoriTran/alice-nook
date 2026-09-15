@@ -12,19 +12,21 @@ export type LinkPreviewMessageProps = {
   preview: LinkPreviewState;
   messageId: string;
   attached?: boolean;
+  disabled?: boolean;
 };
 
 const LinkPreviewMessage: FC<LinkPreviewMessageProps> = ({
   preview,
   messageId,
   attached = false,
+  disabled = false,
 }) => {
   const patchMessage = useDiaryStore('patchMessage');
   const [metadata, setMetadata] = useState<LinkPreviewMetadata | undefined>(
     preview.metadata,
   );
   useEffect(() => {
-    if (preview.metadata) {
+    if (preview.metadata || disabled) {
       setMetadata(preview.metadata);
       return;
     }
@@ -42,7 +44,7 @@ const LinkPreviewMessage: FC<LinkPreviewMessageProps> = ({
     return () => {
       stale = true;
     };
-  }, [messageId, patchMessage, preview]);
+  }, [disabled, messageId, patchMessage, preview]);
 
   return (
     <div className={`${styles.root} ${attached ? styles.attached : ''}`}>

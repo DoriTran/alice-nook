@@ -5,12 +5,13 @@ import {
   faCheck,
   faThumbtack,
 } from '@fortawesome/free-solid-svg-icons';
+import { Loader } from '@mantine/core';
 import clsx from 'clsx';
 
 import type { Message } from '@/store/diary/type';
 
 import { AdIcon } from '@/packages/base';
-import { useDiaryStore } from '@/store';
+import { retryMessage, useDiaryStore } from '@/store';
 
 import {
   collectMessageUrls,
@@ -33,12 +34,14 @@ export type MessageBubbleProps = {
   onNavigateToMessage: (messageId: string) => void;
   /** Centered on the message bubble only (not reply / reactions / tags). */
   hoverActions?: ReactNode;
+  syncStatus?: 'pending' | 'sent' | 'failed';
 };
 
 const MessageBubble: FC<MessageBubbleProps> = ({
   message,
   onNavigateToMessage,
   hoverActions = null,
+  syncStatus = 'sent',
 }) => {
   const toggleMessageReaction = useDiaryStore('toggleMessageReaction');
   const isAssistant = (message.sender ?? 'user') === 'assistant';
@@ -67,6 +70,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const hasReactions = message.reactions.length > 0;
   const surfaceBg = isAssistant ? 'var(--chat-text-bg)' : 'var(--chat-user-bg)';
   const reactionAlign = isAssistant ? 'start' : 'end';
+  const interactionsLocked = syncStatus !== 'sent';
 
   const statusBadge =
     message.archived || message.pinned ? (
@@ -112,8 +116,11 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         decorators={message.decorators}
         attached={hasAttachments}
         messageSurface={showBody}
+        disabled={interactionsLocked}
       >
-        {showBody ? <ContentRenderer message={message} /> : null}
+        {showBody ? (
+          <ContentRenderer message={message} disabled={interactionsLocked} />
+        ) : null}
       </MessageDecoratorShell>
     );
   } else if (showBody) {
@@ -122,7 +129,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         className={clsx(styles.bubble, hasAttachments && styles.bubbleAttached)}
         data-message-surface
       >
-        <ContentRenderer message={message} />
+        <ContentRenderer message={message} disabled={interactionsLocked} />
       </div>
     );
   }
@@ -135,6 +142,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
       onToggle={(id, emoji) =>
         void toggleMessageReaction(id, emoji).catch(() => undefined)
       }
+      disabled={interactionsLocked}
     />
   ) : null;
 
@@ -174,6 +182,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
         messageId={message.id}
         preview={previewState}
         attached={Boolean(body)}
+        disabled={interactionsLocked}
       />
     ) : null;
   const actionsBesidePreview =
@@ -241,9 +250,25 @@ const MessageBubble: FC<MessageBubbleProps> = ({
           {message.edited ? (
             <span className={userStyles.time}> · edited</span>
           ) : null}
-          <span className={userStyles.read} aria-label="Sent">
-            <AdIcon icon={faCheck} size={10} />
-          </span>
+          {syncStatus === 'pending' ? (
+            <span className={userStyles.read} aria-label="Sending">
+              <Loader size={10} />
+            </span>
+          ) : syncStatus === 'failed' ? (
+            <button
+              type="button"
+              className={userStyles.retry}
+              onClick={() =>
+                void retryMessage(message.id).catch(() => undefined)
+              }
+            >
+              Retry
+            </button>
+          ) : (
+            <span className={userStyles.read} aria-label="Sent">
+              <AdIcon icon={faCheck} size={10} />
+            </span>
+          )}
         </div>
       )}
     </div>

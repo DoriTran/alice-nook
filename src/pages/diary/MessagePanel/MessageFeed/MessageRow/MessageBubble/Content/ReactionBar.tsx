@@ -11,6 +11,7 @@ export type ReactionBarProps = {
   reactions: MessageReaction[];
   align?: 'start' | 'end';
   onToggle: (messageId: string, emoji: string) => void;
+  disabled?: boolean;
 };
 
 const ReactionBar: FC<ReactionBarProps> = ({
@@ -18,6 +19,7 @@ const ReactionBar: FC<ReactionBarProps> = ({
   reactions,
   align = 'end',
   onToggle,
+  disabled = false,
 }) => {
   if (reactions.length === 0) {
     return null;
@@ -32,6 +34,7 @@ const ReactionBar: FC<ReactionBarProps> = ({
           className={styles.chip}
           data-active={reaction.count > 0 || undefined}
           aria-label={`React with ${reaction.emoji}`}
+          disabled={disabled}
           onClick={() => onToggle(messageId, reaction.emoji)}
         >
           <AdEmojiGlyph

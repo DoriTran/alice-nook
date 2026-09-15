@@ -24,6 +24,7 @@ export type HoverActionsProps = {
   actions: MessageActionsAPI;
   side: 'left' | 'right';
   className?: string;
+  disabled?: boolean;
 };
 
 const HoverActions: FC<HoverActionsProps> = ({
@@ -31,6 +32,7 @@ const HoverActions: FC<HoverActionsProps> = ({
   actions,
   side,
   className,
+  disabled = false,
 }) => {
   const [reactionOpen, setReactionOpen] = useState(false);
   const [fullPickerOpen, setFullPickerOpen] = useState(false);
@@ -42,6 +44,7 @@ const HoverActions: FC<HoverActionsProps> = ({
   const popupOpen = reactionOpen || tagOpen || menuOpen;
 
   const handleReactionSelect = (emoji: string) => {
+    if (disabled) return;
     actions.toggleReaction(message.id, emoji);
     setReactionOpen(false);
     setFullPickerOpen(false);
@@ -98,12 +101,13 @@ const HoverActions: FC<HoverActionsProps> = ({
         onOpenChange={setMenuOpen}
         compactActions={compactActions}
         replyDisabled={replyDisabled}
+        disabled={disabled}
       />
       {!compactActions ? (
         <AdActionButton
           icon={faReply}
           label="Reply"
-          disabled={replyDisabled}
+          disabled={disabled || replyDisabled}
           onClick={() => actions.startReply(message.id)}
         />
       ) : null}
@@ -119,6 +123,7 @@ const HoverActions: FC<HoverActionsProps> = ({
               icon={faTags}
               label="Add tags"
               tooltip={false}
+              disabled={disabled}
               active={message.tagIds.length > 0}
               onClick={() => setTagOpen((value) => !value)}
             />
@@ -154,6 +159,7 @@ const HoverActions: FC<HoverActionsProps> = ({
             icon={faSmile}
             label="React"
             tooltip={false}
+            disabled={disabled}
             active={message.reactions.length > 0}
             onClick={() => setReactionOpen((value) => !value)}
           />
