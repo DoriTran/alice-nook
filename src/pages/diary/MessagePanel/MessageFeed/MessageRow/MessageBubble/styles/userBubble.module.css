@@ -151,6 +151,11 @@
 
 .read {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
   margin-top: -1px;
   color: var(--primary);
 }

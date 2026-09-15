@@ -252,7 +252,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
           ) : null}
           {syncStatus === 'pending' ? (
             <span className={userStyles.read} aria-label="Sending">
-              <Loader size={10} />
+              <Loader color="var(--primary)" size={10} />
             </span>
           ) : syncStatus === 'failed' ? (
             <button
