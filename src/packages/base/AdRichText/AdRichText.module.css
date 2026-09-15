@@ -93,6 +93,10 @@
 }
 
 @media (max-width: 639px) {
+  .composer :global(.ad-richtext-prose) {
+    font-size: 16px;
+  }
+
   .viewer :global(.ad-richtext-prose a) {
     -webkit-touch-callout: none;
     touch-action: pan-y;

@@ -93,3 +93,9 @@
   font-size: var(--font-sm);
   line-height: 1.25rem;
 }
+
+@media (max-width: 639px) {
+  .surfaceFeed [data-composer-variant-editor] :global(.ad-richtext-prose p) {
+    font-size: 16px;
+  }
+}

@@ -108,6 +108,12 @@
   box-shadow: none;
 }
 
+@media (max-width: 639px) {
+  .input {
+    font-size: 16px;
+  }
+}
+
 .inputDone {
   color: var(--text-soft);
   text-decoration: line-through;
