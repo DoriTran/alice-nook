@@ -11,6 +11,7 @@ import type {
   EditMessageRequest,
   PatchMessageRequest,
   SidebarOrdersResponse,
+  TimerReconciliationResponse,
   UpdateChatboxRequest,
   UpdateGroupRequest,
   UpdateTagRequest,
@@ -23,6 +24,10 @@ const json = (value: unknown) => JSON.stringify(value);
 export const diaryApi = {
   getSnapshot: (signal?: AbortSignal) =>
     apiRequest<DiarySnapshotResponse>('/api/diary', { signal }),
+  reconcileTimers: () =>
+    apiRequest<TimerReconciliationResponse>('/api/diary/timers/reconcile', {
+      method: 'POST',
+    }),
   createGroup: (data: CreateGroupRequest) =>
     apiRequest<Group>('/api/diary/groups', {
       method: 'POST',
@@ -89,6 +94,8 @@ export const diaryApi = {
       method: 'POST',
       body: json(data),
     }),
+  getMessage: (id: string) =>
+    apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}`),
   patchMessage: (id: string, data: PatchMessageRequest) =>
     apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}`, {
       method: 'PATCH',

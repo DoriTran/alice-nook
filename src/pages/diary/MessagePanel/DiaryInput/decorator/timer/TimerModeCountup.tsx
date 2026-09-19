@@ -11,6 +11,7 @@ import type { ComposerContext } from '../charms/charm.types';
 import { getTimerDisplayText } from './timer.utils';
 import styles from './timerCharms.module.css';
 import TimerDisplayText from './TimerDisplayText';
+import { useTimerNow } from './useTimerNow';
 
 type TimerModeCountupProps = {
   decoration: TimerDecorator;
@@ -18,6 +19,9 @@ type TimerModeCountupProps = {
 };
 
 const TimerModeCountup: FC<TimerModeCountupProps> = ({ decoration, ctx }) => {
+  const now = useTimerNow(
+    !ctx.composing && decoration.running && !decoration.pause,
+  );
   return (
     <div className={styles.modePanel}>
       <AdIcon icon={faClock} size={ctx.composing ? 24 : 28} />
@@ -29,7 +33,7 @@ const TimerModeCountup: FC<TimerModeCountupProps> = ({ decoration, ctx }) => {
           00:00
         </span>
       ) : (
-        <TimerDisplayText text={getTimerDisplayText(decoration)} />
+        <TimerDisplayText text={getTimerDisplayText(decoration, now)} />
       )}
     </div>
   );

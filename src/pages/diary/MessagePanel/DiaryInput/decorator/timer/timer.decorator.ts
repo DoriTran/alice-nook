@@ -6,7 +6,6 @@ import type {
 } from '../charms/charm.types';
 
 import { findDecoratorIndex } from '../charms/decoratorIndex';
-import { createRuntimeCharm } from './RuntimeCharm';
 import {
   isTimerDecorator,
   pauseTimerDecorator,
@@ -53,7 +52,6 @@ export const timerDecorator: DecoratorDefinition = {
     createTimerModeDatetimeCharm(decoratorIndex),
     createModeCharm(decoratorIndex),
     createControlsCharm(),
-    createRuntimeCharm(),
   ],
   handleEvent: {
     play: (ctx, decoratorIndex) =>

@@ -10,6 +10,21 @@ export type DiarySnapshotResponse = {
   orders: Orders;
 };
 
+export type TimerReconciliationResponse = {
+  affectedChatboxIds: string[];
+  ringingChatboxIds: string[];
+  affectedMessages: Array<{
+    messageId: string;
+    chatboxId: string;
+    decorators: Message['decorators'];
+    processedTimers: Array<{
+      decoratorIndex: number;
+      deadlineAt: string;
+      alertedAt: string;
+    }>;
+  }>;
+};
+
 export type SidebarOrdersResponse = Pick<
   Orders,
   'rootOrders' | 'groupChatboxOrders'

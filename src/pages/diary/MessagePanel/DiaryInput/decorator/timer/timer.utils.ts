@@ -195,6 +195,7 @@ export const playTimerDecorator = (
       running: true,
       pause: false,
       startedAt: new Date(now - elapsed).toISOString(),
+      deadlineAt: null,
       alertedAt: null,
     };
   }
@@ -213,8 +214,33 @@ export const playTimerDecorator = (
     ...decoration,
     running: true,
     pause: false,
+    startedAt: new Date(now).toISOString(),
     deadlineAt: new Date(now + decoration.durationMs).toISOString(),
     alertedAt: null,
+  };
+};
+
+/** Establish an absolute deadline when a Datetime message is saved. */
+export const scheduleDatetimeDecorator = (
+  decoration: TimerDecorator,
+  now = Date.now(),
+): TimerDecorator => {
+  const target = new Date(decoration.targetDate).getTime();
+  const unchanged = decoration.deadlineAt === decoration.targetDate;
+
+  return {
+    ...decoration,
+    running: target > now,
+    pause: false,
+    startedAt: null,
+    durationMs: Math.max(0, target - now),
+    deadlineAt: decoration.targetDate,
+    alertedAt:
+      target <= now
+        ? (decoration.alertedAt ?? new Date(now).toISOString())
+        : unchanged
+          ? decoration.alertedAt
+          : null,
   };
 };
 
@@ -243,6 +269,7 @@ export const resetTimerDecorator = (
       pause: false,
       durationMs: 0,
       startedAt: null,
+      deadlineAt: null,
       alertedAt: null,
     };
   }
@@ -266,6 +293,7 @@ export const resetTimerDecorator = (
     running: false,
     pause: false,
     durationMs: decoration.initialDurationMs ?? DEFAULT_TIMER_DURATION_MS,
+    startedAt: null,
     deadlineAt: null,
     alertedAt: null,
   };

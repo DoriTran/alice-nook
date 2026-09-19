@@ -17,7 +17,10 @@ import {
   collectDraftUrls,
   syncLinkPreviewState,
 } from '../../LinkPreview/linkPreview.utils';
-import { createDefaultTimerDecorator } from '../decorator/timer/timer.utils';
+import {
+  createDefaultTimerDecorator,
+  scheduleDatetimeDecorator,
+} from '../decorator/timer/timer.utils';
 import {
   createEmptyTodoItem,
   type ComposerDraft,
@@ -126,11 +129,16 @@ export const buildMessagePayload = (
     return null;
   }
 
+  const savedAt = Date.now();
   const base = {
     chatboxId,
     sender: 'user' as const,
     attachments: draft.attachments,
-    decorators: draft.decorators,
+    decorators: draft.decorators.map((decorator) =>
+      decorator.type === 'timer' && decorator.mode === 'datetime'
+        ? scheduleDatetimeDecorator(decorator, savedAt)
+        : decorator,
+    ),
     linkPreview: draft.linkPreview,
     tagIds: [],
     pinned: false,

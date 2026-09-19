@@ -15,6 +15,7 @@ import {
 } from './timer.utils';
 import styles from './timerCharms.module.css';
 import TimerDisplayText from './TimerDisplayText';
+import { useTimerNow } from './useTimerNow';
 
 type TimerModeDatetimeProps = {
   decoration: TimerDecorator;
@@ -28,6 +29,9 @@ const TimerModeDatetime: FC<TimerModeDatetimeProps> = ({
   ctx,
 }) => {
   const timer = decoration;
+  const now = useTimerNow(
+    !ctx.composing && timer.running && !!timer.deadlineAt,
+  );
   const { composing, updateDecorator } = ctx;
 
   const update = (next: TimerDecorator) => {
@@ -57,7 +61,7 @@ const TimerModeDatetime: FC<TimerModeDatetimeProps> = ({
     );
   }
 
-  const remainingMs = getTimerRemainingMs(timer);
+  const remainingMs = getTimerRemainingMs(timer, now);
   const reached = remainingMs <= 0;
 
   return (

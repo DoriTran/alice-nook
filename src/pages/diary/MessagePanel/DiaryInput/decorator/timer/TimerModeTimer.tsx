@@ -11,6 +11,7 @@ import type { ComposerContext } from '../charms/charm.types';
 import { getTimerDisplayText } from './timer.utils';
 import styles from './timerCharms.module.css';
 import TimerDisplayText from './TimerDisplayText';
+import { useTimerNow } from './useTimerNow';
 
 type TimerModeTimerProps = {
   decoration: TimerDecorator;
@@ -24,6 +25,7 @@ const TimerModeTimer: FC<TimerModeTimerProps> = ({
   ctx,
 }) => {
   const timer = decoration;
+  const now = useTimerNow(!ctx.composing && timer.running && !timer.pause);
   const { composing, updateDecorator } = ctx;
 
   const update = (next: TimerDecorator) => {
@@ -49,7 +51,7 @@ const TimerModeTimer: FC<TimerModeTimerProps> = ({
   return (
     <div className={styles.modePanel}>
       <AdIcon icon={faAlarmClock} size={28} />
-      <TimerDisplayText text={getTimerDisplayText(timer)} />
+      <TimerDisplayText text={getTimerDisplayText(timer, now)} />
     </div>
   );
 };
