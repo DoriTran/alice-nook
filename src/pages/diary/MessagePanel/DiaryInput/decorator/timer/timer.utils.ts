@@ -348,6 +348,24 @@ export const formatDatetimeDisplay = (iso: string): string => {
   });
 };
 
+export const formatDatetimeDisplayParts = (
+  iso: string,
+): { date: string; time: string } => {
+  const value = new Date(iso);
+
+  return {
+    date: value.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    time: value.toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }),
+  };
+};
+
 /** Always `Xd HH:MM:SS`, including `0d` under one day. */
 export const formatDatetimeCountdown = (ms: number): string => {
   const parts = durationMsToParts(Math.max(0, ms));

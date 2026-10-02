@@ -72,7 +72,13 @@
   box-shadow: var(--shadow-inset), var(--focus-ring);
 }
 
-@container message-panel (max-width: 22rem) {
+@container message-panel (max-width: 24rem) {
+  .root[data-has-timer] {
+    --timer-top-gap: 8px;
+    --timer-top-padding: 10px 12px;
+    --timer-top-min-height: 48px;
+  }
+
   .root[data-has-timer] .topRegion {
     flex-wrap: wrap !important;
   }

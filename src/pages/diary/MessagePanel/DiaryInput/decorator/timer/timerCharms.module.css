@@ -4,6 +4,7 @@
   gap: 12px;
   flex: 1;
   min-width: 0;
+  max-width: 100%;
   min-height: 40px;
 }
 
@@ -37,10 +38,29 @@
 
 .datetimeStack {
   display: flex;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  align-items: center;
   flex-direction: column;
   gap: 6px;
+  width: fit-content;
   min-width: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.datetimeDisplay {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2em 0.35em;
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.datetimePart {
+  white-space: nowrap;
 }
 
 .datetimeCountdown {
@@ -126,11 +146,38 @@
   opacity: 0.55;
 }
 
-@container message-panel (max-width: 22rem) {
+@container message-panel (max-width: 32rem) {
+  .datetimeDisplay {
+    width: min-content;
+  }
+}
+
+@container message-panel (max-width: 24rem) {
+  .modePanel {
+    gap: 8px;
+    min-height: 36px;
+  }
+
+  .modePanel > svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .displayText {
+    font-size: 22px;
+  }
+
   .controls {
-    flex: 0 0 100%;
-    justify-content: flex-end;
-    width: 100%;
-    margin-left: 0;
+    gap: 8px;
+  }
+
+  .controlBtn {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .controlBtn > svg {
+    width: 14px;
+    height: 14px;
   }
 }

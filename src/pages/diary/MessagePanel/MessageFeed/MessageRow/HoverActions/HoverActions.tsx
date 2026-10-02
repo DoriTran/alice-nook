@@ -1,5 +1,11 @@
 import { faReply, faSmile, faTags } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useRef, useState, type FC } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FC,
+} from 'react';
 
 import type { Message } from '@/store/diary/type';
 
@@ -39,6 +45,7 @@ const HoverActions: FC<HoverActionsProps> = ({
   const [tagOpen, setTagOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [compactActions, setCompactActions] = useState(false);
+  const [actionOffsetX, setActionOffsetX] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const expandedActionsWidthRef = useRef(0);
   const popupOpen = reactionOpen || tagOpen || menuOpen;
@@ -55,20 +62,19 @@ const HoverActions: FC<HoverActionsProps> = ({
     actions.editTargetId === message.id;
 
   useEffect(() => {
-    const row = rootRef.current?.closest<HTMLElement>('[data-message-id]');
-    const bubbleRow = rootRef.current?.parentElement;
+    const root = rootRef.current;
+    const row = root?.closest<HTMLElement>('[data-message-id]');
+    const bubbleRow = root?.parentElement;
     const bubbleSlot = (
-      side === 'right'
-        ? rootRef.current?.nextElementSibling
-        : rootRef.current?.previousElementSibling
+      side === 'right' ? root?.nextElementSibling : root?.previousElementSibling
     ) as HTMLElement | null;
-    if (!row || !bubbleRow || !bubbleSlot || !rootRef.current) return;
+    if (!root || !row || !bubbleRow || !bubbleSlot) return;
 
     const update = () => {
       if (!compactActions) {
         expandedActionsWidthRef.current = Math.max(
           expandedActionsWidthRef.current,
-          rootRef.current?.scrollWidth ?? 0,
+          root.scrollWidth,
         );
       }
       const rowRect = row.getBoundingClientRect();
@@ -78,6 +84,16 @@ const HoverActions: FC<HoverActionsProps> = ({
           ? bubbleRect.left - rowRect.left
           : rowRect.right - bubbleRect.right;
       setCompactActions(available < expandedActionsWidthRef.current + 8);
+
+      const gap = Number.parseFloat(getComputedStyle(root).fontSize) * 0.35;
+      const actionsWidth = root.scrollWidth;
+      const nextOffset =
+        side === 'right'
+          ? Math.max(0, rowRect.left - (bubbleRect.left - gap - actionsWidth))
+          : -Math.max(0, bubbleRect.right + gap + actionsWidth - rowRect.right);
+      setActionOffsetX((current) =>
+        Math.abs(current - nextOffset) < 0.5 ? current : nextOffset,
+      );
     };
     update();
     const observer = new ResizeObserver(update);
@@ -93,6 +109,11 @@ const HoverActions: FC<HoverActionsProps> = ({
       data-side={side}
       data-compact={compactActions || undefined}
       data-open={popupOpen || undefined}
+      style={
+        {
+          '--hover-actions-offset-x': `${actionOffsetX}px`,
+        } as CSSProperties
+      }
     >
       <MoreMenu
         message={message}

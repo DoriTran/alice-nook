@@ -6,7 +6,7 @@
   align-items: center;
   gap: 0.2rem;
   flex-shrink: 0;
-  transform: translateY(-50%);
+  transform: translate(var(--hover-actions-offset-x, 0), -50%);
 }
 
 .root[data-side='right'] {

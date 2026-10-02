@@ -10,7 +10,7 @@ import type { ComposerContext } from '../charms/charm.types';
 
 import {
   formatDatetimeCountdown,
-  formatDatetimeDisplay,
+  formatDatetimeDisplayParts,
   getTimerRemainingMs,
 } from './timer.utils';
 import styles from './timerCharms.module.css';
@@ -63,13 +63,15 @@ const TimerModeDatetime: FC<TimerModeDatetimeProps> = ({
 
   const remainingMs = getTimerRemainingMs(timer, now);
   const reached = remainingMs <= 0;
+  const display = formatDatetimeDisplayParts(timer.targetDate);
 
   return (
     <div className={styles.modePanel}>
       <AdIcon icon={reached ? faCalendarCheck : faCalendar} size={28} />
       <div className={styles.datetimeStack}>
-        <span className={styles.displayText}>
-          {formatDatetimeDisplay(timer.targetDate)}
+        <span className={`${styles.displayText} ${styles.datetimeDisplay}`}>
+          <span className={styles.datetimePart}>{display.date}</span>
+          <span className={styles.datetimePart}>{display.time}</span>
         </span>
         <TimerDisplayText
           text={formatDatetimeCountdown(remainingMs)}
