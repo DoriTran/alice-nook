@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type FC } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FC,
+  type PointerEventHandler,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AdDivider, AdIcon } from '@/packages/base';
@@ -28,11 +34,17 @@ import ProfileInfo from './ProfileInfo/ProfileInfo';
 export type LeftPanelProps = {
   presentation?: 'desktop' | 'drawer';
   onNavigate?: () => void;
+  onDrawerDragStart?: PointerEventHandler<HTMLElement>;
+  onDrawerDragMove?: PointerEventHandler<HTMLElement>;
+  onDrawerDragEnd?: PointerEventHandler<HTMLElement>;
 };
 
 const LeftPanel: FC<LeftPanelProps> = ({
   presentation = 'desktop',
   onNavigate,
+  onDrawerDragStart,
+  onDrawerDragMove,
+  onDrawerDragEnd,
 }) => {
   const { navPanel, diaryPage, setNavPanelFolded, selectChatbox } = useAppStore(
     ['navPanel', 'diaryPage', 'setNavPanelFolded', 'selectChatbox'],
@@ -121,7 +133,17 @@ const LeftPanel: FC<LeftPanelProps> = ({
       data-collapsed={effectiveFolded || undefined}
       data-presentation={presentation}
     >
-      <header className={styles.header}>
+      <header
+        className={styles.header}
+        onPointerDown={
+          presentation === 'drawer' ? onDrawerDragStart : undefined
+        }
+        onPointerMove={presentation === 'drawer' ? onDrawerDragMove : undefined}
+        onPointerUp={presentation === 'drawer' ? onDrawerDragEnd : undefined}
+        onPointerCancel={
+          presentation === 'drawer' ? onDrawerDragEnd : undefined
+        }
+      >
         <Logo
           className={styles.headerLogo}
           variant={effectiveFolded ? 'stacked' : 'expanded'}

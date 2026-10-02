@@ -25,6 +25,7 @@ const MobileNavigation = ({ hidden = false }: MobileNavigationProps) => {
   const [opened, setOpened] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartRef = useRef<number | null>(null);
+  const dragOffsetRef = useRef(0);
   const navDragStartRef = useRef<number | null>(null);
   const navDraggedRef = useRef(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
@@ -83,18 +84,23 @@ const MobileNavigation = ({ hidden = false }: MobileNavigationProps) => {
   }, []);
 
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (!event.isPrimary) return;
     dragStartRef.current = event.clientY;
+    dragOffsetRef.current = 0;
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const onPointerMove = (event: PointerEvent<HTMLElement>) => {
     if (dragStartRef.current === null) return;
-    setDragOffset(Math.max(0, event.clientY - dragStartRef.current));
+    const nextOffset = Math.max(0, event.clientY - dragStartRef.current);
+    dragOffsetRef.current = nextOffset;
+    setDragOffset(nextOffset);
   };
 
   const onPointerUp = () => {
-    if (dragOffset > 72) close();
+    if (dragOffsetRef.current > 72) close();
     dragStartRef.current = null;
+    dragOffsetRef.current = 0;
     setDragOffset(0);
   };
 
@@ -191,7 +197,13 @@ const MobileNavigation = ({ hidden = false }: MobileNavigationProps) => {
                 >
                   <span />
                 </button>
-                <LeftPanel presentation="drawer" onNavigate={close} />
+                <LeftPanel
+                  presentation="drawer"
+                  onNavigate={close}
+                  onDrawerDragStart={onPointerDown}
+                  onDrawerDragMove={onPointerMove}
+                  onDrawerDragEnd={onPointerUp}
+                />
               </div>
             </div>,
             document.body,

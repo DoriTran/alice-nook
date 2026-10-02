@@ -97,7 +97,7 @@ const Chatbox: FC<ChatboxProps> = ({
       withinPortal
       floatingStrategy="fixed"
       middlewares={{ flip: true, shift: { padding: 8 } }}
-      disabled={suppressTooltip}
+      disabled={suppressTooltip || mobileTooltip}
       classNames={{
         tooltip: styles.tooltip,
       }}

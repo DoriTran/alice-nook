@@ -245,7 +245,11 @@ const DiaryContent: FC = () => {
     >
       <div className={styles.listSlot}>
         <ChatboxSidebar
-          selectedId={selectedChatboxId ?? undefined}
+          selectedId={
+            responsiveMode === 'mobile' && routeView === 'list'
+              ? undefined
+              : (selectedChatboxId ?? undefined)
+          }
           onSelect={handleSelectChatbox}
           onOpenCreate={(entity) => setFormModal({ action: 'create', entity })}
           onEditChatbox={(id) =>

@@ -55,37 +55,6 @@
   background: color-mix(in srgb, var(--header-soft) 60%, transparent);
 }
 
-@media (max-width: 899px) {
-  .root {
-    padding: calc(0.65rem + env(safe-area-inset-top)) 0.75rem 0.65rem;
-  }
-  .topRow {
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .backBtn {
-    display: inline-flex;
-  }
-  .textBlock {
-    min-height: 0;
-    justify-content: center;
-  }
-  .name {
-    font-size: var(--font-lg);
-  }
-  .description {
-    font-size: var(--font-xs);
-  }
-  .metadataRow {
-    display: none;
-  }
-  .toggleBtn {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 999px;
-  }
-}
-
 .identityBlock {
   display: grid;
   flex: 1;
@@ -288,4 +257,71 @@
 .searchCloseBtn:hover {
   color: var(--text);
   background: color-mix(in srgb, var(--border-soft) 50%, transparent);
+}
+
+@media (max-width: 899px) {
+  .root {
+    padding: calc(0.65rem + env(safe-area-inset-top)) 0.75rem 0.65rem;
+  }
+
+  .topRow {
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .backBtn {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 639px) {
+  .identityBlock {
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .textBlock {
+    min-height: 0;
+    justify-content: center;
+  }
+
+  .name {
+    font-size: var(--font-lg);
+  }
+
+  .description {
+    font-size: var(--font-xs);
+  }
+
+  .metadataRow {
+    display: none;
+  }
+
+  .iconArea {
+    width: 3rem;
+    min-width: 3rem;
+    height: 3rem;
+    aspect-ratio: auto;
+  }
+
+  .iconWrap svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .overlayPin {
+    top: -3px;
+    left: -1px;
+  }
+
+  .overlayPin svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .toggleBtn {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+  }
 }
