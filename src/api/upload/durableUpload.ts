@@ -1,6 +1,7 @@
 import type { Attachment } from '@/store/diary/type';
 
 import { apiRequest, ApiError } from '../client';
+import { assertAttachmentSize } from './attachmentSize';
 
 export type PresignAttachmentInput = {
   fileName: string;
@@ -25,11 +26,13 @@ export type DurableAttachment = Exclude<Attachment, { type: 'link' }> & {
   url?: never;
 };
 
-export const presignAttachment = (input: PresignAttachmentInput) =>
-  apiRequest<PresignedAttachment>('/api/uploads/presign', {
+export const presignAttachment = (input: PresignAttachmentInput) => {
+  assertAttachmentSize(input.size);
+  return apiRequest<PresignedAttachment>('/api/uploads/presign', {
     method: 'POST',
     body: JSON.stringify(input),
   });
+};
 
 export const finalizeAttachment = (attachmentId: string) =>
   apiRequest<DurableAttachment>(

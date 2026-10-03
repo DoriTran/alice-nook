@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/store';
 import ActionDock from './actions/ActionDock/ActionDock';
 import ReactionIconPicker from './actions/ReactionIconPicker';
 import AttachmentTray from './attachment/AttachmentTray/AttachmentTray';
+import OversizedAttachmentDialog from './attachment/OversizedAttachmentDialog';
 import DecoratedSurface from './decorator/DecoratedSurface/DecoratedSurface';
 import styles from './DiaryInput.module.css';
 import ReplyPreviewInput from './input/ReplyPreviewInput';
@@ -51,6 +52,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     editorRef,
     isEditing,
     pendingVariantSwitch,
+    oversizedFiles,
     setFocused,
     setContent,
     clearAll,
@@ -58,6 +60,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     requestVariantSwitch,
     applyVariantSwitch,
     cancelVariantSwitch,
+    dismissOversizedFiles,
     toggleDecorator,
     toggleLinkPreview,
     updateDecorator,
@@ -245,6 +248,10 @@ const DiaryInput: FC<DiaryInputProps> = ({
           }
         }}
         onCancel={cancelVariantSwitch}
+      />
+      <OversizedAttachmentDialog
+        files={oversizedFiles}
+        onClose={dismissOversizedFiles}
       />
     </footer>
   );

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { CloudMessagePayload } from './type';
-
 import { sanitizeMessageForCloud } from '@/api/diary/mapper';
+
+import type { CloudMessagePayload } from './type';
 
 const { presignAttachment, uploadToPresignedUrl, finalizeAttachment } =
   vi.hoisted(() => ({

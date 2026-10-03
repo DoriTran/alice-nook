@@ -19,6 +19,10 @@ import {
   resolveLinkPreview,
   uploadAttachment,
 } from '@/api';
+import {
+  partitionAttachmentFiles,
+  type OversizedAttachmentFile,
+} from '@/api/upload/attachmentSize';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
 import { getDiaryDataSource } from '@/store/settings/store';
@@ -151,6 +155,9 @@ export const useComposerDraft = (
   );
   const [pendingVariantSwitch, setPendingVariantSwitch] =
     useState<PendingVariantSwitch>(null);
+  const [oversizedFiles, setOversizedFiles] = useState<
+    OversizedAttachmentFile[]
+  >([]);
   const [sending, setSending] = useState(false);
   const editorRef = useRef<ComposerEditorRef | null>(null);
   const editMessageId = options?.editMessageId ?? null;
@@ -384,9 +391,11 @@ export const useComposerDraft = (
 
   const addFiles = useCallback(
     (files: FileList | File[], kind: 'file' | 'image' | 'video') => {
-      const fileList = Array.from(files);
+      const { acceptedFiles, oversizedFiles: rejectedFiles } =
+        partitionAttachmentFiles(files);
+      setOversizedFiles(rejectedFiles);
 
-      for (const file of fileList) {
+      for (const file of acceptedFiles) {
         const blobUrl = URL.createObjectURL(file);
         const attachmentType = fileToAttachmentType(file, kind);
         const tempId = `att:${uuidv4()}`;
@@ -500,9 +509,11 @@ export const useComposerDraft = (
 
   const addTodoRowFiles = useCallback(
     (itemId: string, files: FileList | File[]) => {
-      const fileList = Array.from(files);
+      const { acceptedFiles, oversizedFiles: rejectedFiles } =
+        partitionAttachmentFiles(files);
+      setOversizedFiles(rejectedFiles);
 
-      for (const file of fileList) {
+      for (const file of acceptedFiles) {
         const blobUrl = URL.createObjectURL(file);
         const attachmentType = fileToAttachmentType(file, 'file');
         const tempId = `att:${uuidv4()}`;
@@ -706,6 +717,7 @@ export const useComposerDraft = (
     sending,
     isEditing: editMessageId !== null,
     pendingVariantSwitch,
+    oversizedFiles,
     setFocused,
     setContent,
     clearAll,
@@ -713,6 +725,7 @@ export const useComposerDraft = (
     requestVariantSwitch,
     applyVariantSwitch,
     cancelVariantSwitch: () => setPendingVariantSwitch(null),
+    dismissOversizedFiles: () => setOversizedFiles([]),
     toggleDecorator,
     updateDecorator,
     updateDraft,
