@@ -33,14 +33,6 @@
     background-color 180ms ease;
 }
 
-.root:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--border) 66%, var(--chatbox-soft));
-  background: var(--chatbox-card-hover-bg, var(--surface-soft));
-  box-shadow: 0 4px 12px rgb(86 58 34 / 7%);
-}
-
-.root:hover .menuBtn,
 .menuBtn[aria-expanded='true'] {
   opacity: 1;
   background: color-mix(in srgb, var(--chatbox-soft) 10%, var(--surface-muted));
@@ -49,17 +41,6 @@
 .root[data-active] {
   background: var(--chatbox-card-selected-bg);
   border-color: var(--chatbox-card-selected-border);
-  box-shadow: 2px 3px 0 var(--chatbox-card-underlay);
-}
-
-.root[data-active]:hover {
-  transform: none;
-  background: color-mix(in srgb, var(--chatbox-main) 12%, var(--surface));
-  border-color: color-mix(
-    in srgb,
-    var(--chatbox-strong) 30%,
-    var(--border-soft)
-  );
   box-shadow: 2px 3px 0 var(--chatbox-card-underlay);
 }
 
@@ -107,16 +88,55 @@
     background-color 180ms ease;
 }
 
-.menuBtn:hover {
-  background: color-mix(in srgb, var(--chatbox-soft) 16%, var(--surface-muted));
-}
-
 .menuBtn:focus-visible {
   outline: none;
   opacity: 1;
   background: color-mix(in srgb, var(--chatbox-soft) 10%, var(--surface-muted));
   box-shadow: 0 0 0 2px
     color-mix(in srgb, var(--chatbox-strong) 40%, var(--primary));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .root:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--border) 66%, var(--chatbox-soft));
+    background: var(--chatbox-card-hover-bg, var(--surface-soft));
+    box-shadow: 0 4px 12px rgb(86 58 34 / 7%);
+  }
+
+  .root:hover .menuBtn {
+    opacity: 1;
+    background: color-mix(
+      in srgb,
+      var(--chatbox-soft) 10%,
+      var(--surface-muted)
+    );
+  }
+
+  .root[data-active]:hover {
+    transform: none;
+    background: color-mix(in srgb, var(--chatbox-main) 12%, var(--surface));
+    border-color: color-mix(
+      in srgb,
+      var(--chatbox-strong) 30%,
+      var(--border-soft)
+    );
+    box-shadow: 2px 3px 0 var(--chatbox-card-underlay);
+  }
+
+  .menuBtn:hover {
+    background: color-mix(
+      in srgb,
+      var(--chatbox-soft) 16%,
+      var(--surface-muted)
+    );
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .menuBtn {
+    opacity: 1;
+  }
 }
 
 .mainRow {
