@@ -1,4 +1,4 @@
-export const MAX_ATTACHMENT_SIZE_BYTES = 200 * 1024 * 1024;
+export const MAX_ATTACHMENT_SIZE_BYTES = 200 * 1000 * 1000;
 
 export type OversizedAttachmentFile = {
   name: string;
@@ -10,7 +10,7 @@ export const isAttachmentSizeAllowed = (size: number): boolean =>
 
 export const assertAttachmentSize = (size: number): void => {
   if (!isAttachmentSizeAllowed(size)) {
-    throw new Error('Attachment exceeds the 200 MiB size limit');
+    throw new Error('Attachment exceeds the 200 MB size limit');
   }
 };
 
@@ -29,5 +29,5 @@ export const partitionAttachmentFiles = (files: FileList | File[]) => {
   return { acceptedFiles, oversizedFiles };
 };
 
-export const formatAttachmentSizeMiB = (size: number): string =>
-  `${(size / (1024 * 1024)).toFixed(2)} MiB (${size.toLocaleString('en-US')} bytes)`;
+export const formatAttachmentSizeMB = (size: number): string =>
+  `${Math.round(size / 1_000_000)} MB`;

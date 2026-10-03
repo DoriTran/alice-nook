@@ -20,7 +20,7 @@ const input = (size: number) => ({
 describe('attachment presign size preflight', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('allows exactly 200 MiB to reach the presign API', () => {
+  it('allows exactly 200 MB to reach the presign API', () => {
     apiRequest.mockResolvedValue({});
 
     void presignAttachment(input(MAX_ATTACHMENT_SIZE_BYTES));
@@ -28,10 +28,10 @@ describe('attachment presign size preflight', () => {
     expect(apiRequest).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects 200 MiB plus one byte without a presign request', () => {
+  it('rejects 200 MB plus one byte without a presign request', () => {
     expect(() =>
       presignAttachment(input(MAX_ATTACHMENT_SIZE_BYTES + 1)),
-    ).toThrow('Attachment exceeds the 200 MiB size limit');
+    ).toThrow('Attachment exceeds the 200 MB size limit');
     expect(apiRequest).not.toHaveBeenCalled();
   });
 });

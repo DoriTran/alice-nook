@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { Button, Group, List, ScrollArea, Stack, Text } from '@mantine/core';
 
 import {
-  formatAttachmentSizeMiB,
+  formatAttachmentSizeMB,
   type OversizedAttachmentFile,
 } from '@/api/upload/attachmentSize';
 import { AdModal } from '@/packages/base';
@@ -25,7 +25,11 @@ const OversizedAttachmentDialog: FC<OversizedAttachmentDialogProps> = ({
   >
     <Stack gap="sm">
       <Text size="sm">
-        Each attachment can be up to 200 MiB. These files were not added:
+        Each attachment can be up to 200 MB.
+        <br />
+        {files.length === 1
+          ? 'The file below was skipped:'
+          : 'The files below were skipped:'}
       </Text>
       <ScrollArea.Autosize mah={240} offsetScrollbars>
         <List size="sm" spacing="xs">
@@ -35,7 +39,7 @@ const OversizedAttachmentDialog: FC<OversizedAttachmentDialogProps> = ({
                 {file.name}
               </Text>{' '}
               <Text span c="dimmed">
-                — {formatAttachmentSizeMiB(file.size)}
+                — {formatAttachmentSizeMB(file.size)}
               </Text>
             </List.Item>
           ))}

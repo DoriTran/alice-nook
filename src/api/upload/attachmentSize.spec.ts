@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   assertAttachmentSize,
+  formatAttachmentSizeMB,
   MAX_ATTACHMENT_SIZE_BYTES,
   partitionAttachmentFiles,
 } from './attachmentSize';
@@ -10,10 +11,10 @@ const fileWithSize = (name: string, size: number): File =>
   ({ name, size }) as File;
 
 describe('attachment size validation', () => {
-  it('accepts exactly 200 MiB and rejects one byte more', () => {
+  it('accepts exactly 200 MB and rejects one byte more', () => {
     expect(() => assertAttachmentSize(MAX_ATTACHMENT_SIZE_BYTES)).not.toThrow();
     expect(() => assertAttachmentSize(MAX_ATTACHMENT_SIZE_BYTES + 1)).toThrow(
-      'Attachment exceeds the 200 MiB size limit',
+      'Attachment exceeds the 200 MB size limit',
     );
   });
 
@@ -37,5 +38,9 @@ describe('attachment size validation', () => {
         { name: 'huge-video.mp4', size: MAX_ATTACHMENT_SIZE_BYTES + 1024 },
       ],
     });
+  });
+
+  it('shows a compact rounded MB label', () => {
+    expect(formatAttachmentSizeMB(233_850_738)).toBe('234 MB');
   });
 });
