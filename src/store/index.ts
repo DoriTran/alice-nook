@@ -1,5 +1,6 @@
 export {
   retryMessage,
+  useMessageUploadProgress,
   useDiaryStore,
   useDiaryHydrated,
   useMessageSyncStatus,

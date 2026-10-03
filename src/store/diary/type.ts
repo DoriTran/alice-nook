@@ -222,6 +222,13 @@ export type AttachmentBase = {
   name?: string;
 };
 
+export type DurableAttachmentBase = AttachmentBase & {
+  name: string;
+  mimeType: string;
+  size: number;
+  url?: never;
+};
+
 /** Shared shape for non-media binary attachments (audio/document/note/archive/code/file). */
 export type BinaryAttachmentBase = AttachmentBase & {
   url: string;
@@ -231,41 +238,51 @@ export type BinaryAttachmentBase = AttachmentBase & {
 
 export type ImageAttachment = AttachmentBase & {
   type: 'image';
-  url: string;
+  url?: string;
+  mimeType?: string;
+  size?: number;
   width?: number;
   height?: number;
 };
 
 export type VideoAttachment = AttachmentBase & {
   type: 'video';
-  url: string;
+  url?: string;
+  mimeType?: string;
+  size?: number;
   thumbnail?: string;
   duration?: number;
 };
 
-export type AudioAttachment = BinaryAttachmentBase & {
+export type AudioAttachment = (BinaryAttachmentBase | DurableAttachmentBase) & {
   type: 'audio';
   duration?: number;
 };
 
-export type DocumentAttachment = BinaryAttachmentBase & {
+export type DocumentAttachment = (
+  | BinaryAttachmentBase
+  | DurableAttachmentBase
+) & {
   type: 'document';
 };
 
-export type NoteAttachment = BinaryAttachmentBase & {
+export type NoteAttachment = (BinaryAttachmentBase | DurableAttachmentBase) & {
   type: 'note';
 };
 
-export type ArchiveAttachment = BinaryAttachmentBase & {
+export type ArchiveAttachment = (
+  | BinaryAttachmentBase
+  | DurableAttachmentBase
+) & {
   type: 'archive';
 };
 
-export type CodeAttachment = BinaryAttachmentBase & {
+export type CodeAttachment = (BinaryAttachmentBase | DurableAttachmentBase) & {
   type: 'code';
 };
 
 /** Catch-all binary attachment when no more specific kind matches. */
-export type FileAttachment = BinaryAttachmentBase & {
+export type FileAttachment = (BinaryAttachmentBase | DurableAttachmentBase) & {
   type: 'file';
 };
 
@@ -332,6 +349,11 @@ export type HeadingDecorator = {
 
 // #region Message Variants
 export type Message = TextMessage | TodoMessage | AIMessage;
+export type CloudMessagePayload = Message extends infer Item
+  ? Item extends Message
+    ? Omit<Item, 'edited' | 'createdAt' | 'updatedAt'>
+    : never
+  : never;
 
 export type MessageSender = 'user' | 'assistant';
 
@@ -450,7 +472,8 @@ export type PreviewSource =
 export type PreviewTile =
   | {
       kind: 'media';
-      thumbnailUrl: string;
+      thumbnailUrl?: string;
+      attachment: ImageAttachment | VideoAttachment;
       mediaType: 'image' | 'video';
     }
   | {

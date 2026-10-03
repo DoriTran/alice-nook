@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import type { Message } from '@/store/diary/type';
 
 import { AdIcon } from '@/packages/base';
-import { retryMessage, useDiaryStore } from '@/store';
+import { retryMessage, useDiaryStore, useMessageUploadProgress } from '@/store';
 
 import {
   collectMessageUrls,
@@ -44,6 +44,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   syncStatus = 'sent',
 }) => {
   const toggleMessageReaction = useDiaryStore('toggleMessageReaction');
+  const uploadProgress = useMessageUploadProgress(message.id);
   const isAssistant = (message.sender ?? 'user') === 'assistant';
   const styles = isAssistant ? assistantStyles : userStyles;
   const time = formatMessageTime(message.createdAt);
@@ -251,7 +252,10 @@ const MessageBubble: FC<MessageBubbleProps> = ({
             <span className={userStyles.time}> · edited</span>
           ) : null}
           {syncStatus === 'pending' ? (
-            <span className={userStyles.read} aria-label="Sending">
+            <span
+              className={userStyles.read}
+              aria-label={`Sending${uploadProgress ? ` ${uploadProgress}%` : ''}`}
+            >
               <Loader color="var(--primary)" size={10} />
             </span>
           ) : syncStatus === 'failed' ? (

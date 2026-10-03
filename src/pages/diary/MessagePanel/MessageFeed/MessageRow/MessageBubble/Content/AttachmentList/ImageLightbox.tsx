@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 
 import type { ImageAttachment } from '@/store/diary/type';
 
-import { resolveAttachmentUrl } from '@/api';
+import { useAttachmentUrl } from '@/api';
 import { AdIcon } from '@/packages/base';
 
 import styles from './ImageLightbox.module.css';
@@ -48,6 +48,32 @@ const aspectRatioFrom = (image: ImageAttachment): number | undefined => {
   return undefined;
 };
 
+const Thumbnail: FC<{
+  image: ImageAttachment;
+  active: boolean;
+  index: number;
+  onSelect: (index: number) => void;
+}> = ({ image, active, index, onSelect }) => {
+  const url = useAttachmentUrl(image);
+  return (
+    <button
+      type="button"
+      className={clsx(styles.thumb, active && styles.thumbActive)}
+      onClick={() => onSelect(index)}
+      aria-label={`View image ${index + 1}`}
+      aria-current={active}
+    >
+      {url ? (
+        <img
+          src={url}
+          alt={image.name ?? `Image ${index + 1}`}
+          className={styles.thumbImage}
+        />
+      ) : null}
+    </button>
+  );
+};
+
 const ImageLightbox: FC<ImageLightboxProps> = ({
   images,
   index,
@@ -56,7 +82,7 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
 }) => {
   const total = images.length;
   const current = images[index];
-  const currentUrl = current ? resolveAttachmentUrl(current.url, 'image') : '';
+  const currentUrl = useAttachmentUrl(current);
 
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(() =>
     current ? aspectRatioFrom(current) : undefined,
@@ -206,23 +232,13 @@ const ImageLightbox: FC<ImageLightboxProps> = ({
           <>
             <div className={styles.thumbnails}>
               {images.map((image, thumbIndex) => (
-                <button
+                <Thumbnail
                   key={image.id}
-                  type="button"
-                  className={clsx(
-                    styles.thumb,
-                    thumbIndex === index && styles.thumbActive,
-                  )}
-                  onClick={() => onIndexChange(thumbIndex)}
-                  aria-label={`View image ${thumbIndex + 1}`}
-                  aria-current={thumbIndex === index}
-                >
-                  <img
-                    src={resolveAttachmentUrl(image.url, 'image')}
-                    alt={image.name ?? `Image ${thumbIndex + 1}`}
-                    className={styles.thumbImage}
-                  />
-                </button>
+                  image={image}
+                  active={thumbIndex === index}
+                  index={thumbIndex}
+                  onSelect={onIndexChange}
+                />
               ))}
             </div>
             <span className={styles.counter}>

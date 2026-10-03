@@ -4,7 +4,7 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons';
 
 import type { VideoAttachment as VideoAttachmentType } from '@/store/diary/type';
 
-import { resolveAttachmentUrl } from '@/api';
+import { useAttachmentUrl } from '@/api';
 import { AdIcon } from '@/packages/base';
 
 import styles from './VideoAttachment.module.css';
@@ -20,7 +20,7 @@ const VideoAttachment: FC<VideoAttachmentProps> = ({
   variant,
   className,
 }) => {
-  const src = resolveAttachmentUrl(attachment.url, 'video');
+  const src = useAttachmentUrl(attachment);
 
   if (variant === 'player') {
     return (

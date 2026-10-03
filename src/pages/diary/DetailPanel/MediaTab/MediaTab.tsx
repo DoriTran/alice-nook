@@ -2,7 +2,7 @@ import { faImage, faPlay } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState, type FC } from 'react';
 
-import { resolveAttachmentThumbnail } from '@/api';
+import { resolveAttachmentThumbnail, useAttachmentUrl } from '@/api';
 import { AdIcon } from '@/packages/base';
 import {
   getAttachmentKind,
@@ -36,6 +36,65 @@ export type MediaTabProps = {
   onJumpToMessage: (messageId: string) => void;
 };
 
+const MediaCell: FC<{
+  item: DetailPanelMediaItem;
+  onJumpToMessage: (messageId: string) => void;
+}> = ({ item, onJumpToMessage }) => {
+  const { attachment } = item;
+  const resolvedUrl = useAttachmentUrl(attachment);
+  const label =
+    attachment.name ??
+    (attachment.type === 'link'
+      ? attachment.url
+      : attachment.url?.split('/').pop()) ??
+    'Attachment';
+
+  if (isFileBucketAttachment(attachment) || attachment.type === 'link') {
+    const kindIcon = getAttachmentKind(attachment.type).lucideIcon;
+    return (
+      <button
+        type="button"
+        className={clsx(styles.cell, styles.fileCell)}
+        onClick={() => onJumpToMessage(item.messageId)}
+        aria-label={`Jump to message with ${label}`}
+      >
+        <AdIcon icon={kindIcon} source="lucide" size={18} strokeWidth={1.75} />
+        <span className={styles.fileLabel}>{label}</span>
+        <span className={styles.meta}>{item.timeLabel}</span>
+      </button>
+    );
+  }
+
+  const thumbnail = resolveAttachmentThumbnail(attachment) || resolvedUrl;
+  return (
+    <button
+      type="button"
+      className={styles.cell}
+      style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}
+      onClick={() => onJumpToMessage(item.messageId)}
+      aria-label={`Jump to message with ${label}`}
+    >
+      {attachment.type === 'video' ? (
+        <>
+          <span className={styles.playOverlay} aria-hidden>
+            <AdIcon icon={faPlay} size={10} />
+          </span>
+          {attachment.duration !== undefined ? (
+            <span className={styles.duration}>
+              {formatVideoDuration(attachment.duration)}
+            </span>
+          ) : null}
+        </>
+      ) : (
+        <span className={styles.typeIcon} aria-hidden>
+          <AdIcon icon={faImage} size={12} />
+        </span>
+      )}
+      <span className={styles.meta}>{item.timeLabel}</span>
+    </button>
+  );
+};
+
 const MediaTab: FC<MediaTabProps> = ({
   mediaItems,
   filter,
@@ -62,82 +121,6 @@ const MediaTab: FC<MediaTabProps> = ({
     [visibleItems],
   );
 
-  const getAttachmentLabel = (item: DetailPanelMediaItem): string => {
-    const { attachment } = item;
-
-    if (attachment.name) {
-      return attachment.name;
-    }
-
-    if (attachment.type === 'link') {
-      return attachment.url;
-    }
-
-    return attachment.url.split('/').pop() ?? 'Attachment';
-  };
-
-  const renderCell = (item: DetailPanelMediaItem) => {
-    const { attachment } = item;
-    const label = getAttachmentLabel(item);
-
-    if (isFileBucketAttachment(attachment) || attachment.type === 'link') {
-      const kindIcon = getAttachmentKind(attachment.type).lucideIcon;
-
-      return (
-        <button
-          key={item.id}
-          type="button"
-          className={clsx(styles.cell, styles.fileCell)}
-          onClick={() => onJumpToMessage(item.messageId)}
-          aria-label={`Jump to message with ${label}`}
-        >
-          <AdIcon
-            icon={kindIcon}
-            source="lucide"
-            size={18}
-            strokeWidth={1.75}
-          />
-          <span className={styles.fileLabel}>{label}</span>
-          <span className={styles.meta}>{item.timeLabel}</span>
-        </button>
-      );
-    }
-
-    const thumbnail =
-      attachment.type === 'image' || attachment.type === 'video'
-        ? resolveAttachmentThumbnail(attachment)
-        : undefined;
-
-    return (
-      <button
-        key={item.id}
-        type="button"
-        className={styles.cell}
-        style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}
-        onClick={() => onJumpToMessage(item.messageId)}
-        aria-label={`Jump to message with ${label}`}
-      >
-        {attachment.type === 'video' ? (
-          <>
-            <span className={styles.playOverlay} aria-hidden>
-              <AdIcon icon={faPlay} size={10} />
-            </span>
-            {attachment.duration !== undefined ? (
-              <span className={styles.duration}>
-                {formatVideoDuration(attachment.duration)}
-              </span>
-            ) : null}
-          </>
-        ) : (
-          <span className={styles.typeIcon} aria-hidden>
-            <AdIcon icon={faImage} size={12} />
-          </span>
-        )}
-        <span className={styles.meta}>{item.timeLabel}</span>
-      </button>
-    );
-  };
-
   return (
     <div className={styles.root}>
       <div className={styles.filters}>
@@ -159,7 +142,15 @@ const MediaTab: FC<MediaTabProps> = ({
           {monthGroups.map((group) => (
             <section key={group.monthKey} className={styles.monthGroup}>
               <h3 className={styles.monthHeading}>{group.label}</h3>
-              <div className={styles.grid}>{group.items.map(renderCell)}</div>
+              <div className={styles.grid}>
+                {group.items.map((item) => (
+                  <MediaCell
+                    key={item.id}
+                    item={item}
+                    onJumpToMessage={onJumpToMessage}
+                  />
+                ))}
+              </div>
             </section>
           ))}
         </div>

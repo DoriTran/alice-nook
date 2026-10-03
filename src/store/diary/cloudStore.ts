@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-import type { DiaryStore, Message } from './type';
+import type { UploadRuntime } from './cloudAttachmentUpload';
+import type { CloudMessagePayload, DiaryStore } from './type';
 
 import { diaryInitialState } from './constants';
 
@@ -30,14 +31,12 @@ export const clearCloudDiary = () =>
   useCloudDiaryStoreBase.getState().clearSnapshot();
 
 export type MessageSyncStatus = 'pending' | 'failed';
-export type CloudMessagePayload = Omit<
-  Message,
-  'edited' | 'createdAt' | 'updatedAt'
->;
+export type { CloudMessagePayload } from './type';
 export type MessageSyncEntry = {
   status: MessageSyncStatus;
   payload: CloudMessagePayload;
   attempt: number;
+  runtime: UploadRuntime;
 };
 
 type CloudMessageSyncStore = {
@@ -64,4 +63,10 @@ export const getCloudMessageSyncEntry = (messageId: string) =>
   useCloudMessageSyncStore.getState().entries[messageId];
 
 export const clearCloudMessageSync = () =>
-  useCloudMessageSyncStore.setState({ entries: {} });
+  useCloudMessageSyncStore.setState((state) => {
+    Object.values(state.entries).forEach((entry) => {
+      entry.runtime.controller.abort();
+      entry.runtime.previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    });
+    return { entries: {} };
+  });

@@ -179,6 +179,7 @@ export const resolvePreviewTile = (
     return {
       kind: 'media',
       thumbnailUrl: resolveAttachmentThumbnail(attachment),
+      attachment,
       mediaType: attachment.type,
     };
   }
@@ -196,7 +197,9 @@ export const resolvePreviewTile = (
   if (isBinaryAttachment(attachment)) {
     return {
       kind: 'file',
-      extension: getFileExtensionLabel(attachment.name ?? attachment.url),
+      extension: getFileExtensionLabel(
+        attachment.name ?? attachment.url ?? 'file',
+      ),
       name: attachment.name,
     };
   }

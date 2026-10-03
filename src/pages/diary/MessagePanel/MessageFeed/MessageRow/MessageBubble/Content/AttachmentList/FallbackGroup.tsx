@@ -2,6 +2,8 @@ import type { FC } from 'react';
 
 import type { Attachment } from '@/store/diary/type';
 
+import { useAttachmentUrl } from '@/api';
+
 import styles from './FallbackGroup.module.css';
 
 export type FallbackGroupProps = {
@@ -14,31 +16,26 @@ export type FallbackGroupProps = {
  * (`file` today, plus any new type added later): just its file name +
  * extension, nothing else.
  */
+const FileItem: FC<{ attachment: Attachment }> = ({ attachment }) => {
+  const url = useAttachmentUrl(attachment);
+  const name = attachment.name ?? attachment.url?.split('/').pop() ?? 'file';
+  return url ? (
+    <a href={url} className={styles.item} target="_blank" rel="noreferrer">
+      {name}
+    </a>
+  ) : (
+    <span className={styles.item}>{name}</span>
+  );
+};
+
 const FallbackGroup: FC<FallbackGroupProps> = ({
   attachments,
   compact = false,
 }) => (
   <div className={`${styles.list} ${compact ? styles.listCompact : ''}`}>
-    {attachments.map((attachment) => {
-      const url = 'url' in attachment ? attachment.url : undefined;
-      const name = attachment.name ?? url?.split('/').pop() ?? 'file';
-
-      return url ? (
-        <a
-          key={attachment.id}
-          href={url}
-          className={styles.item}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {name}
-        </a>
-      ) : (
-        <span key={attachment.id} className={styles.item}>
-          {name}
-        </span>
-      );
-    })}
+    {attachments.map((attachment) => (
+      <FileItem key={attachment.id} attachment={attachment} />
+    ))}
   </div>
 );
 

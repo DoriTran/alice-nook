@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import type { ImageAttachment } from '@/store/diary/type';
 
-import { resolveAttachmentUrl } from '@/api';
+import { useAttachmentUrl } from '@/api';
 
 import styles from './ImageGroup.module.css';
 import { buildAttachmentRows } from './imageLayout.utils';
@@ -17,6 +17,32 @@ export type ImageGroupProps = {
 
 const LARGE_CAPACITY = 3;
 const SMALL_CAPACITY = 4;
+
+const ImageCell: FC<{
+  image: ImageAttachment;
+  index: number;
+  className: string;
+  onOpen: (index: number) => (event: MouseEvent) => void;
+}> = ({ image, index, className, onOpen }) => {
+  const imageUrl = useAttachmentUrl(image);
+  return (
+    <a
+      href={imageUrl || undefined}
+      className={className}
+      target="_blank"
+      rel="noreferrer"
+      onClick={onOpen(index)}
+    >
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={image.name ?? 'Image attachment'}
+          className={styles.image}
+        />
+      ) : null}
+    </a>
+  );
+};
 
 const ImageGroup: FC<ImageGroupProps> = ({ attachments }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -40,28 +66,20 @@ const ImageGroup: FC<ImageGroupProps> = ({ attachments }) => {
           className={styles.row}
         >
           {row.map((image) => {
-            const imageUrl = resolveAttachmentUrl(image.url, 'image');
             const index = attachments.indexOf(image);
 
             return (
-              <a
+              <ImageCell
                 key={image.id}
-                href={imageUrl}
+                image={image}
+                index={index}
                 className={clsx(
                   styles.cell,
                   isSolo && styles.cellSolo,
                   !isSolo && row.length >= SMALL_CAPACITY && styles.cellSmall,
                 )}
-                target="_blank"
-                rel="noreferrer"
-                onClick={handleOpen(index)}
-              >
-                <img
-                  src={imageUrl}
-                  alt={image.name ?? 'Image attachment'}
-                  className={styles.image}
-                />
-              </a>
+                onOpen={handleOpen}
+              />
             );
           })}
         </div>

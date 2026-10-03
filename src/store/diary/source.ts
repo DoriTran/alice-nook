@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import type { TimerReconciliationResponse } from '@/api/diary/types';
 import type { DiaryDataSource } from '@/store/settings/type';
 
-import { ApiError, diaryApi } from '@/api';
+import { ApiError, diaryApi, clearAttachmentReadUrlCache } from '@/api';
 import { mapDiarySnapshot } from '@/api/diary/mapper';
 import {
   getDiaryDataSource,
@@ -243,6 +243,7 @@ export const setDiarySessionUser = (userId: string | null) => {
   hydrationController = null;
   clearCloudDiary();
   clearCloudMessageSync();
+  clearAttachmentReadUrlCache();
   rangTimerKeys.clear();
 
   const nextSource: DiaryDataSource = userId
@@ -308,6 +309,7 @@ export const switchDiaryDataSource = async (
 
   if (source === 'local') {
     clearCloudMessageSync();
+    clearAttachmentReadUrlCache();
     rangTimerKeys.clear();
     setRuntime({ cloudStatus: 'idle', error: null });
     return;

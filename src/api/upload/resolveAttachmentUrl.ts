@@ -45,12 +45,14 @@ export const resolveAttachmentThumbnail = (
   attachment: Extract<Attachment, { type: 'image' | 'video' }>,
 ): string => {
   if (attachment.type === 'image') {
-    return resolveAttachmentUrl(attachment.url, 'image');
+    return attachment.url ? resolveAttachmentUrl(attachment.url, 'image') : '';
   }
 
   if (attachment.thumbnail && !isDummyAttachmentUrl(attachment.thumbnail)) {
     return attachment.thumbnail;
   }
 
-  return placeholderImage(`${dummySeed(attachment.url)}-thumb`);
+  return attachment.url
+    ? placeholderImage(`${dummySeed(attachment.url)}-thumb`)
+    : '';
 };

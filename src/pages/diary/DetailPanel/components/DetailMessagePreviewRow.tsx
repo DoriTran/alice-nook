@@ -4,6 +4,7 @@ import { TagX } from 'lucide-react';
 
 import type { Message, PreviewTile } from '@/store/diary/type';
 
+import { useAttachmentUrl } from '@/api';
 import { AdEmojiText, AdIcon } from '@/packages/base';
 import { resolveMessagePreview } from '@/store/diary/messagePreview.utils';
 
@@ -19,11 +20,15 @@ export type DetailMessagePreviewRowProps = {
 };
 
 const PreviewTileView: FC<{ tile: PreviewTile }> = ({ tile }) => {
+  const durableUrl = useAttachmentUrl(
+    tile.kind === 'media' ? tile.attachment : undefined,
+  );
   if (tile.kind === 'media') {
+    const thumbnail = tile.thumbnailUrl || durableUrl;
     return (
       <span
         className={styles.previewMedia}
-        style={{ backgroundImage: `url(${tile.thumbnailUrl})` }}
+        style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}
         aria-hidden
       />
     );

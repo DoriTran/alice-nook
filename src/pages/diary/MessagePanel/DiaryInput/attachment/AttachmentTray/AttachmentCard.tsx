@@ -4,7 +4,7 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import type { Attachment } from '@/store/diary/type';
 
-import { resolveAttachmentUrl } from '@/api';
+import { useAttachmentUrl } from '@/api';
 import { AdIcon } from '@/packages/base';
 import {
   getAttachmentKind,
@@ -34,7 +34,8 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
   dense = false,
   onRemove,
 }) => {
-  const name = attachment.name ?? attachment.url.split('/').pop() ?? 'file';
+  const resolvedUrl = useAttachmentUrl(attachment);
+  const name = attachment.name ?? attachment.url?.split('/').pop() ?? 'file';
   const size = isBinaryAttachment(attachment)
     ? formatFileSize(attachment.size)
     : '';
@@ -50,11 +51,7 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
       >
         <div className={styles.trayMediaThumb}>
           {attachment.type === 'image' ? (
-            <img
-              src={resolveAttachmentUrl(attachment.url, 'image')}
-              alt=""
-              className={styles.thumbImage}
-            />
+            <img src={resolvedUrl} alt="" className={styles.thumbImage} />
           ) : (
             <VideoAttachment attachment={attachment} variant="thumb" />
           )}
@@ -110,11 +107,7 @@ const AttachmentCard: FC<AttachmentCardProps> = ({
     <div className={`${styles.card} ${compact ? styles.cardCompact : ''}`}>
       <div className={`${styles.thumb} ${compact ? styles.thumbCompact : ''}`}>
         {attachment.type === 'image' ? (
-          <img
-            src={resolveAttachmentUrl(attachment.url, 'image')}
-            alt=""
-            className={styles.thumbImage}
-          />
+          <img src={resolvedUrl} alt="" className={styles.thumbImage} />
         ) : attachment.type === 'video' ? (
           <VideoAttachment attachment={attachment} variant="thumb" />
         ) : (

@@ -21,6 +21,14 @@ import type {
 } from './type';
 
 import {
+  cloneCloudDraftPreviews,
+  materializeCloudAttachments,
+  releaseUploadRuntime,
+  takeCloudDraftPreviewUrls,
+  type UploadRuntime,
+  uploadProgress,
+} from './cloudAttachmentUpload';
+import {
   getCloudMessageSyncEntry,
   getCloudDiaryState,
   setCloudMessageSyncEntry,
@@ -132,14 +140,47 @@ const buildCloudMessage = (data: Partial<Message>, id: string): Message => ({
   updatedAt: null,
 });
 
-const persistOptimisticMessage = async (
-  id: string,
-  payload: CloudMessagePayload,
-  attempt: number,
-) => {
+const persistOptimisticMessage = async (id: string, attempt: number) => {
   try {
+    const entry = getCloudMessageSyncEntry(id);
+    if (!entry || entry.attempt !== attempt) return;
+    if (attempt > 1) {
+      try {
+        const existing = await runCloudMutation(() => diaryApi.getMessage(id));
+        updateCloudDiary((state) => {
+          const optimistic = state.messages[id];
+          if (!optimistic) return state;
+          return recalculateChatboxDerivedFields(
+            {
+              ...state,
+              messages: {
+                ...state.messages,
+                [id]: { ...optimistic, ...existing, id },
+              },
+            },
+            optimistic.chatboxId,
+          );
+        });
+        releaseUploadRuntime(entry.runtime);
+        setCloudMessageSyncEntry(id, null);
+        return;
+      } catch (error) {
+        if (!(error instanceof ApiError) || error.status !== 404) throw error;
+      }
+    }
+    const materialized = await materializeCloudAttachments(
+      entry.payload,
+      entry.runtime,
+      () => {
+        const current = getCloudMessageSyncEntry(id);
+        if (current?.attempt === attempt) {
+          setCloudMessageSyncEntry(id, { ...current });
+        }
+      },
+    );
+    const safePayload = sanitizeMessageForCloud(materialized);
     const canonical = await runCloudMutation(() =>
-      diaryApi.createMessage(payload),
+      diaryApi.createMessage(safePayload),
     );
     if (getCloudMessageSyncEntry(id)?.attempt !== attempt) return;
     updateCloudDiary((state) => {
@@ -156,6 +197,7 @@ const persistOptimisticMessage = async (
         optimistic.chatboxId,
       );
     });
+    releaseUploadRuntime(entry.runtime);
     setCloudMessageSyncEntry(id, null);
   } catch (error) {
     const current = getCloudMessageSyncEntry(id);
@@ -164,6 +206,7 @@ const persistOptimisticMessage = async (
       try {
         await reconcileCloudDiary();
         if (cloudState().messages[id]) {
+          releaseUploadRuntime(current.runtime);
           setCloudMessageSyncEntry(id, null);
           return;
         }
@@ -273,16 +316,29 @@ const facadeActions: DiaryAsyncStoreActions = {
     if (isLocal()) return callLocal('createMessage', data);
     if (!data.chatboxId) return '';
     const id = data.id ?? `ms:${uuidv4()}`;
-    const message = buildCloudMessage(data, id);
+    const cloudDraft = cloneCloudDraftPreviews(data);
+    const message = buildCloudMessage(cloudDraft, id);
     const {
       edited: _edited,
       createdAt: _createdAt,
       updatedAt: _updatedAt,
       ...request
     } = message;
-    const payload = sanitizeMessageForCloud(request) as CloudMessagePayload;
+    const payload = request as CloudMessagePayload;
     const attempt = 1;
-    setCloudMessageSyncEntry(id, { status: 'pending', payload, attempt });
+    const runtime: UploadRuntime = {
+      canonical: {},
+      uploads: {},
+      weights: {},
+      controller: new AbortController(),
+      previewUrls: takeCloudDraftPreviewUrls(cloudDraft),
+    };
+    setCloudMessageSyncEntry(id, {
+      status: 'pending',
+      payload,
+      attempt,
+      runtime,
+    });
     updateCloudDiary((state) => {
       const ids = state.orders.chatboxMessageOrders[message.chatboxId] ?? [];
       return recalculateChatboxDerivedFields(
@@ -300,27 +356,60 @@ const facadeActions: DiaryAsyncStoreActions = {
         message.chatboxId,
       );
     });
-    await persistOptimisticMessage(id, payload, attempt);
+    await persistOptimisticMessage(id, attempt);
     return id;
   },
   updateMessage: async (id, data) => {
     if (isLocal()) return callLocal('updateMessage', id, data);
     const current = cloudState().messages[id];
     if (!current) return;
-    const message = sanitizeMessageForCloud({ ...current, ...data } as Message);
-    upsertCloud(
-      'messages',
-      await cloud(async () =>
-        diaryApi.editMessage(id, {
-          variant: message.variant,
-          content: message.content,
-          attachments: message.attachments,
-          decorators: message.decorators,
-          linkPreview: message.linkPreview,
-          replyToMessageId: message.replyToMessageId,
-        }),
-      ),
-    );
+    const message = { ...current, ...data } as Message;
+    const runtime: UploadRuntime = {
+      canonical: {},
+      uploads: {},
+      weights: {},
+      controller: new AbortController(),
+      previewUrls: [],
+    };
+    try {
+      const editPayload = {
+        id: message.id,
+        chatboxId: message.chatboxId,
+        sender: message.sender,
+        variant: message.variant,
+        content: message.content,
+        tagIds: message.tagIds,
+        pinned: message.pinned,
+        archived: message.archived,
+        replyToMessageId: message.replyToMessageId,
+        sourceMessageId: message.sourceMessageId,
+        reactions: message.reactions,
+        attachments: message.attachments,
+        decorators: message.decorators,
+        linkPreview: message.linkPreview,
+      } as CloudMessagePayload;
+      const materialized = await materializeCloudAttachments(
+        editPayload,
+        runtime,
+        () => undefined,
+      );
+      const safe = sanitizeMessageForCloud(materialized);
+      upsertCloud(
+        'messages',
+        await cloud(() =>
+          diaryApi.editMessage(id, {
+            variant: safe.variant,
+            content: safe.content,
+            attachments: safe.attachments,
+            decorators: safe.decorators,
+            linkPreview: safe.linkPreview,
+            replyToMessageId: safe.replyToMessageId,
+          }),
+        ),
+      );
+    } finally {
+      releaseUploadRuntime(runtime);
+    }
   },
   patchMessage: async (id, data: MessagePatchData) => {
     if (isLocal()) return callLocal('patchMessage', id, data);
@@ -577,6 +666,12 @@ export const useMessageSyncStatus = (
   return source === 'cloud' ? (status ?? 'sent') : 'sent';
 };
 
+export const useMessageUploadProgress = (messageId: string): number =>
+  useCloudMessageSyncStore((state) => {
+    const runtime = state.entries[messageId]?.runtime;
+    return runtime ? uploadProgress(runtime) : 0;
+  });
+
 export const retryMessage = async (messageId: string): Promise<void> => {
   if (isLocal()) return;
   const current = getCloudMessageSyncEntry(messageId);
@@ -586,6 +681,10 @@ export const retryMessage = async (messageId: string): Promise<void> => {
     ...current,
     status: 'pending',
     attempt,
+    runtime: {
+      ...current.runtime,
+      controller: new AbortController(),
+    },
   });
-  await persistOptimisticMessage(messageId, current.payload, attempt);
+  await persistOptimisticMessage(messageId, attempt);
 };

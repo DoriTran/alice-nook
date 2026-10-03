@@ -21,6 +21,7 @@ import {
 } from '@/api';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
+import { getDiaryDataSource } from '@/store/settings/store';
 
 import {
   collectDraftUrls,
@@ -566,7 +567,10 @@ export const useComposerDraft = (
     setSending(true);
 
     try {
-      const materializedDraft = await materializeDraft(draft);
+      const materializedDraft =
+        getDiaryDataSource() === 'local'
+          ? await materializeDraft(draft)
+          : draft;
       const payload = buildMessagePayload(materializedDraft, chatboxId);
 
       if (!payload) {
