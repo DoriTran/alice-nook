@@ -41,7 +41,11 @@ const mergeLiveContentTagIds = (
   const inlineIds =
     content && 'json' in content
       ? collectContentTagIds(content.json).filter((id) => Boolean(tags[id]))
-      : [];
+      : content && 'items' in content
+        ? content.items
+            .flatMap((item) => collectContentTagIds(item.content.json))
+            .filter((id) => Boolean(tags[id]))
+        : [];
   return [...new Set([...tagIds, ...inlineIds])];
 };
 

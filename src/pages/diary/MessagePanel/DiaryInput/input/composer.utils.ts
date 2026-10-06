@@ -9,6 +9,7 @@ import type {
 
 import {
   collectContentTagIds,
+  createRichTextContent,
   isRichTextEmpty,
   migratePlainTextToRichText,
 } from '@/packages/base/AdRichText/richtext';
@@ -50,7 +51,7 @@ export const hasDraftContent = (draft: ComposerDraft): boolean => {
 
   if (draft.variant === 'todo') {
     return draft.todoItems.some(
-      (item) => item.text.trim() || item.attachments.length > 0,
+      (item) => !isRichTextEmpty(item.content) || item.attachments.length > 0,
     );
   }
 
@@ -59,7 +60,7 @@ export const hasDraftContent = (draft: ComposerDraft): boolean => {
 
 export const draftHasVariantContent = (draft: ComposerDraft): boolean => {
   if (draft.variant === 'todo') {
-    return draft.todoItems.some((item) => item.text.trim());
+    return draft.todoItems.some((item) => !isRichTextEmpty(item.content));
   }
 
   return !isRichTextEmpty(draft.content);
@@ -78,18 +79,13 @@ export const convertDraftToVariant = (
   }
 
   if (nextVariant === 'todo') {
-    const lines = draft.content.preview
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    const items =
-      lines.length > 0
-        ? lines.map((line) => ({
-            ...createEmptyTodoItem(),
-            text: line,
-          }))
-        : [createEmptyTodoItem()];
+    const blocks = draft.content.json.content ?? [];
+    const items = blocks.length
+      ? blocks.map((block) => ({
+          ...createEmptyTodoItem(),
+          content: createRichTextContent({ type: 'doc', content: [block] }),
+        }))
+      : [createEmptyTodoItem()];
 
     return {
       variant: 'todo',
@@ -99,14 +95,13 @@ export const convertDraftToVariant = (
   }
 
   if (draft.variant === 'todo') {
-    const text = draft.todoItems
-      .map((item) => item.text.trim())
-      .filter(Boolean)
-      .join('\n');
+    const blocks = draft.todoItems.flatMap((item) =>
+      isRichTextEmpty(item.content) ? [] : (item.content.json.content ?? []),
+    );
 
     return {
       variant: nextVariant,
-      content: migratePlainTextToRichText(text),
+      content: createRichTextContent({ type: 'doc', content: blocks }),
       todoItems: [createEmptyTodoItem()],
     };
   }
@@ -138,7 +133,17 @@ export const buildMessagePayload = (
     ),
     linkPreview: null,
     tagIds:
-      draft.variant === 'text' ? collectContentTagIds(draft.content.json) : [],
+      draft.variant === 'todo'
+        ? Array.from(
+            new Set(
+              draft.todoItems.flatMap((item) =>
+                collectContentTagIds(item.content.json),
+              ),
+            ),
+          )
+        : draft.variant === 'text'
+          ? collectContentTagIds(draft.content.json)
+          : [],
     pinned: false,
     archived: false,
     replyToMessageId: draft.replyToMessageId,
@@ -148,12 +153,14 @@ export const buildMessagePayload = (
 
   if (draft.variant === 'todo') {
     const items = draft.todoItems
-      .filter((item) => item.text.trim() || item.attachments.length > 0)
+      .filter(
+        (item) => !isRichTextEmpty(item.content) || item.attachments.length > 0,
+      )
       .map(
         (item): TodoItem => ({
           id: item.id,
           completed: item.completed,
-          content: migratePlainTextToRichText(item.text.trim()),
+          content: item.content,
           attachments: item.attachments,
         }),
       );
@@ -200,7 +207,7 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     const items = message.content.items.map((item) => ({
       id: item.id,
       completed: item.completed,
-      text: item.content.preview,
+      content: item.content,
       attachments: item.attachments,
     }));
 

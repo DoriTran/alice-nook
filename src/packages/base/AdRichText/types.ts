@@ -24,7 +24,7 @@ export type ContentFeatureAnchor = {
 };
 
 export type AdRichTextHandle = {
-  focus: () => void;
+  focus: (position?: 'start' | 'end') => void;
   insertAtCursor: (value: string) => void;
   runContentFeature: (
     id: ContentFeatureId,

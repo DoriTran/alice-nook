@@ -79,6 +79,8 @@ export type AdRichTextProps = {
   onSubmit?: () => void;
   /** When true, Enter submits (Shift+Enter newline). When false, Shift+Enter submits. */
   enterSubmits?: boolean;
+  /** Variant-level keyboard handling. Return true when the event was handled. */
+  onKeyDown?: (event: globalThis.KeyboardEvent) => boolean;
 };
 
 const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
@@ -99,6 +101,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       onContentContactEditorOpenChange,
       onSubmit,
       enterSubmits = true,
+      onKeyDown,
     },
     ref,
   ) => {
@@ -114,6 +117,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       onContentContactEditorOpenChange,
     );
     const enterSubmitsRef = useRef(enterSubmits);
+    const onKeyDownRef = useRef(onKeyDown);
     /** Preserve selection when emoji picker steals focus on mousedown. */
     const selectionRef = useRef<{ from: number; to: number } | null>(null);
     const [tagSuggestion, setTagSuggestion] = useState(CLOSED_TAG_SUGGESTION);
@@ -153,6 +157,10 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       enterSubmitsRef.current = enterSubmits;
     }, [enterSubmits]);
 
+    useEffect(() => {
+      onKeyDownRef.current = onKeyDown;
+    }, [onKeyDown]);
+
     const editor = useAdRichTextEditor({
       content: value.json,
       editable,
@@ -173,6 +181,9 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       },
       editorProps: {
         handleKeyDown: (_view, event) => {
+          if (onKeyDownRef.current?.(event)) {
+            return true;
+          }
           if (
             !onSubmitRef.current ||
             event.key !== 'Enter' ||
@@ -293,8 +304,8 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
     useImperativeHandle(
       ref,
       () => ({
-        focus: () => {
-          editor?.commands.focus();
+        focus: (position) => {
+          editor?.commands.focus(position);
         },
         insertAtCursor: (insertValue: string) => {
           if (!editor || editor.isDestroyed || !insertValue) {

@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import type {
+  AdRichTextHandle,
   ContentFeatureAnchor,
   ContentFeatureId,
   ContentFeatureState,
@@ -61,6 +62,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
   const enterKeyBehavior = preferences.composer.enterKeyBehavior;
   const todoEnterKeyBehavior = preferences.decorations.todo.enterKeyBehavior;
   const todoEditorRef = useRef<TodoEditorHandle>(null);
+  const activeEditorRef = useRef<AdRichTextHandle | null>(null);
   const [contentShelfOpen, setContentShelfOpen] = useState(false);
   const [contentFeatureState, setContentFeatureState] =
     useState<ContentFeatureState>({});
@@ -137,6 +139,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
     removeAttachment,
     addFiles,
     addTodoRow,
+    insertTodoRowAfter,
     updateTodoItem,
     removeTodoRow,
     reorderTodoRow,
@@ -167,11 +170,19 @@ const DiaryInput: FC<DiaryInputProps> = ({
     const finalizedContent =
       draft.variant === 'text'
         ? editorRef.current?.finalizeContentEntities()
-        : undefined;
+        : draft.variant === 'todo'
+          ? {
+              todoItems:
+                todoEditorRef.current?.finalizeItems() ?? draft.todoItems,
+            }
+          : undefined;
+    activeEditorRef.current = null;
+    setContentFeatureState({});
     void send(finalizedContent);
   };
 
   useEffect(() => {
+    activeEditorRef.current = null;
     setContentShelfOpen(false);
     setContentFeatureState({});
     setLinkEditorOpen(false);
@@ -182,16 +193,20 @@ const DiaryInput: FC<DiaryInputProps> = ({
     id: ContentFeatureId,
     anchor?: ContentFeatureAnchor,
   ) => {
-    editorRef.current?.runContentFeature(id, anchor);
+    activeEditorRef.current?.runContentFeature(id, anchor);
   };
 
   const handleClear = () => {
     setContentShelfOpen(false);
+    activeEditorRef.current = null;
+    setContentFeatureState({});
     clearAll();
   };
 
   const handleCancelEdit = () => {
     setContentShelfOpen(false);
+    activeEditorRef.current = null;
+    setContentFeatureState({});
     cancelEdit();
   };
 
@@ -237,6 +252,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
           onUpdateItem={updateTodoItem}
           onRemoveItem={removeTodoRow}
           onAddRow={addTodoRow}
+          onInsertRowAfter={insertTodoRowAfter}
           onAddFiles={handleTodoAddFiles}
           onRemoveAttachment={removeTodoRowAttachment}
           onReorderItem={reorderTodoRow}
@@ -244,6 +260,17 @@ const DiaryInput: FC<DiaryInputProps> = ({
           enterKeyBehavior={todoEnterKeyBehavior}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onActiveEditorChange={(_itemId, editor) => {
+            activeEditorRef.current = editor;
+            setContentFeatureState(editor?.getContentFeatureState() ?? {});
+          }}
+          onContentFeatureStateChange={setContentFeatureState}
+          onContentLinkEditorOpenChange={(open) => {
+            setLinkEditorOpen(open);
+            if (open) setContentShelfOpen(true);
+          }}
+          contentInspectorTarget={contentInspectorTarget}
+          onContentContactEditorOpenChange={setContactEditorFeature}
         />
       );
     }
@@ -270,7 +297,10 @@ const DiaryInput: FC<DiaryInputProps> = ({
         value={draft.content}
         maxRows={8}
         onChange={setContent}
-        onFocus={handleFocus}
+        onFocus={() => {
+          activeEditorRef.current = editorRef.current;
+          handleFocus();
+        }}
         onBlur={handleBlur}
         onSubmit={handleSubmit}
         onContentFeatureStateChange={setContentFeatureState}
@@ -377,7 +407,7 @@ const DiaryInput: FC<DiaryInputProps> = ({
           onToggleDecorator={toggleDecorator}
           onVariantSwitch={handleVariantSwitch}
           contentShelfOpen={contentShelfOpen}
-          contentAvailable={draft.variant === 'text'}
+          contentAvailable={draft.variant !== 'ai'}
           contentFeatureState={contentFeatureState}
           onContentShelfOpenChange={(open) => {
             if (!open && linkEditorOpen) return;

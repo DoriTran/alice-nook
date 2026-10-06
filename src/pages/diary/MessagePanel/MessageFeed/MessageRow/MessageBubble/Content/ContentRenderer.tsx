@@ -10,6 +10,7 @@ import {
 } from '@/packages/base';
 import { useDiaryStore } from '@/store';
 
+import LinkContentPreviews from '../../../../LinkPreview/LinkContentPreviews';
 import { getMessagePreviewText } from '../../../../messagePanel.utils';
 import AttachmentList from './AttachmentList/AttachmentList';
 import styles from './MessageContent.module.css';
@@ -75,6 +76,11 @@ const ContentRenderer: FC<ContentRendererProps> = ({
                     className={`${styles.todoText} ${item.completed ? styles.todoTextDone : ''}`}
                   />
                 ) : null}
+                <LinkContentPreviews
+                  content={item.content}
+                  attached={hasText}
+                  disabled={disabled}
+                />
                 {hasAttachments ? (
                   <div
                     className={

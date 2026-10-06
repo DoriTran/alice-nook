@@ -83,6 +83,20 @@ const actionKeys = new Set<keyof DiaryAsyncStoreActions>([
   'seedIfEmpty',
 ]);
 
+const collectMessageSecretPayloads = (message: Message) => {
+  const hydrations = useSecretRuntime.getState().hydrations;
+  const documents =
+    'json' in message.content
+      ? [message.content.json]
+      : message.content.items.map((item) => item.content.json);
+  const byId = new Map(
+    documents
+      .flatMap((json) => collectPendingSecretPayloads(json, hydrations))
+      .map((payload) => [payload.secretId, payload]),
+  );
+  return Array.from(byId.values());
+};
+
 const isLocal = () => getDiaryDataSource() === 'local';
 
 const callLocal = <Key extends keyof DiaryAsyncStoreActions>(
@@ -332,14 +346,7 @@ const facadeActions: DiaryAsyncStoreActions = {
     } = message;
     const payload = {
       ...request,
-      ...(message.variant === 'text'
-        ? {
-            secretPayloads: collectPendingSecretPayloads(
-              message.content.json,
-              useSecretRuntime.getState().hydrations,
-            ),
-          }
-        : {}),
+      secretPayloads: collectMessageSecretPayloads(message),
     } as CloudMessagePayload;
     const attempt = 1;
     const runtime: UploadRuntime = {
@@ -408,14 +415,7 @@ const facadeActions: DiaryAsyncStoreActions = {
         attachments: message.attachments,
         decorators: message.decorators,
         linkPreview: message.linkPreview,
-        ...(message.variant === 'text'
-          ? {
-              secretPayloads: collectPendingSecretPayloads(
-                message.content.json,
-                useSecretRuntime.getState().hydrations,
-              ),
-            }
-          : {}),
+        secretPayloads: collectMessageSecretPayloads(message),
       } as CloudMessagePayload;
       const materialized = await materializeCloudAttachments(
         editPayload,

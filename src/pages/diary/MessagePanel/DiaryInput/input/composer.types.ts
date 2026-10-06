@@ -24,7 +24,7 @@ export type DraftAttachment = Attachment | LocalDraftAttachment;
 export type DraftTodoItem = {
   id: string;
   completed: boolean;
-  text: string;
+  content: RichTextContent;
   attachments: DraftAttachment[];
 };
 
@@ -45,7 +45,7 @@ export type ComposerEditorRef = AdRichTextHandle;
 export const createEmptyTodoItem = (): DraftTodoItem => ({
   id: `todo:${uuidv4()}`,
   completed: false,
-  text: '',
+  content: createEmptyRichTextContent(),
   attachments: [],
 });
 

@@ -19,6 +19,7 @@ import {
   partitionAttachmentFiles,
   type OversizedAttachmentFile,
 } from '@/api/upload/attachmentSize';
+import { removeSecretHydration } from '@/packages/base/AdRichText/extensions/contentSecret';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
 import { getDiaryDataSource } from '@/store/settings/store';
@@ -85,6 +86,21 @@ const materializeDraftAttachment = async (
     mimeType: result.mimeType,
     size: result.size,
   };
+};
+
+const removeContentSecretHydrations = (content: RichTextContent) => {
+  const visit = (node: typeof content.json) => {
+    if (
+      (node.type === 'secretContentInline' ||
+        node.type === 'secretContentBlock') &&
+      typeof node.attrs?.secretId === 'string'
+    ) {
+      removeSecretHydration(node.attrs.secretId);
+      return;
+    }
+    node.content?.forEach(visit);
+  };
+  visit(content.json);
 };
 
 const materializeDraft = async (
@@ -370,11 +386,28 @@ export const useComposerDraft = (
   );
 
   const addTodoRow = useCallback(() => {
+    const nextItem = createEmptyTodoItem();
     setDraft((current) => ({
       ...current,
-      todoItems: [...current.todoItems, createEmptyTodoItem()],
+      todoItems: [...current.todoItems, nextItem],
     }));
+    return nextItem.id;
   }, [setDraft]);
+
+  const insertTodoRowAfter = useCallback(
+    (itemId: string) => {
+      const nextItem = createEmptyTodoItem();
+      setDraft((current) => {
+        const index = current.todoItems.findIndex((item) => item.id === itemId);
+        const insertAt = index < 0 ? current.todoItems.length : index + 1;
+        const todoItems = current.todoItems.slice();
+        todoItems.splice(insertAt, 0, nextItem);
+        return { ...current, todoItems, linkPreview: null };
+      });
+      return nextItem.id;
+    },
+    [setDraft],
+  );
 
   const updateTodoItem = useCallback(
     (itemId: string, patch: Partial<DraftTodoItem>) => {
@@ -402,6 +435,7 @@ export const useComposerDraft = (
         );
         if (removedItem) {
           revokeDraftAttachmentUrls(removedItem.attachments);
+          removeContentSecretHydrations(removedItem.content);
         }
 
         const nextItems = current.todoItems.filter(
@@ -507,11 +541,17 @@ export const useComposerDraft = (
   );
 
   const send = useCallback(
-    async (contentOverride?: RichTextContent) => {
+    async (
+      contentOverride?: RichTextContent | { todoItems: DraftTodoItem[] },
+    ) => {
       const draftToSend =
-        contentOverride && draft.variant === 'text'
+        contentOverride && 'json' in contentOverride && draft.variant === 'text'
           ? { ...draft, content: contentOverride }
-          : draft;
+          : contentOverride &&
+              'todoItems' in contentOverride &&
+              draft.variant === 'todo'
+            ? { ...draft, todoItems: contentOverride.todoItems }
+            : draft;
       if (!hasDraftContent(draftToSend) || sending) {
         return;
       }
@@ -653,6 +693,7 @@ export const useComposerDraft = (
     removeAttachment,
     addFiles,
     addTodoRow,
+    insertTodoRowAfter,
     updateTodoItem,
     removeTodoRow,
     reorderTodoRow,

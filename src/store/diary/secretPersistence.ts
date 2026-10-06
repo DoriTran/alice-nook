@@ -34,9 +34,9 @@ export const encryptPendingLocalSecrets = async <
 >(
   message: T,
 ): Promise<T> => {
-  if (!message.content || !('json' in message.content)) return message;
+  if (!message.content) return message;
   const hydrations = useSecretRuntime.getState().hydrations;
-  const json = await transform(message.content.json, async (node) => {
+  const encryptNode = async (node: JSONContent) => {
     if (node.attrs?.ciphertext) return node;
     const secretId = String(node.attrs?.secretId ?? '');
     const fragment = hydrations[secretId];
@@ -46,8 +46,21 @@ export const encryptPendingLocalSecrets = async <
       displayLength: Number(node.attrs?.displayLength) || 0,
     });
     return { ...node, attrs };
-  });
-  return { ...message, content: { ...message.content, json } } as T;
+  };
+  if ('json' in message.content) {
+    const json = await transform(message.content.json, encryptNode);
+    return { ...message, content: { ...message.content, json } } as T;
+  }
+  const items = await Promise.all(
+    message.content.items.map(async (item) => ({
+      ...item,
+      content: {
+        ...item.content,
+        json: await transform(item.content.json, encryptNode),
+      },
+    })),
+  );
+  return { ...message, content: { ...message.content, items } } as T;
 };
 
 export const hydrateLocalSecrets = async (
@@ -70,8 +83,11 @@ export const hydrateLocalSecrets = async (
     node.content?.forEach(visit);
   };
   Object.values(messages).forEach((message) => {
-    if (message.variant === 'text' && 'json' in message.content)
+    if ('json' in message.content) {
       visit(message.content.json);
+    } else {
+      message.content.items.forEach((item) => visit(item.content.json));
+    }
   });
   await Promise.all(jobs);
   mergeSecretHydrations(hydrated);

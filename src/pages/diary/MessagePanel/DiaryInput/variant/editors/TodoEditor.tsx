@@ -5,6 +5,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {
   forwardRef,
+  memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
@@ -12,32 +14,35 @@ import {
   useState,
   type FC,
   type FocusEvent,
-  type KeyboardEvent,
 } from 'react';
 
 import type { EnterKeyBehavior } from '@/store/settings/type';
 
-import { AdCheckbox, AdDragDrop, AdIcon } from '@/packages/base';
+import {
+  AdCheckbox,
+  AdDragDrop,
+  AdIcon,
+  AdRichText,
+  isRichTextEmpty,
+  type AdRichTextHandle,
+  type ContentFeatureState,
+} from '@/packages/base';
 
 import type { DraftTodoItem } from '../../input/composer.types';
 
+import LinkContentPreviews from '../../../LinkPreview/LinkContentPreviews';
 import AttachmentCard from '../../attachment/AttachmentTray/AttachmentCard';
-import { useAutoGrowTextarea } from '../../input/useAutoGrowTextarea';
 import styles from './TodoEditor.module.css';
 
 const TODO_SORTABLE_GROUP = 'todo-composer-rows';
 
 const findScrollParent = (start: HTMLElement | null): HTMLElement | null => {
   let node = start?.parentElement ?? null;
-
   while (node) {
     const { overflowY } = getComputedStyle(node);
-    if (overflowY === 'auto' || overflowY === 'scroll') {
-      return node;
-    }
+    if (overflowY === 'auto' || overflowY === 'scroll') return node;
     node = node.parentElement;
   }
-
   return null;
 };
 
@@ -45,7 +50,8 @@ export type TodoEditorProps = {
   items: DraftTodoItem[];
   onUpdateItem: (itemId: string, patch: Partial<DraftTodoItem>) => void;
   onRemoveItem: (itemId: string) => void;
-  onAddRow: () => void;
+  onAddRow: () => string;
+  onInsertRowAfter: (itemId: string) => string;
   onAddFiles: (itemId: string, files: FileList | File[]) => void;
   onRemoveAttachment: (itemId: string, attachmentId: string) => void;
   onReorderItem: (current: number, previous: number) => void;
@@ -53,140 +59,92 @@ export type TodoEditorProps = {
   enterKeyBehavior?: EnterKeyBehavior;
   onFocus?: () => void;
   onBlur?: () => void;
+  onActiveEditorChange: (
+    itemId: string | null,
+    editor: AdRichTextHandle | null,
+  ) => void;
+  onContentFeatureStateChange?: (state: ContentFeatureState) => void;
+  onContentLinkEditorOpenChange?: (open: boolean) => void;
+  contentInspectorTarget?: HTMLElement | null;
+  onContentContactEditorOpenChange?: (
+    feature: 'phone' | 'email' | null,
+  ) => void;
 };
 
 export type TodoEditorHandle = {
   insertAtLatestInput: (value: string) => void;
+  finalizeItems: () => DraftTodoItem[];
 };
 
-type TodoRowTextareaProps = {
-  value: string;
-  onChange: (value: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onSubmit?: () => void;
-  enterKeyBehavior: EnterKeyBehavior;
-  completed: boolean;
-};
-
-const TodoRowTextarea = forwardRef<HTMLTextAreaElement, TodoRowTextareaProps>(
-  (
-    { value, onChange, onFocus, onBlur, onSubmit, enterKeyBehavior, completed },
-    forwardedRef,
-  ) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    useAutoGrowTextarea(textareaRef, value, 5);
-
-    const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (!onSubmit || event.key !== 'Enter' || event.nativeEvent.isComposing) {
-        return;
-      }
-
-      const shouldSend =
-        enterKeyBehavior === 'enter-sends' ? !event.shiftKey : event.shiftKey;
-
-      if (shouldSend) {
-        event.preventDefault();
-        onSubmit();
-      }
-    };
-
-    return (
-      <textarea
-        ref={(node) => {
-          textareaRef.current = node;
-          if (typeof forwardedRef === 'function') {
-            forwardedRef(node);
-          } else if (forwardedRef) {
-            forwardedRef.current = node;
-          }
-        }}
-        className={`${styles.input} ${completed ? styles.inputDone : ''}`}
-        value={value}
-        placeholder="Todo item..."
-        aria-label="Todo item"
-        rows={1}
-        onChange={(event) => onChange(event.target.value)}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        onKeyDown={handleKeyDown}
-      />
-    );
-  },
-);
-
-TodoRowTextarea.displayName = 'TodoRowTextarea';
-
-type SortableTodoRowProps = {
+type TodoRowProps = Omit<TodoEditorProps, 'items' | 'onAddRow'> & {
   item: DraftTodoItem;
   canRemove: boolean;
-  enterKeyBehavior: EnterKeyBehavior;
-  onUpdateItem: (itemId: string, patch: Partial<DraftTodoItem>) => void;
-  onRemoveItem: (itemId: string) => void;
-  onAddFiles: (itemId: string, files: FileList | File[]) => void;
-  onRemoveAttachment: (itemId: string, attachmentId: string) => void;
-  onReorderItem: (current: number, previous: number) => void;
-  onSubmit?: () => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  textareaRef?: (node: HTMLTextAreaElement | null) => void;
+  previousItemId?: string;
+  registerEditor: (itemId: string, editor: AdRichTextHandle | null) => void;
+  focusItem: (itemId: string, position?: 'start' | 'end') => void;
 };
 
-/**
- * Sortable item row — mirrors ChatboxSidebar's SortableChatbox:
- * draggable + sortable + itemOf, with a data-handle grip like Group.
- */
-const SortableTodoRow: FC<SortableTodoRowProps> = ({
-  item,
-  canRemove,
-  enterKeyBehavior,
-  onUpdateItem,
-  onRemoveItem,
-  onAddFiles,
-  onRemoveAttachment,
-  onReorderItem,
-  onSubmit,
-  onFocus,
-  onBlur,
-  textareaRef,
-}) => {
+const isCaretAtStart = (): boolean => {
+  const selection = window.getSelection();
+  return Boolean(selection?.isCollapsed && selection.anchorOffset === 0);
+};
+
+const TodoRow: FC<TodoRowProps> = memo((props) => {
+  const {
+    item,
+    canRemove,
+    previousItemId,
+    enterKeyBehavior = 'shift-enter-sends',
+    onUpdateItem,
+    onRemoveItem,
+    onInsertRowAfter,
+    onAddFiles,
+    onRemoveAttachment,
+    onReorderItem,
+    onSubmit,
+    onFocus,
+    onBlur,
+    onActiveEditorChange,
+    onContentFeatureStateChange,
+    onContentLinkEditorOpenChange,
+    contentInspectorTarget,
+    onContentContactEditorOpenChange,
+    registerEditor,
+    focusItem,
+  } = props;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<AdRichTextHandle | null>(null);
   const [fieldFocused, setFieldFocused] = useState(false);
-  // Native file dialog steals focus; keep the attachment row visible until it closes.
   const [pickingFiles, setPickingFiles] = useState(false);
-  const hasAttachments = item.attachments.length > 0;
-  const showAttachments = hasAttachments || fieldFocused || pickingFiles;
+  const showAttachments =
+    item.attachments.length > 0 || fieldFocused || pickingFiles;
 
   useEffect(() => {
-    if (!pickingFiles) {
-      return;
-    }
-
-    const handleWindowFocus = () => {
+    if (!pickingFiles) return;
+    const handleWindowFocus = () =>
       window.setTimeout(() => setPickingFiles(false), 0);
-    };
-
     window.addEventListener('focus', handleWindowFocus);
     return () => window.removeEventListener('focus', handleWindowFocus);
   }, [pickingFiles]);
 
-  const handleFieldFocus = () => {
-    setFieldFocused(true);
-    onFocus?.();
-  };
+  useEffect(
+    () => () => registerEditor(item.id, null),
+    [item.id, registerEditor],
+  );
+
+  const setEditorRef = useCallback(
+    (editor: AdRichTextHandle | null) => {
+      editorRef.current = editor;
+      registerEditor(item.id, editor);
+    },
+    [item.id, registerEditor],
+  );
 
   const handleFieldBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget as Node | null;
-    if (next && event.currentTarget.contains(next)) {
-      return;
-    }
+    if (next && event.currentTarget.contains(next)) return;
     setFieldFocused(false);
     onBlur?.();
-  };
-
-  const openFilePicker = () => {
-    setPickingFiles(true);
-    fileInputRef.current?.click();
   };
 
   return (
@@ -195,9 +153,9 @@ const SortableTodoRow: FC<SortableTodoRowProps> = ({
       sortable
       itemOf={TODO_SORTABLE_GROUP}
       data={{ kind: 'todo-row', id: item.id }}
-      onSortableChange={({ current, previous }) => {
-        onReorderItem(current, previous);
-      }}
+      onSortableChange={({ current, previous }) =>
+        onReorderItem(current, previous)
+      }
     >
       <div className={styles.row} data-test-id={item.id}>
         <span
@@ -207,30 +165,67 @@ const SortableTodoRow: FC<SortableTodoRowProps> = ({
         >
           <AdIcon icon={faGripVertical} size={16} />
         </span>
-
         <AdCheckbox
           className={styles.checkbox}
           checked={item.completed}
           aria-label={
-            item.text ? `Mark ${item.text} complete` : 'Mark todo complete'
+            item.content.preview
+              ? `Mark ${item.content.preview} complete`
+              : 'Mark todo complete'
           }
           onChange={() => onUpdateItem(item.id, { completed: !item.completed })}
         />
-
         <div
           className={styles.field}
-          onFocus={handleFieldFocus}
+          onFocus={() => {
+            setFieldFocused(true);
+            onActiveEditorChange(item.id, editorRef.current);
+            onFocus?.();
+          }}
           onBlur={handleFieldBlur}
         >
-          <TodoRowTextarea
-            ref={textareaRef}
-            value={item.text}
-            completed={item.completed}
-            enterKeyBehavior={enterKeyBehavior}
-            onChange={(text) => onUpdateItem(item.id, { text })}
+          <AdRichText
+            ref={setEditorRef}
+            value={item.content}
+            placeholder="Todo item..."
+            grow
+            className={`${styles.input} ${item.completed ? styles.inputDone : ''}`}
+            onChange={(content) => onUpdateItem(item.id, { content })}
+            onFocus={() => onActiveEditorChange(item.id, editorRef.current)}
+            onContentFeatureStateChange={onContentFeatureStateChange}
+            onContentLinkEditorOpenChange={onContentLinkEditorOpenChange}
+            contentInspectorTarget={contentInspectorTarget}
+            onContentContactEditorOpenChange={onContentContactEditorOpenChange}
             onSubmit={onSubmit}
+            enterSubmits={enterKeyBehavior === 'enter-sends'}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && event.altKey && !event.isComposing) {
+                event.preventDefault();
+                focusItem(onInsertRowAfter(item.id));
+                return true;
+              }
+              if (
+                event.key === 'Backspace' &&
+                canRemove &&
+                isRichTextEmpty(item.content) &&
+                isCaretAtStart()
+              ) {
+                event.preventDefault();
+                onRemoveItem(item.id);
+                if (previousItemId) focusItem(previousItemId, 'end');
+                return true;
+              }
+              return false;
+            }}
           />
-
+          <LinkContentPreviews
+            content={item.content}
+            composer
+            attached
+            onDisablePreview={(url) =>
+              editorRef.current?.setContentLinkPreviewEnabled(url, false)
+            }
+          />
           {showAttachments ? (
             <div
               className={`${styles.rowAttachments}${item.completed ? ` ${styles.attachmentsDone}` : ''}`}
@@ -250,7 +245,10 @@ const SortableTodoRow: FC<SortableTodoRowProps> = ({
                 className={styles.addAttachmentBtn}
                 aria-label="Upload file for row"
                 onMouseDown={(event) => event.preventDefault()}
-                onClick={openFilePicker}
+                onClick={() => {
+                  setPickingFiles(true);
+                  fileInputRef.current?.click();
+                }}
               >
                 <AdIcon icon={faPlus} size={12} />
               </button>
@@ -270,7 +268,6 @@ const SortableTodoRow: FC<SortableTodoRowProps> = ({
             </div>
           ) : null}
         </div>
-
         {canRemove ? (
           <button
             type="button"
@@ -284,95 +281,98 @@ const SortableTodoRow: FC<SortableTodoRowProps> = ({
       </div>
     </AdDragDrop>
   );
-};
+});
+
+TodoRow.displayName = 'TodoRow';
 
 const TodoEditor = forwardRef<TodoEditorHandle, TodoEditorProps>(
-  (
-    {
+  (props, ref) => {
+    const {
       items,
       onUpdateItem,
       onRemoveItem,
       onAddRow,
+      onInsertRowAfter,
       onAddFiles,
       onRemoveAttachment,
       onReorderItem,
       onSubmit,
-      enterKeyBehavior = 'shift-enter-sends',
+      enterKeyBehavior,
       onFocus,
       onBlur,
-    },
-    ref,
-  ) => {
-    // Ref on an inner node — AdDragDrop steals the ref on its direct child.
+      onActiveEditorChange,
+      onContentFeatureStateChange,
+      onContentLinkEditorOpenChange,
+      contentInspectorTarget,
+      onContentContactEditorOpenChange,
+    } = props;
     const addRowBtnRef = useRef<HTMLButtonElement>(null);
     const shouldScrollToBottomRef = useRef(false);
-    const textareaRefs = useRef(new Map<string, HTMLTextAreaElement>());
+    const editorRefs = useRef(new Map<string, AdRichTextHandle>());
     const latestFocusedItemIdRef = useRef<string | null>(null);
+
+    const registerEditor = useCallback(
+      (itemId: string, editor: AdRichTextHandle | null) => {
+        if (editor) editorRefs.current.set(itemId, editor);
+        else editorRefs.current.delete(itemId);
+      },
+      [],
+    );
+    const focusItem = useCallback(
+      (itemId: string, position: 'start' | 'end' = 'start') => {
+        latestFocusedItemIdRef.current = itemId;
+        requestAnimationFrame(() =>
+          editorRefs.current.get(itemId)?.focus(position),
+        );
+      },
+      [],
+    );
 
     useImperativeHandle(
       ref,
       () => ({
         insertAtLatestInput: (value) => {
-          const activeEntry = Array.from(textareaRefs.current.entries()).find(
-            ([, textarea]) => textarea === document.activeElement,
-          );
-          const targetId =
-            activeEntry?.[0] ??
-            (latestFocusedItemIdRef.current &&
-            textareaRefs.current.has(latestFocusedItemIdRef.current)
-              ? latestFocusedItemIdRef.current
-              : items[0]?.id);
-          const textarea = targetId
-            ? textareaRefs.current.get(targetId)
-            : undefined;
-          const item = targetId
-            ? items.find(({ id }) => id === targetId)
-            : null;
-
-          if (!targetId || !textarea || !item) {
-            return;
-          }
-
-          const start = textarea.selectionStart ?? item.text.length;
-          const end = textarea.selectionEnd ?? start;
-          const nextText = `${item.text.slice(0, start)}${value}${item.text.slice(end)}`;
-          const nextCaret = start + value.length;
-
-          latestFocusedItemIdRef.current = targetId;
-          onUpdateItem(targetId, { text: nextText });
-          requestAnimationFrame(() => {
-            textarea.focus();
-            textarea.setSelectionRange(nextCaret, nextCaret);
-          });
+          const id = latestFocusedItemIdRef.current ?? items[0]?.id;
+          if (id) editorRefs.current.get(id)?.insertAtCursor(value);
         },
+        finalizeItems: () =>
+          items.map((item) => ({
+            ...item,
+            content:
+              editorRefs.current.get(item.id)?.finalizeContentEntities() ??
+              item.content,
+          })),
       }),
-      [items, onUpdateItem],
+      [items],
+    );
+
+    useEffect(() => {
+      const activeId = latestFocusedItemIdRef.current;
+      if (activeId && !items.some((item) => item.id === activeId)) {
+        latestFocusedItemIdRef.current = null;
+        onActiveEditorChange(null, null);
+      }
+    }, [items, onActiveEditorChange]);
+
+    const handleActiveEditorChange = useCallback(
+      (itemId: string | null, editor: AdRichTextHandle | null) => {
+        latestFocusedItemIdRef.current = itemId;
+        onActiveEditorChange(itemId, editor);
+      },
+      [onActiveEditorChange],
     );
 
     useLayoutEffect(() => {
-      if (!shouldScrollToBottomRef.current) {
-        return;
-      }
+      if (!shouldScrollToBottomRef.current) return;
       shouldScrollToBottomRef.current = false;
-
       const scrollParent = findScrollParent(addRowBtnRef.current);
-      if (!scrollParent) {
-        return;
-      }
-
+      if (!scrollParent) return;
       const pinBottom = () => {
         scrollParent.scrollTop = scrollParent.scrollHeight;
       };
-
       pinBottom();
-      // Follow-up after layout/DnD motion settles so height is final.
       requestAnimationFrame(pinBottom);
     }, [items.length]);
-
-    const handleAddRow = () => {
-      shouldScrollToBottomRef.current = true;
-      onAddRow();
-    };
 
     return (
       <AdDragDrop
@@ -381,45 +381,48 @@ const TodoEditor = forwardRef<TodoEditorHandle, TodoEditorProps>(
         group={TODO_SORTABLE_GROUP}
         hostPreview
         dropData={{ id: TODO_SORTABLE_GROUP }}
-        onSortableChange={({ current, previous }) => {
-          onReorderItem(current, previous);
-        }}
+        onSortableChange={({ current, previous }) =>
+          onReorderItem(current, previous)
+        }
       >
         <div className={styles.root}>
           <div className={styles.list}>
-            {items.map((item) => (
-              <SortableTodoRow
+            {items.map((item, index) => (
+              <TodoRow
                 key={item.id}
                 item={item}
                 canRemove={items.length > 1}
+                previousItemId={items[index - 1]?.id}
                 enterKeyBehavior={enterKeyBehavior}
                 onUpdateItem={onUpdateItem}
                 onRemoveItem={onRemoveItem}
+                onInsertRowAfter={onInsertRowAfter}
                 onAddFiles={onAddFiles}
                 onRemoveAttachment={onRemoveAttachment}
                 onReorderItem={onReorderItem}
                 onSubmit={onSubmit}
-                onFocus={() => {
-                  latestFocusedItemIdRef.current = item.id;
-                  onFocus?.();
-                }}
+                onFocus={onFocus}
                 onBlur={onBlur}
-                textareaRef={(node) => {
-                  if (node) {
-                    textareaRefs.current.set(item.id, node);
-                  } else {
-                    textareaRefs.current.delete(item.id);
-                  }
-                }}
+                onActiveEditorChange={handleActiveEditorChange}
+                onContentFeatureStateChange={onContentFeatureStateChange}
+                onContentLinkEditorOpenChange={onContentLinkEditorOpenChange}
+                contentInspectorTarget={contentInspectorTarget}
+                onContentContactEditorOpenChange={
+                  onContentContactEditorOpenChange
+                }
+                registerEditor={registerEditor}
+                focusItem={focusItem}
               />
             ))}
           </div>
-
           <button
             ref={addRowBtnRef}
             type="button"
             className={styles.addRowBtn}
-            onClick={handleAddRow}
+            onClick={() => {
+              shouldScrollToBottomRef.current = true;
+              focusItem(onAddRow());
+            }}
           >
             <span className={styles.addRowIcon} aria-hidden>
               <AdIcon icon={faPlus} size={10} />
@@ -433,5 +436,4 @@ const TodoEditor = forwardRef<TodoEditorHandle, TodoEditorProps>(
 );
 
 TodoEditor.displayName = 'TodoEditor';
-
 export default TodoEditor;
