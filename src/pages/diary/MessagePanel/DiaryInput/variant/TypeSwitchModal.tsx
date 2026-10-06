@@ -1,10 +1,13 @@
 import type { FC } from 'react';
 
-import { Button, Group, Text } from '@mantine/core';
+import { Group, Text } from '@mantine/core';
 
 import type { MessageVariant } from '@/store/diary/type';
 
 import { AdModal } from '@/packages/base';
+
+import formStyles from '../../../ChatboxSidebar/Create/CreateForm.module.css';
+import styles from './TypeSwitchModal.module.css';
 
 export type TypeSwitchModalProps = {
   nextVariant: MessageVariant | null;
@@ -28,10 +31,20 @@ const TypeSwitchModal: FC<TypeSwitchModalProps> = ({
         Current content will be converted if possible. Continue?
       </Text>
       <Group justify="flex-end" mt="md">
-        <Button variant="default" onClick={onCancel}>
+        <button
+          type="button"
+          className={formStyles.btnSecondary}
+          onClick={onCancel}
+        >
           Cancel
-        </Button>
-        <Button onClick={onConfirm}>Switch Type</Button>
+        </button>
+        <button
+          type="button"
+          className={`${formStyles.btnPrimary} ${styles.confirmButton}`}
+          onClick={onConfirm}
+        >
+          Switch Type
+        </button>
       </Group>
     </AdModal>
   );

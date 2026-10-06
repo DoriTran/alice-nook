@@ -1,0 +1,9 @@
+.confirmButton,
+.confirmButton:hover:not(:disabled),
+.confirmButton:focus-visible {
+  background: var(--primary) !important;
+}
+
+.confirmButton:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
