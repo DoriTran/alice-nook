@@ -1,5 +1,5 @@
 export { default } from './DiaryInput';
-export type { DiaryInputProps } from './DiaryInput';
+export type { DiaryInputHandle, DiaryInputProps } from './DiaryInput';
 
 export * as input from './input';
 export * as attachment from './attachment';

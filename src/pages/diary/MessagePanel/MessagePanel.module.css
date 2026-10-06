@@ -1,4 +1,5 @@
 .root {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -9,6 +10,32 @@
   max-height: calc(var(--app-viewport-height) - 24px);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+}
+
+.root::after {
+  position: absolute;
+  z-index: 50;
+  inset: 0.5rem;
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  content: 'Drop files to attach';
+  pointer-events: none;
+  visibility: hidden;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-lg);
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    visibility 120ms ease;
+}
+
+.root[data-file-drag-active]::after {
+  visibility: visible;
+  opacity: 1;
 }
 
 @media (max-width: 899px) {

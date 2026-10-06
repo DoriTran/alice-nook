@@ -1,11 +1,18 @@
-import { useEffect, type FC, type RefObject } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type FC,
+  type RefObject,
+} from 'react';
 
 import { AdConfirmDialog } from '@/packages/base';
 import LayoutCard from '@/packages/ui/LayoutCard/LayoutCard';
 
 import { useMessageActions } from './.hooks/useMessageActions';
 import { useMessageScroll } from './.hooks/useMessageScroll';
-import DiaryInput from './DiaryInput';
+import DiaryInput, { type DiaryInputHandle } from './DiaryInput';
 import Header from './Header/Header';
 import { useMessageHeaderData } from './Header/useMessageHeaderData';
 import MessageFeed from './MessageFeed/MessageFeed';
@@ -49,6 +56,9 @@ const MessagePanel: FC<MessagePanelProps> = ({
   onTimelineSearchActiveChange,
   forceVisibleMessageIds = [],
 }) => {
+  const diaryInputRef = useRef<DiaryInputHandle>(null);
+  const fileDragDepthRef = useRef(0);
+  const [fileDragActive, setFileDragActive] = useState(false);
   const headerData = useMessageHeaderData(chatboxId);
   const { groups } = useChatboxMessages(chatboxId, {
     searchQuery: messageSearchQuery,
@@ -83,12 +93,53 @@ const MessagePanel: FC<MessagePanelProps> = ({
     return () => window.clearTimeout(timer);
   }, [groups, onPendingScrollHandled, pendingScrollMessageId, scroll]);
 
+  const hasDraggedFiles = (event: DragEvent<HTMLElement>) =>
+    Array.from(event.dataTransfer.types).includes('Files');
+
+  const handleDragEnter = (event: DragEvent<HTMLElement>) => {
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+    fileDragDepthRef.current += 1;
+    setFileDragActive(true);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLElement>) => {
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLElement>) => {
+    if (!hasDraggedFiles(event)) return;
+    fileDragDepthRef.current = Math.max(0, fileDragDepthRef.current - 1);
+    if (fileDragDepthRef.current === 0) setFileDragActive(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLElement>) => {
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+    fileDragDepthRef.current = 0;
+    setFileDragActive(false);
+    if (event.dataTransfer.files.length > 0) {
+      diaryInputRef.current?.addDroppedFiles(event.dataTransfer.files);
+    }
+  };
+
   if (!headerData) {
     return null;
   }
 
   return (
-    <LayoutCard tag="main" className={styles.root} aria-label={headerData.name}>
+    <LayoutCard
+      tag="main"
+      className={styles.root}
+      aria-label={headerData.name}
+      data-file-drag-active={fileDragActive || undefined}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <Header
         data={headerData}
         detailPanelCollapsed={detailPanelCollapsed}
@@ -110,6 +161,7 @@ const MessagePanel: FC<MessagePanelProps> = ({
         actions={actions}
       />
       <DiaryInput
+        ref={diaryInputRef}
         chatboxId={chatboxId}
         replyToMessageId={actions.replyToMessageId}
         onCancelReply={actions.cancelReply}

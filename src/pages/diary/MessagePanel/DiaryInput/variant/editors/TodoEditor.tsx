@@ -73,6 +73,7 @@ export type TodoEditorProps = {
 
 export type TodoEditorHandle = {
   insertAtLatestInput: (value: string) => void;
+  addFilesAtLatestInput: (files: FileList | File[]) => void;
   finalizeItems: () => DraftTodoItem[];
 };
 
@@ -335,6 +336,10 @@ const TodoEditor = forwardRef<TodoEditorHandle, TodoEditorProps>(
           const id = latestFocusedItemIdRef.current ?? items[0]?.id;
           if (id) editorRefs.current.get(id)?.insertAtCursor(value);
         },
+        addFilesAtLatestInput: (files) => {
+          const id = latestFocusedItemIdRef.current ?? items[0]?.id;
+          if (id) onAddFiles(id, files);
+        },
         finalizeItems: () =>
           items.map((item) => ({
             ...item,
@@ -343,7 +348,7 @@ const TodoEditor = forwardRef<TodoEditorHandle, TodoEditorProps>(
               item.content,
           })),
       }),
-      [items],
+      [items, onAddFiles],
     );
 
     useEffect(() => {
