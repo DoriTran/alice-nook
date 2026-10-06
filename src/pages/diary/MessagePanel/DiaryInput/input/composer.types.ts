@@ -1,6 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { RichTextContent } from '@/packages/base/AdRichText/types';
+import type {
+  AdRichTextHandle,
+  RichTextContent,
+} from '@/packages/base/AdRichText/types';
 import type {
   Attachment,
   LinkPreviewState,
@@ -37,10 +40,7 @@ export type ComposerDraft = {
   linkPreview: LinkPreviewState | null;
 };
 
-export type ComposerEditorRef = {
-  insertAtCursor: (value: string) => void;
-  focus: () => void;
-};
+export type ComposerEditorRef = AdRichTextHandle;
 
 export const createEmptyTodoItem = (): DraftTodoItem => ({
   id: `todo:${uuidv4()}`,

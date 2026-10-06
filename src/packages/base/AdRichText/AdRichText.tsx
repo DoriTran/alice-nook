@@ -1,19 +1,63 @@
+import { NodeSelection } from '@tiptap/pm/state';
 import { EditorContent } from '@tiptap/react';
 import {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
   type KeyboardEvent,
 } from 'react';
 
+import type { ContentFeatureState } from './content';
 import type { AdRichTextHandle, RichTextContent } from './types';
 
 import { useLatestRef } from '../AdDragDrop/useLatestRef';
 import styles from './AdRichText.module.css';
 import { useAdRichTextEditor } from './AdRichTextEngine';
+import { getContentFeatureState, runContentFeature } from './content';
+import {
+  getContentContactEditorState,
+  type ContentContactEditorState,
+} from './extensions/contentContact';
+import ContentContactEditor from './extensions/contentContact/ContentContactEditor';
+import {
+  getContentLinkEditorState,
+  type ContentLinkEditorState,
+} from './extensions/contentLink';
+import ContentLinkEditor from './extensions/contentLink/ContentLinkEditor';
+import { useSecretRuntime } from './extensions/contentSecret';
+import {
+  getContentEntitySuggestionState,
+  type ContentEntitySuggestionState,
+} from './extensions/contentTag';
+import ContentTagSuggestion from './extensions/contentTag/ContentTagSuggestion';
 import { createRichTextContent } from './richtext/createRichTextContent';
 import { isEmojiToken } from './richtext/splitPlainTextToInlineNodes';
+
+const CLOSED_TAG_SUGGESTION: ContentEntitySuggestionState = {
+  open: false,
+  kind: 'tag',
+  from: 0,
+  to: 0,
+  query: '',
+};
+const CLOSED_LINK_EDITOR: ContentLinkEditorState = {
+  open: false,
+  from: 0,
+  to: 0,
+  href: '',
+  label: '',
+  previewEnabled: true,
+  existing: false,
+};
+const CLOSED_CONTACT_EDITOR: ContentContactEditorState = {
+  open: false,
+  kind: 'phone',
+  from: 0,
+  to: 0,
+  value: '',
+};
 
 export type AdRichTextProps = {
   value: RichTextContent;
@@ -25,6 +69,12 @@ export type AdRichTextProps = {
   grow?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
+  onContentFeatureStateChange?: (state: ContentFeatureState) => void;
+  onContentLinkEditorOpenChange?: (open: boolean) => void;
+  contentInspectorTarget?: HTMLElement | null;
+  onContentContactEditorOpenChange?: (
+    feature: 'phone' | 'email' | null,
+  ) => void;
   /** Called when Enter should submit (caller decides Shift/Enter policy). */
   onSubmit?: () => void;
   /** When true, Enter submits (Shift+Enter newline). When false, Shift+Enter submits. */
@@ -43,6 +93,10 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       grow = false,
       onFocus,
       onBlur,
+      onContentFeatureStateChange,
+      onContentLinkEditorOpenChange,
+      contentInspectorTarget,
+      onContentContactEditorOpenChange,
       onSubmit,
       enterSubmits = true,
     },
@@ -52,9 +106,19 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
     const onSubmitRef = useRef(onSubmit);
     const onFocusRef = useRef(onFocus);
     const onBlurRef = useRef(onBlur);
+    const onContentFeatureStateChangeRef = useRef(onContentFeatureStateChange);
+    const onContentLinkEditorOpenChangeRef = useRef(
+      onContentLinkEditorOpenChange,
+    );
+    const onContentContactEditorOpenChangeRef = useRef(
+      onContentContactEditorOpenChange,
+    );
     const enterSubmitsRef = useRef(enterSubmits);
     /** Preserve selection when emoji picker steals focus on mousedown. */
     const selectionRef = useRef<{ from: number; to: number } | null>(null);
+    const [tagSuggestion, setTagSuggestion] = useState(CLOSED_TAG_SUGGESTION);
+    const [linkEditor, setLinkEditor] = useState(CLOSED_LINK_EDITOR);
+    const [contactEditor, setContactEditor] = useState(CLOSED_CONTACT_EDITOR);
 
     useEffect(() => {
       onChangeRef.current = onChange;
@@ -73,6 +137,19 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
     }, [onBlur]);
 
     useEffect(() => {
+      onContentFeatureStateChangeRef.current = onContentFeatureStateChange;
+    }, [onContentFeatureStateChange]);
+
+    useEffect(() => {
+      onContentLinkEditorOpenChangeRef.current = onContentLinkEditorOpenChange;
+    }, [onContentLinkEditorOpenChange]);
+
+    useEffect(() => {
+      onContentContactEditorOpenChangeRef.current =
+        onContentContactEditorOpenChange;
+    }, [onContentContactEditorOpenChange]);
+
+    useEffect(() => {
       enterSubmitsRef.current = enterSubmits;
     }, [enterSubmits]);
 
@@ -83,6 +160,10 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       autoFocus,
       onUpdate: (next) => {
         onChangeRef.current(createRichTextContent(next.getJSON()));
+        onContentFeatureStateChangeRef.current?.(getContentFeatureState(next));
+      },
+      onSelectionUpdate: (next) => {
+        onContentFeatureStateChangeRef.current?.(getContentFeatureState(next));
       },
       onFocus: () => {
         onFocusRef.current?.();
@@ -114,8 +195,50 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
         },
       },
     });
+    const activeSecretEditor = useSecretRuntime(
+      (state) => state.activeNestedEditor,
+    );
+    const contentEditor =
+      activeSecretEditor?.parentEditor === editor
+        ? activeSecretEditor.editor
+        : editor;
+    const resolveContentState = () => {
+      if (!contentEditor || contentEditor.isDestroyed) return {};
+      const state = getContentFeatureState(contentEditor);
+      if (activeSecretEditor?.parentEditor === editor)
+        state.secret = { enabled: true, active: true };
+      return state;
+    };
+
+    useEffect(() => {
+      if (!contentEditor || contentEditor.isDestroyed) return;
+      onContentFeatureStateChangeRef.current?.(resolveContentState());
+      if (contentEditor !== editor) {
+        setTagSuggestion({
+          ...getContentEntitySuggestionState(contentEditor.state),
+        });
+        const nextLinkEditor = getContentLinkEditorState(contentEditor.state);
+        setLinkEditor({ ...nextLinkEditor });
+        const nextContactEditor = getContentContactEditorState(
+          contentEditor.state,
+        );
+        setContactEditor({ ...nextContactEditor });
+        onContentContactEditorOpenChangeRef.current?.(
+          nextContactEditor.open ? nextContactEditor.kind : null,
+        );
+        onContentLinkEditorOpenChangeRef.current?.(nextLinkEditor.open);
+      }
+    }, [activeSecretEditor, contentEditor]);
 
     const editorRef = useLatestRef(editor);
+
+    useEffect(() => {
+      if (editor && !editor.isDestroyed) {
+        onContentFeatureStateChangeRef.current?.(
+          getContentFeatureState(editor),
+        );
+      }
+    }, [editor]);
 
     const saveSelection = () => {
       const current = editorRef.current;
@@ -141,6 +264,29 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
       editor.on('blur', onBlurSave);
       return () => {
         editor.off('blur', onBlurSave);
+      };
+    }, [editor]);
+
+    useEffect(() => {
+      if (!editor) return;
+      const syncSuggestion = () => {
+        onContentFeatureStateChangeRef.current?.(
+          getContentFeatureState(editor),
+        );
+        setTagSuggestion({ ...getContentEntitySuggestionState(editor.state) });
+        const nextLinkEditor = getContentLinkEditorState(editor.state);
+        setLinkEditor({ ...nextLinkEditor });
+        const nextContactEditor = getContentContactEditorState(editor.state);
+        setContactEditor({ ...nextContactEditor });
+        onContentContactEditorOpenChangeRef.current?.(
+          nextContactEditor.open ? nextContactEditor.kind : null,
+        );
+        onContentLinkEditorOpenChangeRef.current?.(nextLinkEditor.open);
+      };
+      syncSuggestion();
+      editor.on('transaction', syncSuggestion);
+      return () => {
+        editor.off('transaction', syncSuggestion);
       };
     }, [editor]);
 
@@ -171,8 +317,62 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
             to: editor.state.selection.to,
           };
         },
+        runContentFeature: (id, anchor) => {
+          if (!editor || editor.isDestroyed || !contentEditor) {
+            return false;
+          }
+
+          if (id === 'secret' && activeSecretEditor?.parentEditor === editor) {
+            let secretPosition: number | null = null;
+            editor.state.doc.descendants((node, pos) => {
+              if (
+                secretPosition === null &&
+                node.type.name.startsWith('secretContent') &&
+                node.attrs.secretId === activeSecretEditor.secretId
+              ) {
+                secretPosition = pos;
+                return false;
+              }
+            });
+            if (secretPosition === null) return false;
+            editor.view.dispatch(
+              editor.state.tr.setSelection(
+                NodeSelection.create(editor.state.doc, secretPosition),
+              ),
+            );
+            const applied = runContentFeature(editor, id, anchor);
+            onContentFeatureStateChangeRef.current?.(
+              getContentFeatureState(editor),
+            );
+            return applied;
+          }
+
+          const selection = selectionRef.current;
+          if (contentEditor === editor && selection && !editor.isFocused) {
+            editor.commands.setTextSelection(selection);
+          }
+
+          if (id === 'link') contentEditor.commands.closeContentContactEditor();
+          if (id === 'phone' || id === 'email')
+            contentEditor.commands.closeContentLinkEditor();
+
+          const applied = runContentFeature(contentEditor, id, anchor);
+          if (contentEditor === editor) saveSelection();
+          onContentFeatureStateChangeRef.current?.(resolveContentState());
+          return applied;
+        },
+        getContentFeatureState: () => resolveContentState(),
+        setContentLinkPreviewEnabled: (url, enabled) =>
+          editor && !editor.isDestroyed
+            ? editor.commands.setContentLinkPreviewEnabled(url, enabled)
+            : false,
+        finalizeContentEntities: () => {
+          if (!editor || editor.isDestroyed) return value;
+          editor.commands.finalizeContentEntities();
+          return createRichTextContent(editor.getJSON());
+        },
       }),
-      [editor],
+      [contentEditor, editor],
     );
 
     const handleMouseUp = () => {
@@ -198,8 +398,41 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
         className={rootClass}
         onMouseUp={handleMouseUp}
         onKeyUp={handleKeyUp}
+        onClick={(event) => {
+          const anchor =
+            event.target instanceof Element
+              ? event.target.closest('a[href]')
+              : null;
+          if (!anchor || !contentEditor?.isEditable) return;
+          if (event.ctrlKey || event.metaKey) return;
+          event.preventDefault();
+          if (
+            anchor.hasAttribute('data-content-phone') ||
+            anchor.hasAttribute('data-content-email')
+          )
+            return;
+          contentEditor.commands.openContentLinkEditor();
+        }}
       >
         <EditorContent editor={editor} />
+        {contentEditor && tagSuggestion.open ? (
+          <ContentTagSuggestion editor={contentEditor} state={tagSuggestion} />
+        ) : null}
+        {contentEditor && linkEditor.open && contentInspectorTarget !== null ? (
+          <ContentLinkEditor
+            key={linkEditor.from}
+            editor={contentEditor}
+            state={linkEditor}
+            inspectorTarget={contentInspectorTarget}
+          />
+        ) : null}
+        {contentEditor && contactEditor.open ? (
+          <ContentContactEditor
+            key={`${contactEditor.kind}:${contactEditor.from}`}
+            editor={contentEditor}
+            state={contactEditor}
+          />
+        ) : null}
       </div>
     );
   },

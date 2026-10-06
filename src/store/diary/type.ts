@@ -1,5 +1,7 @@
 // #region Store
 
+import type { JSONContent } from '@tiptap/core';
+
 import type { RichTextContent } from '@/packages/base/AdRichText/types';
 import type { ColorId, CustomPalette } from '@/packages/color';
 import type { IconId } from '@/packages/icon';
@@ -351,7 +353,12 @@ export type HeadingDecorator = {
 export type Message = TextMessage | TodoMessage | AIMessage;
 export type CloudMessagePayload = Message extends infer Item
   ? Item extends Message
-    ? Omit<Item, 'edited' | 'createdAt' | 'updatedAt'>
+    ? Omit<Item, 'edited' | 'createdAt' | 'updatedAt'> & {
+        secretPayloads?: Array<{
+          secretId: string;
+          fragment: JSONContent;
+        }>;
+      }
     : never
   : never;
 

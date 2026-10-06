@@ -14,11 +14,7 @@ import type {
   MessageVariant,
 } from '@/store/diary/type';
 
-import {
-  generateAiResponse,
-  resolveLinkPreview,
-  uploadAttachment,
-} from '@/api';
+import { generateAiResponse, uploadAttachment } from '@/api';
 import {
   partitionAttachmentFiles,
   type OversizedAttachmentFile,
@@ -27,11 +23,6 @@ import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext'
 import { useDiaryStore } from '@/store';
 import { getDiaryDataSource } from '@/store/settings/store';
 
-import {
-  collectDraftUrls,
-  extractPreviewUrls,
-  syncLinkPreviewState,
-} from '../../LinkPreview/linkPreview.utils';
 import {
   createInitialDraft,
   createEmptyTodoItem,
@@ -178,34 +169,6 @@ export const useComposerDraft = (
   );
 
   useEffect(() => {
-    const preview = draft.linkPreview;
-    if (!preview?.enabled || preview.metadata) return;
-
-    let stale = false;
-    const timer = window.setTimeout(() => {
-      void resolveLinkPreview(preview.normalizedUrl)
-        .then((metadata) => {
-          if (stale) return;
-          setDraft((current) => {
-            if (current.linkPreview?.normalizedUrl !== preview.normalizedUrl) {
-              return current;
-            }
-            return {
-              ...current,
-              linkPreview: { ...current.linkPreview, metadata },
-            };
-          });
-        })
-        .catch(() => undefined);
-    }, 1000);
-
-    return () => {
-      stale = true;
-      window.clearTimeout(timer);
-    };
-  }, [draft.linkPreview, setDraft]);
-
-  useEffect(() => {
     setDraft((current) => ({
       ...current,
       replyToMessageId: options?.replyToMessageId ?? null,
@@ -256,16 +219,7 @@ export const useComposerDraft = (
 
   const setContent = useCallback(
     (content: RichTextContent) => {
-      setDraft((current) => {
-        const next = { ...current, content };
-        return {
-          ...next,
-          linkPreview: syncLinkPreviewState(
-            current.linkPreview,
-            collectDraftUrls(next),
-          ),
-        };
-      });
+      setDraft((current) => ({ ...current, content, linkPreview: null }));
     },
     [setDraft],
   );
@@ -434,13 +388,7 @@ export const useComposerDraft = (
             return { ...item, ...patch };
           }),
         };
-        return {
-          ...next,
-          linkPreview: syncLinkPreviewState(
-            current.linkPreview,
-            collectDraftUrls(next),
-          ),
-        };
+        return { ...next, linkPreview: null };
       });
     },
     [setDraft],
@@ -463,13 +411,7 @@ export const useComposerDraft = (
           ...current,
           todoItems: nextItems.length > 0 ? nextItems : [createEmptyTodoItem()],
         };
-        return {
-          ...next,
-          linkPreview: syncLinkPreviewState(
-            current.linkPreview,
-            collectDraftUrls(next),
-          ),
-        };
+        return { ...next, linkPreview: null };
       });
     },
     [setDraft],
@@ -495,13 +437,7 @@ export const useComposerDraft = (
         const next = items.slice();
         [next[current], next[previous]] = [next[previous], next[current]];
         const reordered = { ...draftState, todoItems: next };
-        return {
-          ...reordered,
-          linkPreview: syncLinkPreviewState(
-            draftState.linkPreview,
-            collectDraftUrls(reordered),
-          ),
-        };
+        return { ...reordered, linkPreview: null };
       });
     },
     [setDraft],
@@ -570,107 +506,106 @@ export const useComposerDraft = (
     [setDraft],
   );
 
-  const send = useCallback(async () => {
-    if (!hasDraftContent(draft) || sending) {
-      return;
-    }
-
-    setSending(true);
-
-    try {
-      const materializedDraft =
-        getDiaryDataSource() === 'local'
-          ? await materializeDraft(draft)
+  const send = useCallback(
+    async (contentOverride?: RichTextContent) => {
+      const draftToSend =
+        contentOverride && draft.variant === 'text'
+          ? { ...draft, content: contentOverride }
           : draft;
-      const payload = buildMessagePayload(materializedDraft, chatboxId);
-
-      if (!payload) {
+      if (!hasDraftContent(draftToSend) || sending) {
         return;
       }
 
-      if (editMessageId) {
-        const current = messages[editMessageId];
+      setSending(true);
 
-        await updateMessage(editMessageId, {
-          variant: payload.variant,
-          content: payload.content,
-          attachments: payload.attachments ?? [],
-          decorators: payload.decorators ?? [],
-          linkPreview: payload.linkPreview ?? null,
-          replyToMessageId:
-            payload.replyToMessageId ?? current?.replyToMessageId ?? null,
-        });
+      try {
+        const materializedDraft =
+          getDiaryDataSource() === 'local'
+            ? await materializeDraft(draftToSend)
+            : draftToSend;
+        const payload = buildMessagePayload(materializedDraft, chatboxId);
+
+        if (!payload) {
+          return;
+        }
+
+        if (editMessageId) {
+          const current = messages[editMessageId];
+
+          await updateMessage(editMessageId, {
+            variant: payload.variant,
+            content: payload.content,
+            attachments: payload.attachments ?? [],
+            decorators: payload.decorators ?? [],
+            linkPreview: payload.linkPreview ?? null,
+            replyToMessageId:
+              payload.replyToMessageId ?? current?.replyToMessageId ?? null,
+          });
+
+          setDraft((current) => {
+            revokeDraftObjectUrls(current);
+            return createInitialDraft();
+          });
+          onEditClearRef.current?.();
+          return;
+        }
+
+        const prompt =
+          payload.variant === 'ai' &&
+          payload.content &&
+          'preview' in payload.content
+            ? payload.content.preview
+            : '';
+
+        const createPromise = createMessage(payload);
 
         setDraft((current) => {
           revokeDraftObjectUrls(current);
           return createInitialDraft();
         });
-        onEditClearRef.current?.();
-        return;
+        onReplyClearRef.current?.();
+        setSending(false);
+
+        await createPromise;
+
+        if (payload.variant === 'ai' && prompt) {
+          const response = await generateAiResponse({ chatboxId, prompt });
+          await createMessage({
+            chatboxId,
+            sender: 'assistant',
+            variant: 'text',
+            content: migratePlainTextToRichText(
+              response.list
+                ? `${response.text}\n\n${response.list.map((item) => `• ${item}`).join('\n')}`
+                : response.text,
+            ),
+            attachments: [],
+            decorators: [],
+            linkPreview: null,
+            tagIds: [],
+            pinned: false,
+            archived: false,
+            replyToMessageId: null,
+            sourceMessageId: null,
+            reactions: [],
+          });
+        }
+      } catch {
+        // Cloud failures remain recoverable from the optimistic message bubble.
+      } finally {
+        setSending(false);
       }
-
-      const prompt =
-        payload.variant === 'ai' &&
-        payload.content &&
-        'preview' in payload.content
-          ? payload.content.preview
-          : '';
-
-      const createPromise = createMessage(payload);
-
-      setDraft((current) => {
-        revokeDraftObjectUrls(current);
-        return createInitialDraft();
-      });
-      onReplyClearRef.current?.();
-      setSending(false);
-
-      await createPromise;
-
-      if (payload.variant === 'ai' && prompt) {
-        const response = await generateAiResponse({ chatboxId, prompt });
-        const responsePreviewText = [
-          response.text,
-          ...(response.list ?? []),
-        ].join('\n');
-
-        await createMessage({
-          chatboxId,
-          sender: 'assistant',
-          variant: 'text',
-          content: migratePlainTextToRichText(
-            response.list
-              ? `${response.text}\n\n${response.list.map((item) => `• ${item}`).join('\n')}`
-              : response.text,
-          ),
-          attachments: [],
-          decorators: [],
-          linkPreview: syncLinkPreviewState(
-            null,
-            extractPreviewUrls(responsePreviewText),
-          ),
-          tagIds: [],
-          pinned: false,
-          archived: false,
-          replyToMessageId: null,
-          sourceMessageId: null,
-          reactions: [],
-        });
-      }
-    } catch {
-      // Cloud failures remain recoverable from the optimistic message bubble.
-    } finally {
-      setSending(false);
-    }
-  }, [
-    chatboxId,
-    createMessage,
-    draft,
-    editMessageId,
-    messages,
-    sending,
-    updateMessage,
-  ]);
+    },
+    [
+      chatboxId,
+      createMessage,
+      draft,
+      editMessageId,
+      messages,
+      sending,
+      updateMessage,
+    ],
+  );
 
   const insertReactionIcon = useCallback(
     (icon: string) => {
@@ -697,20 +632,6 @@ export const useComposerDraft = (
     [setDraft],
   );
 
-  const toggleLinkPreview = useCallback(() => {
-    setDraft((current) =>
-      current.linkPreview
-        ? {
-            ...current,
-            linkPreview: {
-              ...current.linkPreview,
-              enabled: !current.linkPreview.enabled,
-            },
-          }
-        : current,
-    );
-  }, [setDraft]);
-
   return {
     draft,
     editorRef,
@@ -729,7 +650,6 @@ export const useComposerDraft = (
     toggleDecorator,
     updateDecorator,
     updateDraft,
-    toggleLinkPreview,
     removeAttachment,
     addFiles,
     addTodoRow,

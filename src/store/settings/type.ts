@@ -88,7 +88,6 @@ export type MessagePreferences = {
   timestampFormat: '12h' | '24h';
   bubbleWidth: 'narrow' | 'regular' | 'wide';
   animationSpeed: 'slow' | 'normal' | 'fast';
-  linkPreviews: boolean;
   defaultMediaLayout: 'grid' | 'stack';
 };
 

@@ -1,17 +1,6 @@
 import { EditorContent } from '@tiptap/react';
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FC,
-  type PointerEvent,
-} from 'react';
+import { useEffect, useRef, useState, type FC, type PointerEvent } from 'react';
 
-import {
-  linkifyRichTextDocument,
-  normalizeLinkPreviewUrl,
-} from '@/pages/diary/MessagePanel/LinkPreview/linkPreview.utils';
 import LinkPreviewPopover from '@/pages/diary/MessagePanel/LinkPreview/LinkPreviewPopover';
 import { DIARY_BREAKPOINTS } from '@/pages/diary/useDiaryResponsiveMode';
 
@@ -19,6 +8,7 @@ import type { RichTextContent } from './types';
 
 import styles from './AdRichText.module.css';
 import { useAdRichTextEditor } from './AdRichTextEngine';
+import { normalizeContentLinkUrl } from './extensions/contentLink';
 
 export type AdRichTextViewerProps = {
   value: RichTextContent;
@@ -48,12 +38,8 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
     anchor: HTMLAnchorElement;
     interaction: 'hover' | 'hold' | 'focus';
   } | null>(null);
-  const linkedValue = useMemo(
-    () => ({ ...value, json: linkifyRichTextDocument(value.json) }),
-    [value],
-  );
   const editor = useAdRichTextEditor({
-    content: linkedValue.json,
+    content: value.json,
     editable: false,
   });
 
@@ -163,7 +149,7 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
     if (!linkPreviewOnHover || !(target instanceof Element)) return false;
     const anchor = target.closest<HTMLAnchorElement>('a[href]');
     if (!anchor) return false;
-    const url = normalizeLinkPreviewUrl(anchor.href);
+    const url = normalizeContentLinkUrl(anchor.href);
     if (!url) return false;
     if (import.meta.env.DEV) {
       console.debug('[link-preview] resolved hover target', {
@@ -213,7 +199,7 @@ const AdRichTextViewer: FC<AdRichTextViewerProps> = ({
           target instanceof Element
             ? target.closest<HTMLAnchorElement>('a[href]')
             : null;
-        if (!anchor || !normalizeLinkPreviewUrl(anchor.href)) {
+        if (!anchor || !normalizeContentLinkUrl(anchor.href)) {
           setPopover(null);
           return;
         }

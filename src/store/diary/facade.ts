@@ -4,6 +4,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { ApiError, diaryApi } from '@/api';
 import { sanitizeMessageForCloud } from '@/api/diary/mapper';
 import { showAdNotification } from '@/packages/base';
+import {
+  collectPendingSecretPayloads,
+  useSecretRuntime,
+} from '@/packages/base/AdRichText/extensions/contentSecret';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import {
   DEFAULT_COLOR_ID,
@@ -37,6 +41,7 @@ import {
   useCloudMessageSyncStore,
   type CloudMessagePayload,
 } from './cloudStore';
+import { encryptPendingLocalSecrets } from './secretPersistence';
 import { reconcileCloudDiary, runCloudMutation } from './source';
 import {
   getLocalDiaryCustomPalettes,
@@ -313,7 +318,8 @@ const facadeActions: DiaryAsyncStoreActions = {
     });
   },
   createMessage: async (data) => {
-    if (isLocal()) return callLocal('createMessage', data);
+    if (isLocal())
+      return callLocal('createMessage', await encryptPendingLocalSecrets(data));
     if (!data.chatboxId) return '';
     const id = data.id ?? `ms:${uuidv4()}`;
     const cloudDraft = cloneCloudDraftPreviews(data);
@@ -324,7 +330,17 @@ const facadeActions: DiaryAsyncStoreActions = {
       updatedAt: _updatedAt,
       ...request
     } = message;
-    const payload = request as CloudMessagePayload;
+    const payload = {
+      ...request,
+      ...(message.variant === 'text'
+        ? {
+            secretPayloads: collectPendingSecretPayloads(
+              message.content.json,
+              useSecretRuntime.getState().hydrations,
+            ),
+          }
+        : {}),
+    } as CloudMessagePayload;
     const attempt = 1;
     const runtime: UploadRuntime = {
       canonical: {},
@@ -360,7 +376,12 @@ const facadeActions: DiaryAsyncStoreActions = {
     return id;
   },
   updateMessage: async (id, data) => {
-    if (isLocal()) return callLocal('updateMessage', id, data);
+    if (isLocal())
+      return callLocal(
+        'updateMessage',
+        id,
+        await encryptPendingLocalSecrets(data),
+      );
     const current = cloudState().messages[id];
     if (!current) return;
     const message = { ...current, ...data } as Message;
@@ -387,6 +408,14 @@ const facadeActions: DiaryAsyncStoreActions = {
         attachments: message.attachments,
         decorators: message.decorators,
         linkPreview: message.linkPreview,
+        ...(message.variant === 'text'
+          ? {
+              secretPayloads: collectPendingSecretPayloads(
+                message.content.json,
+                useSecretRuntime.getState().hydrations,
+              ),
+            }
+          : {}),
       } as CloudMessagePayload;
       const materialized = await materializeCloudAttachments(
         editPayload,

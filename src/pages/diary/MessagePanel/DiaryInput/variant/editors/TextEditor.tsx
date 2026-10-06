@@ -3,7 +3,12 @@ import { forwardRef } from 'react';
 
 import type { EnterKeyBehavior } from '@/store/settings/type';
 
-import { AdIcon, AdRichText, type RichTextContent } from '@/packages/base';
+import {
+  AdIcon,
+  AdRichText,
+  type ContentFeatureState,
+  type RichTextContent,
+} from '@/packages/base';
 
 import type { ComposerEditorRef } from '../../input/composer.types';
 
@@ -15,6 +20,12 @@ export type TextEditorProps = {
   onChange: (value: RichTextContent) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  onContentFeatureStateChange?: (state: ContentFeatureState) => void;
+  onContentLinkEditorOpenChange?: (open: boolean) => void;
+  contentInspectorTarget?: HTMLElement | null;
+  onContentContactEditorOpenChange?: (
+    feature: 'phone' | 'email' | null,
+  ) => void;
   /** Called when Enter (or Shift+Enter) should send, per enterKeyBehavior. */
   onSubmit?: () => void;
   enterKeyBehavior?: EnterKeyBehavior;
@@ -33,6 +44,10 @@ const TextEditor = forwardRef<ComposerEditorRef, TextEditorProps>(
       onChange,
       onFocus,
       onBlur,
+      onContentFeatureStateChange,
+      onContentLinkEditorOpenChange,
+      contentInspectorTarget,
+      onContentContactEditorOpenChange,
       onSubmit,
       enterKeyBehavior = 'enter-sends',
       showAiIcon = false,
@@ -51,6 +66,10 @@ const TextEditor = forwardRef<ComposerEditorRef, TextEditorProps>(
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
+          onContentFeatureStateChange={onContentFeatureStateChange}
+          onContentLinkEditorOpenChange={onContentLinkEditorOpenChange}
+          contentInspectorTarget={contentInspectorTarget}
+          onContentContactEditorOpenChange={onContentContactEditorOpenChange}
           onSubmit={onSubmit}
           enterSubmits={enterKeyBehavior === 'enter-sends'}
         />

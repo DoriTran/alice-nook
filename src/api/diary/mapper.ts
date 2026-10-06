@@ -1,32 +1,50 @@
 import type { DiaryStore, Message } from '@/store/diary/type';
 
-import type { DiarySnapshotResponse } from './types';
+import {
+  mergeSecretHydrations,
+  setCloudSecretEnabled,
+} from '@/packages/base/AdRichText/extensions/contentSecret';
+import { migrateDiaryRichTextState } from '@/store/migrateRichText';
+
+import type { DiarySnapshotResponse, DiaryMessageResponse } from './types';
 
 const toRecord = <T extends { id: string }>(items: T[]): Record<string, T> =>
   Object.fromEntries(items.map((item) => [item.id, item]));
 
 export const mapDiarySnapshot = (
   snapshot: DiarySnapshotResponse,
-): DiaryStore => ({
-  groups: toRecord(snapshot.groups),
-  chatboxes: toRecord(
-    snapshot.chatboxes.map((chatbox) => ({
-      ...chatbox,
-      colorId: chatbox.colorId,
-      notificationRinging: false,
-    })),
-  ),
-  messages: toRecord(snapshot.messages),
-  tags: toRecord(
-    snapshot.tags.map((tag) => ({ ...tag, colorId: tag.colorId })),
-  ),
-  customPalettes: toRecord(snapshot.palettes),
-  orders: {
-    rootOrders: [...snapshot.orders.rootOrders],
-    groupChatboxOrders: { ...snapshot.orders.groupChatboxOrders },
-    chatboxMessageOrders: { ...snapshot.orders.chatboxMessageOrders },
-  },
-});
+): DiaryStore => {
+  mergeSecretHydrations(snapshot.secretHydrations);
+  setCloudSecretEnabled(snapshot.capabilities?.cloudSecret ?? false);
+  return migrateDiaryRichTextState({
+    groups: toRecord(snapshot.groups),
+    chatboxes: toRecord(
+      snapshot.chatboxes.map((chatbox) => ({
+        ...chatbox,
+        colorId: chatbox.colorId,
+        notificationRinging: false,
+      })),
+    ),
+    messages: toRecord(snapshot.messages),
+    tags: toRecord(
+      snapshot.tags.map((tag) => ({ ...tag, colorId: tag.colorId })),
+    ),
+    customPalettes: toRecord(snapshot.palettes),
+    orders: {
+      rootOrders: [...snapshot.orders.rootOrders],
+      groupChatboxOrders: { ...snapshot.orders.groupChatboxOrders },
+      chatboxMessageOrders: { ...snapshot.orders.chatboxMessageOrders },
+    },
+  });
+};
+
+export const mapDiaryMessageResponse = (
+  response: DiaryMessageResponse,
+): Message => {
+  const { secretHydrations, ...message } = response;
+  mergeSecretHydrations(secretHydrations);
+  return message;
+};
 
 const sanitizeCloudValue = (value: unknown): unknown => {
   if (typeof value === 'string') {

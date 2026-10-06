@@ -1,11 +1,26 @@
-import { useRef, type ClipboardEvent, type FC } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type FC,
+} from 'react';
+
+import type {
+  ContentFeatureAnchor,
+  ContentFeatureId,
+  ContentFeatureState,
+} from '@/packages/base';
 
 import { useSettingsStore } from '@/store';
 
+import LinkContentPreviews from '../LinkPreview/LinkContentPreviews';
 import ActionDock from './actions/ActionDock/ActionDock';
 import ReactionIconPicker from './actions/ReactionIconPicker';
 import AttachmentTray from './attachment/AttachmentTray/AttachmentTray';
 import OversizedAttachmentDialog from './attachment/OversizedAttachmentDialog';
+import ContentShelf from './content/ContentShelf';
 import DecoratedSurface from './decorator/DecoratedSurface/DecoratedSurface';
 import styles from './DiaryInput.module.css';
 import ReplyPreviewInput from './input/ReplyPreviewInput';
@@ -46,6 +61,61 @@ const DiaryInput: FC<DiaryInputProps> = ({
   const enterKeyBehavior = preferences.composer.enterKeyBehavior;
   const todoEnterKeyBehavior = preferences.decorations.todo.enterKeyBehavior;
   const todoEditorRef = useRef<TodoEditorHandle>(null);
+  const [contentShelfOpen, setContentShelfOpen] = useState(false);
+  const [contentFeatureState, setContentFeatureState] =
+    useState<ContentFeatureState>({});
+  const [linkEditorOpen, setLinkEditorOpen] = useState(false);
+  const [contentInspectorTarget, setContentInspectorTarget] =
+    useState<HTMLDivElement | null>(null);
+  const contentShelfLayerRef = useRef<HTMLDivElement>(null);
+  const [contentInspectorLeft, setContentInspectorLeft] = useState(0);
+  const [contactEditorFeature, setContactEditorFeature] = useState<
+    'phone' | 'email' | null
+  >(null);
+
+  useLayoutEffect(() => {
+    const layer = contentShelfLayerRef.current;
+    const host = contentInspectorTarget;
+    if (!layer || !host || !contentShelfOpen) return;
+
+    const updatePosition = () => {
+      const linkButton = layer.querySelector<HTMLElement>(
+        '[data-content-feature="link"]',
+      );
+      if (!linkButton) return;
+      const layerRect = layer.getBoundingClientRect();
+      const buttonRect = linkButton.getBoundingClientRect();
+      const inspectorWidth = Math.min(
+        host.getBoundingClientRect().width || 352,
+        layerRect.width,
+      );
+      const desiredLeft =
+        buttonRect.left +
+        buttonRect.width / 2 -
+        layerRect.left -
+        inspectorWidth / 2;
+      const nextLeft = Math.max(
+        0,
+        Math.min(desiredLeft, layerRect.width - inspectorWidth),
+      );
+      setContentInspectorLeft((current) =>
+        Math.abs(current - nextLeft) < 0.5 ? current : nextLeft,
+      );
+    };
+
+    updatePosition();
+    const observer = new ResizeObserver(updatePosition);
+    observer.observe(layer);
+    const linkButton = layer.querySelector<HTMLElement>(
+      '[data-content-feature="link"]',
+    );
+    if (linkButton) observer.observe(linkButton);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [contentInspectorTarget, contentShelfOpen]);
 
   const {
     draft,
@@ -62,7 +132,6 @@ const DiaryInput: FC<DiaryInputProps> = ({
     cancelVariantSwitch,
     dismissOversizedFiles,
     toggleDecorator,
-    toggleLinkPreview,
     updateDecorator,
     updateDraft,
     removeAttachment,
@@ -94,7 +163,43 @@ const DiaryInput: FC<DiaryInputProps> = ({
     if (!canSend) {
       return;
     }
-    void send();
+    setContentShelfOpen(false);
+    const finalizedContent =
+      draft.variant === 'text'
+        ? editorRef.current?.finalizeContentEntities()
+        : undefined;
+    void send(finalizedContent);
+  };
+
+  useEffect(() => {
+    setContentShelfOpen(false);
+    setContentFeatureState({});
+    setLinkEditorOpen(false);
+    setContactEditorFeature(null);
+  }, [chatboxId, draft.variant]);
+
+  const handleRunContentFeature = (
+    id: ContentFeatureId,
+    anchor?: ContentFeatureAnchor,
+  ) => {
+    editorRef.current?.runContentFeature(id, anchor);
+  };
+
+  const handleClear = () => {
+    setContentShelfOpen(false);
+    clearAll();
+  };
+
+  const handleCancelEdit = () => {
+    setContentShelfOpen(false);
+    cancelEdit();
+  };
+
+  const handleVariantSwitch = (
+    variant: Parameters<typeof requestVariantSwitch>[0],
+  ) => {
+    setContentShelfOpen(false);
+    requestVariantSwitch(variant);
   };
 
   const handleAddFiles = (
@@ -168,6 +273,13 @@ const DiaryInput: FC<DiaryInputProps> = ({
         onFocus={handleFocus}
         onBlur={handleBlur}
         onSubmit={handleSubmit}
+        onContentFeatureStateChange={setContentFeatureState}
+        onContentLinkEditorOpenChange={(open) => {
+          setLinkEditorOpen(open);
+          if (open) setContentShelfOpen(true);
+        }}
+        contentInspectorTarget={contentInspectorTarget}
+        onContentContactEditorOpenChange={setContactEditorFeature}
         enterKeyBehavior={enterKeyBehavior}
       />
     );
@@ -187,7 +299,15 @@ const DiaryInput: FC<DiaryInputProps> = ({
   };
 
   return (
-    <footer className={styles.root} onPasteCapture={handlePaste}>
+    <footer
+      className={styles.root}
+      onPasteCapture={handlePaste}
+      onKeyDownCapture={(event) => {
+        if (event.key === 'Escape' && contentShelfOpen) {
+          setContentShelfOpen(false);
+        }
+      }}
+    >
       <div className={styles.dock}>
         <div className={styles.editorStack}>
           <AttachmentTray
@@ -196,6 +316,26 @@ const DiaryInput: FC<DiaryInputProps> = ({
             onRemove={removeAttachment}
             onAddFiles={handleAddFiles}
           />
+
+          {contentShelfOpen ? (
+            <div
+              ref={contentShelfLayerRef}
+              className={styles.contentShelfLayer}
+            >
+              <div
+                ref={setContentInspectorTarget}
+                className={styles.contentInspectorHost}
+                style={{ left: contentInspectorLeft }}
+              />
+              <ContentShelf
+                activeFeatures={contentFeatureState}
+                onRunFeature={handleRunContentFeature}
+                suppressTooltipFor={
+                  linkEditorOpen ? 'link' : (contactEditorFeature ?? undefined)
+                }
+              />
+            </div>
+          ) : null}
 
           {replyToMessageId ? (
             <ReplyPreviewInput
@@ -214,6 +354,16 @@ const DiaryInput: FC<DiaryInputProps> = ({
           >
             {renderEditor()}
           </DecoratedSurface>
+          {draft.variant === 'text' ? (
+            <LinkContentPreviews
+              content={draft.content}
+              composer
+              attached
+              onDisablePreview={(url) =>
+                editorRef.current?.setContentLinkPreviewEnabled(url, false)
+              }
+            />
+          ) : null}
         </div>
 
         <ActionDock
@@ -222,18 +372,24 @@ const DiaryInput: FC<DiaryInputProps> = ({
           canSend={canSend}
           canClear={canClear}
           editing={isEditing}
-          onClear={clearAll}
+          onClear={handleClear}
           onAddFiles={handleAddFiles}
           onToggleDecorator={toggleDecorator}
-          linkPreview={draft.linkPreview}
-          onToggleLinkPreview={toggleLinkPreview}
-          onVariantSwitch={requestVariantSwitch}
+          onVariantSwitch={handleVariantSwitch}
+          contentShelfOpen={contentShelfOpen}
+          contentAvailable={draft.variant === 'text'}
+          contentFeatureState={contentFeatureState}
+          onContentShelfOpenChange={(open) => {
+            if (!open && linkEditorOpen) return;
+            setContentShelfOpen(open);
+          }}
+          onRunContentFeature={handleRunContentFeature}
           reactionPicker={
             <ReactionIconPicker onSelect={handleInsertReactionIcon} />
           }
-          onSend={() => void send()}
-          onCancelEdit={cancelEdit}
-          onConfirmEdit={() => void send()}
+          onSend={handleSubmit}
+          onCancelEdit={handleCancelEdit}
+          onConfirmEdit={handleSubmit}
           hasCopiedMessage={hasCopiedMessage}
           onClearCopiedMessage={onClearCopiedMessage}
           onPasteCopiedMessage={onPasteCopiedMessage}

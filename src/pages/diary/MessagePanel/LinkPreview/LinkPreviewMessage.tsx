@@ -1,58 +1,51 @@
-import { useEffect, useState, type FC } from 'react';
+import type { FC } from 'react';
 
-import type { LinkPreviewMetadata, LinkPreviewState } from '@/store/diary/type';
+import { X } from 'lucide-react';
 
-import { resolveLinkPreview } from '@/api';
-import { useDiaryStore } from '@/store';
+import { AdIcon } from '@/packages/base';
 
 import LinkPreviewCard from './LinkPreviewCard';
 import styles from './LinkPreviewMessage.module.css';
+import { useLinkPreviewMetadata } from './useLinkPreviewMetadata';
 
 export type LinkPreviewMessageProps = {
-  preview: LinkPreviewState;
-  messageId: string;
+  url: string;
   attached?: boolean;
+  followed?: boolean;
   disabled?: boolean;
+  composer?: boolean;
+  onDisablePreview?: () => void;
 };
 
 const LinkPreviewMessage: FC<LinkPreviewMessageProps> = ({
-  preview,
-  messageId,
+  url,
   attached = false,
+  followed = false,
   disabled = false,
+  composer = false,
+  onDisablePreview,
 }) => {
-  const patchMessage = useDiaryStore('patchMessage');
-  const [metadata, setMetadata] = useState<LinkPreviewMetadata | undefined>(
-    preview.metadata,
-  );
-  useEffect(() => {
-    if (preview.metadata || disabled) {
-      setMetadata(preview.metadata);
-      return;
-    }
-    let stale = false;
-    void resolveLinkPreview(preview.normalizedUrl)
-      .then((next) => {
-        if (!stale) {
-          setMetadata(next);
-          void patchMessage(messageId, {
-            linkPreview: { ...preview, metadata: next },
-          }).catch(() => undefined);
-        }
-      })
-      .catch(() => undefined);
-    return () => {
-      stale = true;
-    };
-  }, [disabled, messageId, patchMessage, preview]);
+  const metadata = useLinkPreviewMetadata(url, disabled);
 
   return (
     <div className={`${styles.root} ${attached ? styles.attached : ''}`}>
       <LinkPreviewCard
-        url={preview.normalizedUrl}
+        url={url}
         metadata={metadata}
         attached={attached}
+        followed={followed}
+        composer={composer}
       />
+      {composer && onDisablePreview ? (
+        <button
+          type="button"
+          className={styles.dismiss}
+          aria-label="Hide link preview"
+          onClick={onDisablePreview}
+        >
+          <AdIcon icon={X} source="lucide" size={14} />
+        </button>
+      ) : null}
     </div>
   );
 };

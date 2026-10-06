@@ -15,6 +15,7 @@ import ChatboxSidebar from './ChatboxSidebar/ChatboxSidebar';
 import DiaryFormModal, {
   type DiaryFormModalState,
 } from './ChatboxSidebar/Create/DiaryFormModal';
+import ContentTagDiaryProvider from './ContentTagDiaryProvider';
 import DetailPanel from './DetailPanel/DetailPanel';
 import styles from './index.module.css';
 import MessagePanel from './MessagePanel/MessagePanel';
@@ -236,98 +237,108 @@ const DiaryContent: FC = () => {
   );
 
   return (
-    <div
-      className={styles.rootPage}
-      data-mode={responsiveMode}
-      data-view={routeView}
-      data-overlay-mounted={overlayMounted || undefined}
-      data-overlay-closing={overlayClosing || undefined}
+    <ContentTagDiaryProvider
+      onNavigateChatbox={handleSelectChatbox}
+      onNavigateMessage={(chatboxId, messageId) => {
+        setPendingScrollMessageId(messageId);
+        handleSelectChatbox(chatboxId);
+      }}
     >
-      <div className={styles.listSlot}>
-        <ChatboxSidebar
-          selectedId={
-            responsiveMode === 'mobile' && routeView === 'list'
-              ? undefined
-              : (selectedChatboxId ?? undefined)
-          }
-          onSelect={handleSelectChatbox}
-          onOpenCreate={(entity) => setFormModal({ action: 'create', entity })}
-          onEditChatbox={(id) =>
-            setFormModal({ action: 'edit', entity: 'chatbox', id })
-          }
-          onEditGroup={(id) =>
-            setFormModal({ action: 'edit', entity: 'group', id })
-          }
-        />
-      </div>
-      <div className={styles.messageColumn}>
-        <MessagePanel
-          chatboxId={selectedChatboxId ?? ''}
-          detailPanelCollapsed={effectiveDetailCollapsed}
-          onToggleDetailPanel={openDetails}
-          onBack={openList}
-          onOpenDetails={openDetails}
-          compactHeader={!isWide}
-          pendingScrollMessageId={pendingScrollMessageId}
-          onPendingScrollHandled={() => setPendingScrollMessageId(null)}
-          onNavigateToChatbox={(targetChatboxId, messageId) => {
-            setPendingScrollMessageId(messageId);
-            handleSelectChatbox(targetChatboxId);
-          }}
-          messageSearchQuery={messageSearchQuery}
-          timelineSearchActive={timelineSearchActive}
-          searchInputRef={searchInputRef}
-          onMessageSearchQueryChange={setMessageSearchQuery}
-          onTimelineSearchActiveChange={setTimelineSearchActive}
-          forceVisibleMessageIds={forceVisibleMessageIds}
-        />
-      </div>
-      <button
-        className={styles.detailBackdrop}
-        type="button"
-        aria-label="Close details"
-        onClick={openChat}
-      />
       <div
-        ref={detailSlotRef}
-        className={styles.detailSlot}
-        role={
-          responsiveMode === 'overlay-detail' && routeView === 'details'
-            ? 'dialog'
-            : undefined
-        }
-        aria-modal={
-          responsiveMode === 'overlay-detail' && routeView === 'details'
-            ? true
-            : undefined
-        }
-        aria-label={
-          responsiveMode === 'overlay-detail' && routeView === 'details'
-            ? 'Chatbox details'
-            : undefined
-        }
+        className={styles.rootPage}
+        data-mode={responsiveMode}
+        data-view={routeView}
+        data-overlay-mounted={overlayMounted || undefined}
+        data-overlay-closing={overlayClosing || undefined}
       >
-        <DetailPanel
-          chatboxId={selectedChatboxId ?? ''}
-          collapsed={effectiveDetailCollapsed}
-          presentation={
-            responsiveMode === 'overlay-detail'
-              ? 'overlay'
-              : isWide
-                ? 'desktop'
-                : 'screen'
-          }
-          onBack={openChat}
-          onJumpToMessage={handleJumpToMessage}
-          onFocusTimelineSearch={handleFocusTimelineSearch}
-          onEditChatbox={(id) =>
-            setFormModal({ action: 'edit', entity: 'chatbox', id })
-          }
-          onDeleteChatbox={(id) => void handleDeleteChatbox(id)}
+        <div className={styles.listSlot}>
+          <ChatboxSidebar
+            selectedId={
+              responsiveMode === 'mobile' && routeView === 'list'
+                ? undefined
+                : (selectedChatboxId ?? undefined)
+            }
+            onSelect={handleSelectChatbox}
+            onOpenCreate={(entity) =>
+              setFormModal({ action: 'create', entity })
+            }
+            onEditChatbox={(id) =>
+              setFormModal({ action: 'edit', entity: 'chatbox', id })
+            }
+            onEditGroup={(id) =>
+              setFormModal({ action: 'edit', entity: 'group', id })
+            }
+          />
+        </div>
+        <div className={styles.messageColumn}>
+          <MessagePanel
+            chatboxId={selectedChatboxId ?? ''}
+            detailPanelCollapsed={effectiveDetailCollapsed}
+            onToggleDetailPanel={openDetails}
+            onBack={openList}
+            onOpenDetails={openDetails}
+            compactHeader={!isWide}
+            pendingScrollMessageId={pendingScrollMessageId}
+            onPendingScrollHandled={() => setPendingScrollMessageId(null)}
+            onNavigateToChatbox={(targetChatboxId, messageId) => {
+              setPendingScrollMessageId(messageId);
+              handleSelectChatbox(targetChatboxId);
+            }}
+            messageSearchQuery={messageSearchQuery}
+            timelineSearchActive={timelineSearchActive}
+            searchInputRef={searchInputRef}
+            onMessageSearchQueryChange={setMessageSearchQuery}
+            onTimelineSearchActiveChange={setTimelineSearchActive}
+            forceVisibleMessageIds={forceVisibleMessageIds}
+          />
+        </div>
+        <button
+          className={styles.detailBackdrop}
+          type="button"
+          aria-label="Close details"
+          onClick={openChat}
         />
+        <div
+          ref={detailSlotRef}
+          className={styles.detailSlot}
+          role={
+            responsiveMode === 'overlay-detail' && routeView === 'details'
+              ? 'dialog'
+              : undefined
+          }
+          aria-modal={
+            responsiveMode === 'overlay-detail' && routeView === 'details'
+              ? true
+              : undefined
+          }
+          aria-label={
+            responsiveMode === 'overlay-detail' && routeView === 'details'
+              ? 'Chatbox details'
+              : undefined
+          }
+        >
+          <DetailPanel
+            chatboxId={selectedChatboxId ?? ''}
+            collapsed={effectiveDetailCollapsed}
+            presentation={
+              responsiveMode === 'overlay-detail'
+                ? 'overlay'
+                : isWide
+                  ? 'desktop'
+                  : 'screen'
+            }
+            onBack={openChat}
+            onJumpToMessage={handleJumpToMessage}
+            onFocusTimelineSearch={handleFocusTimelineSearch}
+            onEditChatbox={(id) =>
+              setFormModal({ action: 'edit', entity: 'chatbox', id })
+            }
+            onDeleteChatbox={(id) => void handleDeleteChatbox(id)}
+          />
+        </div>
+        <DiaryFormModal state={formModal} onClose={() => setFormModal(null)} />
       </div>
-      <DiaryFormModal state={formModal} onClose={() => setFormModal(null)} />
-    </div>
+    </ContentTagDiaryProvider>
   );
 };
 

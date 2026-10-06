@@ -8,6 +8,7 @@ import type {
   CreatePaletteRequest,
   CreateTagRequest,
   DiarySnapshotResponse,
+  DiaryMessageResponse,
   EditMessageRequest,
   PatchMessageRequest,
   SidebarOrdersResponse,
@@ -18,6 +19,7 @@ import type {
 } from './types';
 
 import { apiRequest } from '../client';
+import { mapDiaryMessageResponse } from './mapper';
 
 const json = (value: unknown) => JSON.stringify(value);
 
@@ -90,22 +92,27 @@ export const diaryApi = {
       method: 'DELETE',
     }),
   createMessage: (data: CreateMessageRequest) =>
-    apiRequest<Message>('/api/diary/messages', {
+    apiRequest<DiaryMessageResponse>('/api/diary/messages', {
       method: 'POST',
       body: json(data),
-    }),
+    }).then(mapDiaryMessageResponse),
   getMessage: (id: string) =>
-    apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}`),
+    apiRequest<DiaryMessageResponse>(
+      `/api/diary/messages/${encodeURIComponent(id)}`,
+    ).then(mapDiaryMessageResponse),
   patchMessage: (id: string, data: PatchMessageRequest) =>
     apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: json(data),
     }),
   editMessage: (id: string, data: EditMessageRequest) =>
-    apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}/edit`, {
-      method: 'PUT',
-      body: json(data),
-    }),
+    apiRequest<DiaryMessageResponse>(
+      `/api/diary/messages/${encodeURIComponent(id)}/edit`,
+      {
+        method: 'PUT',
+        body: json(data),
+      },
+    ).then(mapDiaryMessageResponse),
   setMessageTags: (id: string, tagIds: string[]) =>
     apiRequest<Message>(`/api/diary/messages/${encodeURIComponent(id)}/tags`, {
       method: 'PUT',

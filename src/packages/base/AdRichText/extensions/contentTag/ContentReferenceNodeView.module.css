@@ -1,0 +1,31 @@
+.root {
+  display: inline-flex;
+  margin-inline: 0.08em;
+  vertical-align: baseline;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.08rem 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface-muted);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 25%, transparent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-2xs);
+  font-weight: var(--font-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+.chip[data-unavailable] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+:global(.ProseMirror-selectednode) .chip {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  outline-offset: 1px;
+}

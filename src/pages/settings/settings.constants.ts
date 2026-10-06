@@ -238,12 +238,6 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     title: 'Bubble Width',
     description: 'How wide message bubbles can grow.',
   },
-  {
-    category: 'messages',
-    subSection: 'general',
-    title: 'Link Previews',
-    description: 'Show rich previews for links.',
-  },
   // Tags
   {
     category: 'tags',

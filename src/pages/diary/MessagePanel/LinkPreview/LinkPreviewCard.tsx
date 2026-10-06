@@ -6,6 +6,10 @@ import type { LinkPreviewMetadata } from '@/store/diary/type';
 import { AdIcon } from '@/packages/base';
 
 import styles from './LinkPreviewCard.module.css';
+import {
+  getLinkPreviewHostname,
+  safeRemoteImage,
+} from './linkPreviewPresentation.utils';
 
 export type LinkPreviewCardProps = {
   url: string;
@@ -13,16 +17,7 @@ export type LinkPreviewCardProps = {
   composer?: boolean;
   interactive?: boolean;
   attached?: boolean;
-};
-
-const safeRemoteImage = (value?: string): string | null => {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
-  } catch {
-    return null;
-  }
+  followed?: boolean;
 };
 
 const LinkPreviewCard: FC<LinkPreviewCardProps> = ({
@@ -31,6 +26,7 @@ const LinkPreviewCard: FC<LinkPreviewCardProps> = ({
   composer = false,
   interactive = true,
   attached = false,
+  followed = false,
 }) => {
   const imageUrl = safeRemoteImage(metadata?.imageUrl);
   const faviconUrl = safeRemoteImage(metadata?.faviconUrl);
@@ -40,18 +36,11 @@ const LinkPreviewCard: FC<LinkPreviewCardProps> = ({
   useEffect(() => setImageFailed(false), [imageUrl]);
   useEffect(() => setFaviconFailed(false), [faviconUrl]);
 
-  let hostname = metadata?.hostname;
-  if (!hostname) {
-    try {
-      hostname = new URL(url).hostname.replace(/^www\./i, '');
-    } catch {
-      hostname = url;
-    }
-  }
+  const hostname = getLinkPreviewHostname(url, metadata);
 
   return (
     <a
-      className={`${styles.card} ${composer ? styles.composer : ''} ${attached ? styles.attached : ''}`}
+      className={`${styles.card} ${composer ? styles.composer : ''} ${attached ? styles.attached : ''} ${followed ? styles.followed : ''}`}
       href={url}
       target="_blank"
       rel="noopener noreferrer"

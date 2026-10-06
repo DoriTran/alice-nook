@@ -1,0 +1,12 @@
+.palette {
+  position: fixed;
+  z-index: 500;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  overflow: hidden;
+  transform: translateY(-100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}

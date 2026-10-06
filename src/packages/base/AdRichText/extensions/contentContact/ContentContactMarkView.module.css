@@ -1,0 +1,23 @@
+.root {
+  display: inline;
+  color: var(--primary);
+}
+
+.icon {
+  display: inline-flex;
+  margin-right: 0.16em;
+  vertical-align: -0.12em;
+  pointer-events: none;
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 48%, transparent);
+  text-underline-offset: 0.14em;
+}
+
+.root:hover,
+.root:focus-within {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}

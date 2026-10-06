@@ -61,7 +61,6 @@ export const DEFAULT_PREFERENCES: SettingsPreferences = {
     timestampFormat: '12h',
     bubbleWidth: 'regular',
     animationSpeed: 'normal',
-    linkPreviews: true,
     defaultMediaLayout: 'grid',
   },
 };

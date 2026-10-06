@@ -7,6 +7,10 @@ import type { DiaryDataSource } from '@/store/settings/type';
 import { ApiError, diaryApi, clearAttachmentReadUrlCache } from '@/api';
 import { mapDiarySnapshot } from '@/api/diary/mapper';
 import {
+  clearSecretHydrations,
+  setSecretRuntimeSource,
+} from '@/packages/base/AdRichText/extensions/contentSecret';
+import {
   getDiaryDataSource,
   getDiaryLocalExplicit,
   setDiaryDataSource,
@@ -22,6 +26,8 @@ import {
   replaceCloudDiary,
   updateCloudDiary,
 } from './cloudStore';
+import { hydrateLocalSecrets } from './secretPersistence';
+import { useLocalDiaryStoreBase } from './store';
 
 export type DiaryCloudStatus =
   | 'idle'
@@ -242,6 +248,7 @@ export const setDiarySessionUser = (userId: string | null) => {
   hydrationController?.abort();
   hydrationController = null;
   clearCloudDiary();
+  clearSecretHydrations();
   clearCloudMessageSync();
   clearAttachmentReadUrlCache();
   rangTimerKeys.clear();
@@ -252,6 +259,9 @@ export const setDiarySessionUser = (userId: string | null) => {
       : 'cloud'
     : 'local';
   setDiaryDataSource(nextSource);
+  setSecretRuntimeSource(nextSource);
+  if (nextSource === 'local')
+    void hydrateLocalSecrets(useLocalDiaryStoreBase.getState().messages);
   setRuntime({ cloudStatus: 'idle', error: null });
 };
 
@@ -306,12 +316,15 @@ export const switchDiaryDataSource = async (
   hydrationController?.abort();
   hydrationController = null;
   setDiaryDataSourcePreference(source);
+  clearSecretHydrations();
+  setSecretRuntimeSource(source);
 
   if (source === 'local') {
     clearCloudMessageSync();
     clearAttachmentReadUrlCache();
     rangTimerKeys.clear();
     setRuntime({ cloudStatus: 'idle', error: null });
+    await hydrateLocalSecrets(useLocalDiaryStoreBase.getState().messages);
     return;
   }
   await hydrateCloudDiary();
@@ -358,5 +371,10 @@ export const useDiarySourceLifecycle = (userId: string | null | undefined) => {
     if (userId === undefined) return;
     setDiarySessionUser(userId);
     if (source === 'cloud' && userId) void hydrateCloudDiary();
+    if (source !== 'local') return;
+    const hydrate = () =>
+      void hydrateLocalSecrets(useLocalDiaryStoreBase.getState().messages);
+    hydrate();
+    return useLocalDiaryStoreBase.persist.onFinishHydration(hydrate);
   }, [source, userId]);
 };

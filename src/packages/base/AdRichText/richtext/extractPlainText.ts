@@ -1,5 +1,7 @@
 import type { JSONContent } from '@tiptap/core';
 
+import { getContentPreviewText } from '../content';
+
 /**
  * Recursively walk Tiptap JSON and concatenate text nodes + emoji values.
  * Ignores formatting marks.
@@ -9,6 +11,11 @@ export const extractPlainText = (
 ): string => {
   if (!json) {
     return '';
+  }
+
+  const featurePreview = getContentPreviewText(json);
+  if (featurePreview !== undefined) {
+    return featurePreview;
   }
 
   if (json.type === 'text' && typeof json.text === 'string') {

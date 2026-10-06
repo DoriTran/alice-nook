@@ -4,6 +4,7 @@ export {
   EMPTY_DOC,
 } from './createRichTextContent';
 export { extractPlainText } from './extractPlainText';
+export { collectContentTagIds } from './collectContentTagIds';
 export { isRichTextEmpty } from './isRichTextEmpty';
 export {
   migratePlainTextToRichText,

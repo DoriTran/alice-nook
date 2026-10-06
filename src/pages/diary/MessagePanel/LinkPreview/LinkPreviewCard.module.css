@@ -97,6 +97,10 @@
   -webkit-line-clamp: 1;
 }
 
+.composer .body {
+  padding-right: 2.5rem;
+}
+
 .attached {
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -104,6 +108,11 @@
 
 .attached:hover {
   transform: none;
+}
+
+.followed {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 @media (max-width: 640px) {

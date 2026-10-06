@@ -1,0 +1,123 @@
+.root {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.05rem 0.15rem;
+  color: var(--text);
+}
+
+.group {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.groupLabel {
+  padding-inline: 0.2rem;
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.02em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.divider {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.35rem;
+  margin-bottom: 0.25rem;
+  background: var(--border-soft);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.action:hover,
+.action:focus-visible {
+  color: var(--text);
+  background: var(--field-bg-hover-strong);
+}
+
+.action:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.action[data-active] {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface));
+}
+
+.action[data-planned] {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.action[data-planned]:hover {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.tooltip {
+  max-width: 13rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-soft);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--font-xs);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.helpText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  text-align: center;
+}
+
+.helpText span {
+  color: var(--text-muted);
+  font-size: var(--font-2xs);
+}
+
+@media (max-width: 639px) {
+  .root {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .action {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .divider {
+    height: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+}

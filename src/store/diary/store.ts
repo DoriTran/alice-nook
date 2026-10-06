@@ -3,7 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
+import {
+  collectContentTagIds,
+  migratePlainTextToRichText,
+} from '@/packages/base/AdRichText/richtext';
 import {
   DEFAULT_COLOR_ID,
   toCustomColorId,
@@ -29,6 +32,18 @@ import { migrateDiaryIconState } from '../migrateIconId';
 import { migrateDiaryRichTextState } from '../migrateRichText';
 import shallow from '../shallow';
 import { diaryDummyState, diaryInitialState } from './constants';
+
+const mergeLiveContentTagIds = (
+  tagIds: string[],
+  content: Message['content'],
+  tags: DiaryStore['tags'],
+): string[] => {
+  const inlineIds =
+    content && 'json' in content
+      ? collectContentTagIds(content.json).filter((id) => Boolean(tags[id]))
+      : [];
+  return [...new Set([...tagIds, ...inlineIds])];
+};
 
 // #region Helpers
 
@@ -470,11 +485,19 @@ export const useLocalDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
         };
 
         set((state) => {
+          const normalizedMessage = {
+            ...message,
+            tagIds: mergeLiveContentTagIds(
+              message.tagIds,
+              message.content,
+              state.tags,
+            ),
+          };
           let nextState: DiaryStore = {
             ...state,
             messages: {
               ...state.messages,
-              [id]: message,
+              [id]: normalizedMessage,
             },
             orders: {
               ...state.orders,
@@ -503,6 +526,12 @@ export const useLocalDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
             return state;
           }
 
+          const nextContent = data.content ?? current.content;
+          const nextTagIds = mergeLiveContentTagIds(
+            current.tagIds,
+            nextContent,
+            state.tags,
+          );
           let nextState: DiaryStore = {
             ...state,
             messages: {
@@ -510,6 +539,7 @@ export const useLocalDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
               [messageId]: {
                 ...current,
                 ...data,
+                tagIds: nextTagIds,
                 id: messageId,
                 chatboxId: current.chatboxId,
                 edited: true,
@@ -718,7 +748,12 @@ export const useLocalDiaryStoreBase = create<DiaryStore & DiaryStoreActions>()(
         get().patchMessage(messageId, { reactions });
       },
       setMessageTags: (messageId, tagIds) => {
-        get().patchMessage(messageId, { tagIds });
+        const state = get();
+        const message = state.messages[messageId];
+        if (!message) return;
+        get().patchMessage(messageId, {
+          tagIds: mergeLiveContentTagIds(tagIds, message.content, state.tags),
+        });
       },
       forwardMessage: (sourceMessageId, targetChatboxId, caption) => {
         const source = get().messages[sourceMessageId];

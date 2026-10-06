@@ -1,13 +1,13 @@
 import type { Editor, JSONContent } from '@tiptap/core';
 
-import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEditor, type EditorOptions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 
+import { getContentExtensions } from './content';
 import { EmojiConvertExtension, EmojiExtension } from './extensions/emoji';
-import { LinkBoundaryExtension } from './extensions/linkBoundary';
+import { LegacyCodeExtension } from './extensions/legacyCode';
 import { EMPTY_DOC } from './richtext/createRichTextContent';
 
 export const createAdRichTextExtensions = (placeholder?: string) => [
@@ -19,21 +19,10 @@ export const createAdRichTextExtensions = (placeholder?: string) => [
     bulletList: false,
     orderedList: false,
     listItem: false,
-    code: false,
     link: false,
+    code: false,
   }),
-  Link.extend({ inclusive: false }).configure({
-    autolink: true,
-    linkOnPaste: true,
-    defaultProtocol: 'https',
-    openOnClick: 'whenNotEditable',
-    shouldAutoLink: (url) => /^(?:https?:\/\/|www\.)/i.test(url),
-    HTMLAttributes: {
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    },
-  }),
-  LinkBoundaryExtension,
+  LegacyCodeExtension,
   Placeholder.configure({
     placeholder: placeholder ?? '',
     emptyEditorClass: 'is-editor-empty',
@@ -41,6 +30,7 @@ export const createAdRichTextExtensions = (placeholder?: string) => [
   }),
   EmojiExtension,
   EmojiConvertExtension,
+  ...getContentExtensions(),
 ];
 
 export type UseAdRichTextEditorOptions = {
@@ -49,6 +39,7 @@ export type UseAdRichTextEditorOptions = {
   placeholder?: string;
   autoFocus?: boolean;
   onUpdate?: (editor: Editor) => void;
+  onSelectionUpdate?: (editor: Editor) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   editorProps?: EditorOptions['editorProps'];
@@ -60,6 +51,7 @@ export const useAdRichTextEditor = ({
   placeholder,
   autoFocus = false,
   onUpdate,
+  onSelectionUpdate,
   onFocus,
   onBlur,
   editorProps,
@@ -79,6 +71,9 @@ export const useAdRichTextEditor = ({
     },
     onUpdate: ({ editor: next }) => {
       onUpdate?.(next);
+    },
+    onSelectionUpdate: ({ editor: next }) => {
+      onSelectionUpdate?.(next);
     },
     onFocus: () => {
       onFocus?.();

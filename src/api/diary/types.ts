@@ -2,12 +2,18 @@ import type { CustomPalette } from '@/packages/color';
 import type { Chatbox, Group, Message, Orders, Tag } from '@/store/diary/type';
 
 export type DiarySnapshotResponse = {
+  capabilities: { cloudSecret: boolean };
+  secretHydrations: Record<string, JSONContent>;
   groups: Group[];
   chatboxes: Array<Omit<Chatbox, 'notificationRinging'>>;
   messages: Message[];
   tags: Tag[];
   palettes: CustomPalette[];
   orders: Orders;
+};
+
+export type DiaryMessageResponse = Message & {
+  secretHydrations?: Record<string, JSONContent>;
 };
 
 export type TimerReconciliationResponse = {
@@ -59,7 +65,12 @@ export type CreatePaletteRequest = Omit<CustomPalette, 'createdAt'>;
 export type CreateMessageRequest = Omit<
   Message,
   'edited' | 'createdAt' | 'updatedAt'
->;
+> & {
+  secretPayloads?: Array<{
+    secretId: string;
+    fragment: JSONContent;
+  }>;
+};
 export type PatchMessageRequest = Partial<
   Pick<
     Message,
@@ -79,4 +90,10 @@ export type EditMessageRequest = Pick<
   | 'decorators'
   | 'linkPreview'
   | 'replyToMessageId'
->;
+> & {
+  secretPayloads?: Array<{
+    secretId: string;
+    fragment: JSONContent;
+  }>;
+};
+import type { JSONContent } from '@tiptap/core';

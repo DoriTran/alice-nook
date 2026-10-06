@@ -26,8 +26,26 @@
   overflow: visible;
 }
 
+.contentShelfLayer {
+  position: relative;
+  min-width: 0;
+}
+
+.contentInspectorHost {
+  position: absolute;
+  z-index: 40;
+  bottom: calc(100% + 0.45rem);
+  width: min(22rem, 100%);
+  height: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 639px) {
   .root {
     padding: 0.55rem 0.65rem calc(0.55rem + env(safe-area-inset-bottom));
+  }
+
+  .contentInspectorHost {
+    position: static;
   }
 }

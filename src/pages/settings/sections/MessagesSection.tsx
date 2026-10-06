@@ -3,7 +3,7 @@ import { useState, type FC } from 'react';
 
 import type { MessagePreferences } from '@/store/settings/type';
 
-import { AdSegmentedControl, AdSwitch } from '@/packages/base';
+import { AdSegmentedControl } from '@/packages/base';
 import { DEFAULT_PREFERENCES } from '@/store/settings/constants';
 
 import { SettingCard, SettingRow } from '../components';
@@ -20,7 +20,6 @@ const MessagesSection: FC = () => {
   const [animationSpeed, setAnimationSpeed] = useState<
     MessagePreferences['animationSpeed']
   >(D.animationSpeed);
-  const [linkPreviews, setLinkPreviews] = useState(D.linkPreviews);
   const [mediaLayout, setMediaLayout] = useState<
     MessagePreferences['defaultMediaLayout']
   >(D.defaultMediaLayout);
@@ -79,17 +78,6 @@ const MessagesSection: FC = () => {
               { value: 'fast', label: 'Fast' },
             ]}
             value={animationSpeed}
-          />
-        }
-      />
-      <SettingRow
-        title="Link previews"
-        description="Show rich previews for links in messages."
-        suggested
-        control={
-          <AdSwitch
-            onSwitch={() => setLinkPreviews((v) => !v)}
-            value={linkPreviews}
           />
         }
       />

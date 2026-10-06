@@ -1,0 +1,87 @@
+.root {
+  display: inline;
+  min-width: 0;
+  max-width: 100%;
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.root:hover,
+.root:focus-within,
+.root[data-selected] {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  box-shadow: inset 0 -1px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.root[data-copy-block='true'] {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  line-height: inherit;
+}
+
+.content {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+}
+
+.action {
+  display: inline-flex;
+  width: auto;
+  height: 1em;
+  margin-left: 0.16em;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--primary);
+  background: transparent;
+  line-height: 1;
+  vertical-align: -0.12em;
+  cursor: pointer;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.action:hover,
+.action:focus-visible {
+  color: var(--primary-dark);
+}
+
+.action svg {
+  width: 0.9em;
+  height: 0.9em;
+}
+
+.action:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+}
+
+.action[data-feedback='copied'] {
+  color: var(--success, var(--primary));
+}
+
+.action[data-feedback='failed'] {
+  color: var(--danger, var(--error, var(--primary)));
+}
+
+.status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .root {
+    max-width: 100%;
+  }
+}

@@ -1,9 +1,48 @@
 .root {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   width: 100%;
   min-width: 0;
+}
+
+.dismiss {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 2;
+  display: inline-flex;
+  width: 1.65rem;
+  height: 1.65rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-muted);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--surface) 96%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 76%, transparent) 56%,
+    transparent 80%
+  );
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  color: var(--danger);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--danger) 18%, var(--surface)) 0%,
+    color-mix(in srgb, var(--danger) 7%, transparent) 58%,
+    transparent 80%
+  );
+}
+
+.dismiss:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
 }
 
 .attached {

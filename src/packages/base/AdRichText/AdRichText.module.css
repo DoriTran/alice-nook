@@ -85,11 +85,48 @@
 }
 
 .composer :global(.ad-richtext-prose a),
-.viewer :global(.ad-richtext-prose a) {
+.viewer :global(.ad-richtext-prose a),
+.composer :global(.ad-richtext-prose .ad-content-link-draft) {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
   text-underline-offset: 0.14em;
+}
+
+.composer :global(.ad-richtext-prose .ad-content-link-selected) {
+  border-radius: 0.24em;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.composer :global(.ad-richtext-prose a[data-content-phone]),
+.composer :global(.ad-richtext-prose a[data-content-email]),
+.viewer :global(.ad-richtext-prose a[data-content-phone]),
+.viewer :global(.ad-richtext-prose a[data-content-email]) {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 48%, transparent);
+  text-underline-offset: 0.14em;
+}
+
+.composer :global(.ad-richtext-prose a[data-content-phone]),
+.composer :global(.ad-richtext-prose a[data-content-email]) {
+  cursor: text;
+}
+
+.viewer :global(.ad-richtext-prose a[data-content-phone]),
+.viewer :global(.ad-richtext-prose a[data-content-email]) {
+  cursor: pointer;
+}
+
+.composer :global(.ad-richtext-prose code),
+.viewer :global(.ad-richtext-prose code) {
+  padding: 0.08em 0.28em;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: var(--surface-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.92em;
 }
 
 @media (max-width: 639px) {

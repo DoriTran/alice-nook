@@ -6,7 +6,6 @@ import {
   ClipboardX,
   FolderPlus,
   ImageUp,
-  Link2,
   MessageCirclePlus,
   SendHorizontal,
   Sparkles,
@@ -15,6 +14,7 @@ import {
   Tickets,
   TimerReset,
   TextInitial,
+  TextCursorInput,
   Video,
   type LucideIcon,
 } from 'lucide-react';
@@ -29,13 +29,15 @@ import {
   type ReactNode,
 } from 'react';
 
-import type {
-  LinkPreviewState,
-  MessageDecorator,
-  MessageVariant,
-} from '@/store/diary/type';
+import type { MessageDecorator, MessageVariant } from '@/store/diary/type';
 
-import { AdIcon, AdTooltip } from '@/packages/base';
+import {
+  AdIcon,
+  AdTooltip,
+  CONTENT_FEATURES,
+  type ContentFeatureId,
+  type ContentFeatureState,
+} from '@/packages/base';
 
 import styles from './ActionDock.module.css';
 import ActionPicker, { type ActionPickerOption } from './ActionPicker';
@@ -52,9 +54,12 @@ export type ActionDockProps = {
     kind: 'file' | 'image' | 'video',
   ) => void;
   onToggleDecorator: (type: MessageDecorator['type']) => void;
-  linkPreview: LinkPreviewState | null;
-  onToggleLinkPreview: () => void;
   onVariantSwitch: (variant: MessageVariant) => void;
+  contentShelfOpen: boolean;
+  contentAvailable: boolean;
+  contentFeatureState: ContentFeatureState;
+  onContentShelfOpenChange: (opened: boolean) => void;
+  onRunContentFeature: (id: ContentFeatureId) => void;
   reactionPicker?: ReactNode;
   onSend: () => void;
   onCancelEdit?: () => void;
@@ -115,20 +120,15 @@ const RichTooltip: FC<RichTooltipProps> = ({ name, description }) => (
 );
 
 type ActionDockLayout = 'expanded' | 'compact' | 'compact-text';
-type CharmId = MessageDecorator['type'] | 'linkPreview';
+type CharmId = MessageDecorator['type'];
 
 const CHARM_DESCRIPTION =
   'Add optional behavior or decoration. You can select more than one.';
 const VARIANT_DESCRIPTION =
   'Change the main structure and editor used by this message.';
 
-const getSelectedCharmIds = (
-  decorators: MessageDecorator[],
-  linkPreview: LinkPreviewState | null,
-): CharmId[] => [
-  ...decorators.map((decorator) => decorator.type),
-  ...(linkPreview?.enabled ? (['linkPreview'] as const) : []),
-];
+const getSelectedCharmIds = (decorators: MessageDecorator[]): CharmId[] =>
+  decorators.map((decorator) => decorator.type);
 
 const ActionDock: FC<ActionDockProps> = ({
   variant,
@@ -139,9 +139,12 @@ const ActionDock: FC<ActionDockProps> = ({
   onClear,
   onAddFiles,
   onToggleDecorator,
-  linkPreview,
-  onToggleLinkPreview,
   onVariantSwitch,
+  contentShelfOpen,
+  contentAvailable,
+  contentFeatureState,
+  onContentShelfOpenChange,
+  onRunContentFeature,
   reactionPicker,
   onSend,
   onCancelEdit,
@@ -168,8 +171,8 @@ const ActionDock: FC<ActionDockProps> = ({
   const hasHeading = decorators.some((d) => d.type === 'heading');
 
   const selectedCharmIds = useMemo(
-    () => getSelectedCharmIds(decorators, linkPreview),
-    [decorators, linkPreview],
+    () => getSelectedCharmIds(decorators),
+    [decorators],
   );
 
   useEffect(() => {
@@ -234,10 +237,9 @@ const ActionDock: FC<ActionDockProps> = ({
           ? current.filter((item) => item !== id)
           : [...current.filter((item) => item !== id), id],
       );
-      if (id === 'linkPreview') onToggleLinkPreview();
-      else onToggleDecorator(id);
+      onToggleDecorator(id);
     },
-    [onToggleDecorator, onToggleLinkPreview, selectedCharmIds],
+    [onToggleDecorator, selectedCharmIds],
   );
 
   const charmOptions = useMemo<ActionPickerOption[]>(
@@ -263,19 +265,8 @@ const ActionDock: FC<ActionDockProps> = ({
         icon: TimerReset,
         selected: hasTimer,
       },
-      ...(linkPreview
-        ? [
-            {
-              value: 'linkPreview',
-              label: 'Link Preview',
-              description: 'Show a rich preview for the first link.',
-              icon: Link2,
-              selected: linkPreview.enabled,
-            },
-          ]
-        : []),
     ],
-    [hasHeading, hasTicket, hasTimer, linkPreview],
+    [hasHeading, hasTicket, hasTimer],
   );
 
   const variantOptions = useMemo<ActionPickerOption[]>(
@@ -312,6 +303,21 @@ const ActionDock: FC<ActionDockProps> = ({
     onVariantSwitch(nextVariant === variant ? 'text' : nextVariant);
   };
 
+  const handleContentShelfToggle = () => {
+    if (!contentAvailable) return;
+    const nextOpened = !contentShelfOpen;
+    setCharmPickerOpen(false);
+    setVariantPickerOpen(false);
+    onContentShelfOpenChange(nextOpened);
+  };
+
+  const contentTooltip = contentAvailable
+    ? 'Open Content tools for formatting and inline content.'
+    : 'Content tools are available for Normal messages in Phase 1.';
+  const contentQuickActions = CONTENT_FEATURES.filter(
+    (feature) => feature.status === 'enabled' && feature.quickAction,
+  );
+
   return (
     <div ref={rootRef} className={styles.root} data-layout={layout}>
       {layout === 'expanded' ? (
@@ -332,6 +338,55 @@ const ActionDock: FC<ActionDockProps> = ({
               label="Upload video"
               onClick={() => videoInputRef.current?.click()}
             />
+          </div>
+
+          <span className={styles.divider} aria-hidden />
+
+          <div className={styles.group}>
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="Todo"
+                  description="Write your message as a checklist."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${variant === 'todo' ? styles.btnActive : ''}`}
+                aria-label="Todo variant"
+                aria-pressed={variant === 'todo'}
+                onClick={() => handleVariantSelect('todo')}
+              >
+                <AdIcon icon={SquareCheckBig} source="lucide" size={16} />
+              </button>
+            </AdTooltip>
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="AI"
+                  description="Ask AI to help write your message."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${variant === 'ai' ? styles.btnActive : ''}`}
+                aria-label="AI variant"
+                aria-pressed={variant === 'ai'}
+                onClick={() => handleVariantSelect('ai')}
+              >
+                <AdIcon icon={Sparkles} source="lucide" size={16} />
+              </button>
+            </AdTooltip>
           </div>
 
           <span className={styles.divider} aria-hidden />
@@ -403,30 +458,6 @@ const ActionDock: FC<ActionDockProps> = ({
                 <AdIcon icon={TimerReset} source="lucide" size={16} />
               </button>
             </AdTooltip>
-            {linkPreview ? (
-              <AdTooltip
-                label={
-                  <RichTooltip
-                    name="Link Preview"
-                    description="Show a rich preview for the first link."
-                  />
-                }
-                position="top"
-                withArrow={false}
-                multiline
-                classNames={{ tooltip: styles.tooltip }}
-              >
-                <button
-                  type="button"
-                  className={`${styles.btn} ${linkPreview.enabled ? styles.btnActive : ''}`}
-                  aria-label="Link preview charm"
-                  aria-pressed={linkPreview.enabled}
-                  onClick={() => handleCharmToggle('linkPreview')}
-                >
-                  <AdIcon icon={Link2} source="lucide" size={16} />
-                </button>
-              </AdTooltip>
-            ) : null}
           </div>
 
           <span className={styles.divider} aria-hidden />
@@ -434,10 +465,7 @@ const ActionDock: FC<ActionDockProps> = ({
           <div className={styles.group}>
             <AdTooltip
               label={
-                <RichTooltip
-                  name="Todo"
-                  description="Write your message as a checklist."
-                />
+                <RichTooltip name="Content" description={contentTooltip} />
               }
               position="top"
               withArrow={false}
@@ -446,36 +474,30 @@ const ActionDock: FC<ActionDockProps> = ({
             >
               <button
                 type="button"
-                className={`${styles.btn} ${variant === 'todo' ? styles.btnActive : ''}`}
-                aria-label="Todo variant"
-                aria-pressed={variant === 'todo'}
-                onClick={() => handleVariantSelect('todo')}
+                className={`${styles.btn} ${contentShelfOpen ? styles.btnActive : ''}`}
+                aria-label="Content"
+                aria-expanded={contentShelfOpen}
+                aria-disabled={!contentAvailable}
+                data-unavailable={!contentAvailable || undefined}
+                onClick={handleContentShelfToggle}
               >
-                <AdIcon icon={SquareCheckBig} source="lucide" size={16} />
+                <AdIcon icon={TextCursorInput} source="lucide" size={16} />
               </button>
             </AdTooltip>
-            <AdTooltip
-              label={
-                <RichTooltip
-                  name="AI"
-                  description="Ask AI to help write your message."
-                />
-              }
-              position="top"
-              withArrow={false}
-              multiline
-              classNames={{ tooltip: styles.tooltip }}
-            >
-              <button
-                type="button"
-                className={`${styles.btn} ${variant === 'ai' ? styles.btnActive : ''}`}
-                aria-label="AI variant"
-                aria-pressed={variant === 'ai'}
-                onClick={() => handleVariantSelect('ai')}
-              >
-                <AdIcon icon={Sparkles} source="lucide" size={16} />
-              </button>
-            </AdTooltip>
+            {contentQuickActions.map((feature) => (
+              <ActionButton
+                key={feature.id}
+                icon={feature.icon}
+                label={feature.description}
+                active={Boolean(contentFeatureState[feature.id]?.active)}
+                activeClassName={styles.btnActive}
+                disabled={
+                  !contentAvailable ||
+                  contentFeatureState[feature.id]?.enabled === false
+                }
+                onClick={() => onRunContentFeature(feature.id)}
+              />
+            ))}
           </div>
         </div>
       ) : (
@@ -484,6 +506,23 @@ const ActionDock: FC<ActionDockProps> = ({
             icon={FolderPlus}
             label="Upload attachment"
             onClick={() => fileInputRef.current?.click()}
+          />
+          <ActionPicker
+            label="Variant"
+            description={VARIANT_DESCRIPTION}
+            icon={activeVariantIcon}
+            showIcon={layout === 'compact'}
+            options={variantOptions}
+            active={variant !== 'text'}
+            opened={variantPickerOpen}
+            onOpenChange={(opened) => {
+              setVariantPickerOpen(opened);
+              if (opened) {
+                setCharmPickerOpen(false);
+                onContentShelfOpenChange(false);
+              }
+            }}
+            onSelect={(value) => handleVariantSelect(value as MessageVariant)}
           />
           <ActionPicker
             label="Charm"
@@ -496,24 +535,46 @@ const ActionDock: FC<ActionDockProps> = ({
             opened={charmPickerOpen}
             onOpenChange={(opened) => {
               setCharmPickerOpen(opened);
-              if (opened) setVariantPickerOpen(false);
+              if (opened) {
+                setVariantPickerOpen(false);
+                onContentShelfOpenChange(false);
+              }
             }}
             onSelect={(value) => handleCharmToggle(value as CharmId)}
           />
-          <ActionPicker
-            label="Variant"
-            description={VARIANT_DESCRIPTION}
-            icon={activeVariantIcon}
-            showIcon={layout === 'compact'}
-            options={variantOptions}
-            active={variant !== 'text'}
-            opened={variantPickerOpen}
-            onOpenChange={(opened) => {
-              setVariantPickerOpen(opened);
-              if (opened) setCharmPickerOpen(false);
-            }}
-            onSelect={(value) => handleVariantSelect(value as MessageVariant)}
-          />
+          <AdTooltip
+            label={<RichTooltip name="Content" description={contentTooltip} />}
+            position="top"
+            withArrow={false}
+            multiline
+            classNames={{ tooltip: styles.tooltip }}
+          >
+            <button
+              type="button"
+              className={`${styles.btn} ${contentShelfOpen ? styles.btnActive : ''}`}
+              aria-label="Content"
+              aria-expanded={contentShelfOpen}
+              aria-disabled={!contentAvailable}
+              data-unavailable={!contentAvailable || undefined}
+              onClick={handleContentShelfToggle}
+            >
+              <AdIcon icon={TextCursorInput} source="lucide" size={16} />
+            </button>
+          </AdTooltip>
+          {contentQuickActions.map((feature) => (
+            <ActionButton
+              key={feature.id}
+              icon={feature.icon}
+              label={feature.description}
+              active={Boolean(contentFeatureState[feature.id]?.active)}
+              activeClassName={styles.btnActive}
+              disabled={
+                !contentAvailable ||
+                contentFeatureState[feature.id]?.enabled === false
+              }
+              onClick={() => onRunContentFeature(feature.id)}
+            />
+          ))}
         </div>
       )}
 
@@ -603,6 +664,11 @@ const ActionDock: FC<ActionDockProps> = ({
           </span>
           <span className={styles.divider} />
           <span className={styles.group}>
+            <span className={styles.btn} />
+            <span className={styles.btn} />
+          </span>
+          <span className={styles.divider} />
+          <span className={styles.group}>
             {charmOptions.map((option) => (
               <span key={option.value} className={styles.btn} />
             ))}
@@ -610,7 +676,9 @@ const ActionDock: FC<ActionDockProps> = ({
           <span className={styles.divider} />
           <span className={styles.group}>
             <span className={styles.btn} />
-            <span className={styles.btn} />
+            {contentQuickActions.map((feature) => (
+              <span key={feature.id} className={styles.btn} />
+            ))}
           </span>
         </div>
         <div
@@ -620,15 +688,19 @@ const ActionDock: FC<ActionDockProps> = ({
         >
           <span className={styles.btn} />
           <span className={styles.compactTrigger}>
-            <AdIcon icon={StarPlus} source="lucide" size={16} />
-            <span>Charm</span>
-            <AdIcon icon={ChevronUp} source="lucide" size={13} />
-          </span>
-          <span className={styles.compactTrigger}>
             <AdIcon icon={MessageCirclePlus} source="lucide" size={16} />
             <span>Variant</span>
             <AdIcon icon={ChevronUp} source="lucide" size={13} />
           </span>
+          <span className={styles.compactTrigger}>
+            <AdIcon icon={StarPlus} source="lucide" size={16} />
+            <span>Charm</span>
+            <AdIcon icon={ChevronUp} source="lucide" size={13} />
+          </span>
+          <span className={styles.btn} />
+          {contentQuickActions.map((feature) => (
+            <span key={feature.id} className={styles.btn} />
+          ))}
         </div>
         <div
           ref={compactTextMeasureRef}
@@ -637,13 +709,17 @@ const ActionDock: FC<ActionDockProps> = ({
         >
           <span className={styles.btn} />
           <span className={styles.compactTrigger}>
-            <span>Charm</span>
-            <AdIcon icon={ChevronUp} source="lucide" size={13} />
-          </span>
-          <span className={styles.compactTrigger}>
             <span>Variant</span>
             <AdIcon icon={ChevronUp} source="lucide" size={13} />
           </span>
+          <span className={styles.compactTrigger}>
+            <span>Charm</span>
+            <AdIcon icon={ChevronUp} source="lucide" size={13} />
+          </span>
+          <span className={styles.btn} />
+          {contentQuickActions.map((feature) => (
+            <span key={feature.id} className={styles.btn} />
+          ))}
         </div>
       </div>
 

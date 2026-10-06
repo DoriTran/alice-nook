@@ -132,6 +132,16 @@
   background: color-mix(in srgb, var(--primary) 18%, var(--surface));
 }
 
+.btn[data-unavailable] {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.btn[data-unavailable]:hover {
+  color: var(--text-muted);
+  background: transparent;
+}
+
 .sendBtn {
   color: var(--primary);
 }

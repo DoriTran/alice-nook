@@ -10,14 +10,14 @@ import clsx from 'clsx';
 
 import type { Message } from '@/store/diary/type';
 
-import { AdIcon } from '@/packages/base';
+import {
+  AdIcon,
+  collectPreviewLinkContent,
+  normalizeContentLinkUrl,
+} from '@/packages/base';
 import { retryMessage, useDiaryStore, useMessageUploadProgress } from '@/store';
 
-import {
-  collectMessageUrls,
-  isLinkOnlyText,
-} from '../../../LinkPreview/linkPreview.utils';
-import LinkPreviewMessage from '../../../LinkPreview/LinkPreviewMessage';
+import LinkContentPreviews from '../../../LinkPreview/LinkContentPreviews';
 import { formatMessageTime } from '../../message.utils';
 import AttachmentList from './Content/AttachmentList/AttachmentList';
 import ContentRenderer from './Content/ContentRenderer';
@@ -50,17 +50,16 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const time = formatMessageTime(message.createdAt);
   const captionText =
     message.variant === 'todo' ? '' : message.content.preview.trim();
-  const previewUrls = collectMessageUrls(message);
-  const previewState = message.linkPreview;
-  const hasLinkPreview = Boolean(
-    previewState?.enabled &&
-    previewUrls.some((item) => item.normalized === previewState.normalizedUrl),
-  );
+  const previewLinks =
+    message.variant === 'todo'
+      ? []
+      : collectPreviewLinkContent(message.content.json);
+  const hasLinkPreview = previewLinks.length > 0;
   const hideLinkOnlyText =
     hasLinkPreview &&
-    previewUrls.length === 1 &&
+    previewLinks.length === 1 &&
     message.variant !== 'todo' &&
-    isLinkOnlyText(captionText);
+    normalizeContentLinkUrl(captionText) === previewLinks[0]?.normalizedUrl;
   // Only render a body bubble when there is real content (not attachment-only empties).
   const showBody =
     message.variant === 'todo' || (captionText.length > 0 && !hideLinkOnlyText);
@@ -178,10 +177,9 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   ) : null;
 
   const previewContent =
-    hasLinkPreview && previewState ? (
-      <LinkPreviewMessage
-        messageId={message.id}
-        preview={previewState}
+    hasLinkPreview && message.variant !== 'todo' ? (
+      <LinkContentPreviews
+        content={message.content}
         attached={Boolean(body)}
         disabled={interactionsLocked}
       />

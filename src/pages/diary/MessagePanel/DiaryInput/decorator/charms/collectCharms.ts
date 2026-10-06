@@ -2,7 +2,6 @@ import type { MessageDecorator } from '@/store/diary/type';
 
 import type { Charm, ComposerContext } from './charm.types';
 
-import { createLinkPreviewCharm } from '../../../LinkPreview/linkPreviewCharm';
 import { getDecoratorDefinition } from '../decoratorRegistry';
 
 export const collectCharms = (
@@ -19,10 +18,6 @@ export const collectCharms = (
 
     charms.push(...definition.createCharms(decoration, decoratorIndex, ctx));
   });
-
-  if (ctx.draft.linkPreview?.enabled) {
-    charms.push(createLinkPreviewCharm());
-  }
 
   return charms;
 };

@@ -1,5 +1,10 @@
 import type { JSONContent } from '@tiptap/core';
 
+import type {
+  ContentFeatureId,
+  ContentFeatureState,
+} from './content/contentFeatureRegistry';
+
 export interface RichTextContent {
   json: JSONContent;
 
@@ -11,7 +16,21 @@ export interface RichTextContent {
   preview: string;
 }
 
+export type ContentFeatureAnchor = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
 export type AdRichTextHandle = {
   focus: () => void;
   insertAtCursor: (value: string) => void;
+  runContentFeature: (
+    id: ContentFeatureId,
+    anchor?: ContentFeatureAnchor,
+  ) => boolean;
+  getContentFeatureState: () => ContentFeatureState;
+  setContentLinkPreviewEnabled: (url: string, enabled: boolean) => boolean;
+  finalizeContentEntities: () => RichTextContent;
 };
