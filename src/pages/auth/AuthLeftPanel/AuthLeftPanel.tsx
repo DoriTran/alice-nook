@@ -1,10 +1,36 @@
-import type { FC, ReactNode } from 'react';
+import {
+  useState,
+  type ComponentPropsWithoutRef,
+  type FC,
+  type ReactNode,
+} from 'react';
 
 import { AdAnimation } from '@/packages/base';
 
 import { authAssets } from '../auth.assets';
 import { authDecorAnim, type AuthDecorAnim } from './authDecor.anim';
 import styles from './AuthLeftPanel.module.css';
+
+function RevealImage({
+  className,
+  onLoad,
+  ...props
+}: ComponentPropsWithoutRef<'img'>) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <img
+      {...props}
+      className={`${className ?? ''} ${styles.revealImage} ${
+        isLoaded ? styles.revealImageLoaded : ''
+      }`}
+      onLoad={(event) => {
+        setIsLoaded(true);
+        onLoad?.(event);
+      }}
+    />
+  );
+}
 
 /**
  * Floating decorations wrap their img in AdAnimation for a gentle, staggered
@@ -56,19 +82,31 @@ const AuthLeftPanel: FC = () => {
 
         <div className={styles.shelvesWrap}>
           <FloatingDecor anim={authDecorAnim.shelves}>
-            <img alt="" className={styles.decorImg} src={authAssets.shelves} />
+            <RevealImage
+              alt=""
+              className={styles.decorImg}
+              src={authAssets.shelves}
+            />
           </FloatingDecor>
         </div>
 
         <div className={styles.windowWrap}>
           <FloatingDecor anim={authDecorAnim.window}>
-            <img alt="" className={styles.decorImg} src={authAssets.window} />
+            <RevealImage
+              alt=""
+              className={styles.decorImg}
+              src={authAssets.window}
+            />
           </FloatingDecor>
         </div>
 
         <div className={styles.lampWrap}>
           <FloatingDecor anim={authDecorAnim.lamp}>
-            <img alt="" className={styles.decorImg} src={authAssets.lamp} />
+            <RevealImage
+              alt=""
+              className={styles.decorImg}
+              src={authAssets.lamp}
+            />
           </FloatingDecor>
         </div>
 
@@ -81,7 +119,7 @@ const AuthLeftPanel: FC = () => {
         />
 
         <div className={styles.deskDecor}>
-          <img
+          <RevealImage
             alt="Alice writing in her diary"
             className={styles.mascot}
             src={authAssets.writingMascot}
@@ -89,7 +127,7 @@ const AuthLeftPanel: FC = () => {
 
           <div className={styles.bookstackWrap}>
             <FloatingDecor anim={authDecorAnim.bookstack}>
-              <img
+              <RevealImage
                 alt=""
                 className={styles.decorImg}
                 src={authAssets.bookstack}
@@ -99,13 +137,17 @@ const AuthLeftPanel: FC = () => {
 
           <div className={styles.cupWrap}>
             <FloatingDecor anim={authDecorAnim.cup}>
-              <img alt="" className={styles.decorImg} src={authAssets.cup} />
+              <RevealImage
+                alt=""
+                className={styles.decorImg}
+                src={authAssets.cup}
+              />
             </FloatingDecor>
           </div>
 
           <div className={styles.linedHeartWrap}>
             <FloatingDecor anim={authDecorAnim.linedHeart}>
-              <img
+              <RevealImage
                 alt=""
                 className={styles.decorImg}
                 src={authAssets.linedHeart}
@@ -115,19 +157,27 @@ const AuthLeftPanel: FC = () => {
 
           <div className={styles.vaseWrap}>
             <FloatingDecor anim={authDecorAnim.vase}>
-              <img alt="" className={styles.decorImg} src={authAssets.vase} />
+              <RevealImage
+                alt=""
+                className={styles.decorImg}
+                src={authAssets.vase}
+              />
             </FloatingDecor>
           </div>
 
           <div className={styles.diaryWrap}>
             <FloatingDecor anim={authDecorAnim.diary}>
-              <img alt="" className={styles.decorImg} src={authAssets.diary} />
+              <RevealImage
+                alt=""
+                className={styles.decorImg}
+                src={authAssets.diary}
+              />
             </FloatingDecor>
           </div>
 
           <div className={styles.noteOpenWrap}>
             <FloatingDecor anim={authDecorAnim.noteOpen}>
-              <img
+              <RevealImage
                 alt=""
                 className={styles.decorImg}
                 src={authAssets.noteOpen}
@@ -137,7 +187,7 @@ const AuthLeftPanel: FC = () => {
 
           <div className={styles.washiTapeWrap}>
             <FloatingDecor anim={authDecorAnim.washiTape}>
-              <img
+              <RevealImage
                 alt=""
                 className={styles.decorImg}
                 src={authAssets.washiTape}
