@@ -31,6 +31,9 @@ import AIEditor from './variant/editors/AIEditor';
 import ColumnEditor, {
   type ColumnEditorHandle,
 } from './variant/editors/ColumnEditor';
+import TableEditor, {
+  type TableEditorHandle,
+} from './variant/editors/TableEditor';
 import TextEditor from './variant/editors/TextEditor';
 import TodoEditor, {
   type TodoEditorHandle,
@@ -75,6 +78,7 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
     const todoEnterKeyBehavior = preferences.decorations.todo.enterKeyBehavior;
     const todoEditorRef = useRef<TodoEditorHandle>(null);
     const columnEditorRef = useRef<ColumnEditorHandle>(null);
+    const tableEditorRef = useRef<TableEditorHandle>(null);
     const activeEditorRef = useRef<AdRichTextHandle | null>(null);
     const [contentShelfOpen, setContentShelfOpen] = useState(false);
     const [contentFeatureState, setContentFeatureState] =
@@ -162,6 +166,8 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
       reorderColumn,
       addTodoRowFiles,
       removeTodoRowAttachment,
+      updateTable,
+      addTableCellFiles,
       send,
       insertReactionIcon,
       canSend,
@@ -198,7 +204,9 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
                     columnEditorRef.current?.finalizeItems() ??
                     draft.columnItems,
                 }
-              : undefined;
+              : draft.variant === 'table'
+                ? tableEditorRef.current?.finalizeTable()
+                : undefined;
       activeEditorRef.current = null;
       setContentFeatureState({});
       void send(finalizedContent);
@@ -244,6 +252,11 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
       files: FileList | File[],
       kind: 'file' | 'image' | 'video',
     ) => {
+      if (
+        draft.variant === 'table' &&
+        tableEditorRef.current?.addFilesToSelection(files)
+      )
+        return;
       void addFiles(files, kind);
     };
 
@@ -259,6 +272,11 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
             todoEditorRef.current?.addFilesAtLatestInput(files);
             return;
           }
+          if (
+            draft.variant === 'table' &&
+            tableEditorRef.current?.addFilesToSelection(files)
+          )
+            return;
           void addFiles(files, 'file');
         },
       }),
@@ -356,6 +374,33 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
         );
       }
 
+      if (draft.variant === 'table') {
+        return (
+          <TableEditor
+            key={chatboxId}
+            ref={tableEditorRef}
+            rows={draft.tableRows}
+            columns={draft.tableColumns}
+            onChange={updateTable}
+            onAddFiles={addTableCellFiles}
+            enterKeyBehavior={enterKeyBehavior}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onActiveEditorChange={(_id, editor) => {
+              activeEditorRef.current = editor;
+              setContentFeatureState(editor?.getContentFeatureState() ?? {});
+            }}
+            onContentFeatureStateChange={setContentFeatureState}
+            onContentLinkEditorOpenChange={(open) => {
+              setLinkEditorOpen(open);
+              if (open) setContentShelfOpen(true);
+            }}
+            contentInspectorTarget={contentInspectorTarget}
+            onContentContactEditorOpenChange={setContactEditorFeature}
+          />
+        );
+      }
+
       return (
         <TextEditor
           key={chatboxId}
@@ -393,6 +438,10 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
 
       if (draft.variant === 'column') {
         columnEditorRef.current?.insertAtLatestInput(icon);
+        return;
+      }
+      if (draft.variant === 'table') {
+        tableEditorRef.current?.insertAtSelectedCell(icon);
         return;
       }
 
@@ -470,34 +519,36 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
             ) : null}
           </div>
 
-          <ActionDock
-            variant={draft.variant}
-            decorators={draft.decorators}
-            canSend={canSend}
-            canClear={canClear}
-            editing={isEditing}
-            onClear={handleClear}
-            onAddFiles={handleAddFiles}
-            onToggleDecorator={toggleDecorator}
-            onVariantSwitch={handleVariantSwitch}
-            contentShelfOpen={contentShelfOpen}
-            contentAvailable={draft.variant !== 'ai'}
-            contentFeatureState={contentFeatureState}
-            onContentShelfOpenChange={(open) => {
-              if (!open && linkEditorOpen) return;
-              setContentShelfOpen(open);
-            }}
-            onRunContentFeature={handleRunContentFeature}
-            reactionPicker={
-              <ReactionIconPicker onSelect={handleInsertReactionIcon} />
-            }
-            onSend={handleSubmit}
-            onCancelEdit={handleCancelEdit}
-            onConfirmEdit={handleSubmit}
-            hasCopiedMessage={hasCopiedMessage}
-            onClearCopiedMessage={onClearCopiedMessage}
-            onPasteCopiedMessage={onPasteCopiedMessage}
-          />
+          <div data-table-selection-preserve>
+            <ActionDock
+              variant={draft.variant}
+              decorators={draft.decorators}
+              canSend={canSend}
+              canClear={canClear}
+              editing={isEditing}
+              onClear={handleClear}
+              onAddFiles={handleAddFiles}
+              onToggleDecorator={toggleDecorator}
+              onVariantSwitch={handleVariantSwitch}
+              contentShelfOpen={contentShelfOpen}
+              contentAvailable={draft.variant !== 'ai'}
+              contentFeatureState={contentFeatureState}
+              onContentShelfOpenChange={(open) => {
+                if (!open && linkEditorOpen) return;
+                setContentShelfOpen(open);
+              }}
+              onRunContentFeature={handleRunContentFeature}
+              reactionPicker={
+                <ReactionIconPicker onSelect={handleInsertReactionIcon} />
+              }
+              onSend={handleSubmit}
+              onCancelEdit={handleCancelEdit}
+              onConfirmEdit={handleSubmit}
+              hasCopiedMessage={hasCopiedMessage}
+              onClearCopiedMessage={onClearCopiedMessage}
+              onPasteCopiedMessage={onPasteCopiedMessage}
+            />
+          </div>
         </div>
 
         <TypeSwitchModal

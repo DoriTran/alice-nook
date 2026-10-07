@@ -221,6 +221,18 @@ export const resolveMessageTitle = (message: Message): string => {
     return first ? `Columns: ${first.content.preview.trim()}` : 'Columns';
   }
 
+  if (message.variant === 'table') {
+    const first = message.content.rows.flatMap((row) =>
+      message.content.columns.flatMap((column) => {
+        const cell = row.cells[column.id];
+        return cell?.kind === 'richText' && cell.content.preview.trim()
+          ? [cell.content.preview.trim()]
+          : [];
+      }),
+    )[0];
+    return first ? `Table: ${first}` : 'Table';
+  }
+
   const heading = message.decorators.find((item) => item.type === 'heading');
 
   if (heading?.type === 'heading' && heading.title.trim()) {
@@ -336,6 +348,13 @@ export const resolveMessagePreview = (
   }
 
   if (message.variant === 'column') {
+    return withAttachments(message, {
+      source: 'variant',
+      ...PREVIEW_STYLES.column,
+    });
+  }
+
+  if (message.variant === 'table') {
     return withAttachments(message, {
       source: 'variant',
       ...PREVIEW_STYLES.column,

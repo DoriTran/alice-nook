@@ -86,11 +86,17 @@ const actionKeys = new Set<keyof DiaryAsyncStoreActions>([
 const collectMessageSecretPayloads = (message: Message) => {
   const hydrations = useSecretRuntime.getState().hydrations;
   const documents =
-    'json' in message.content
+    message.variant === 'text' || message.variant === 'ai'
       ? [message.content.json]
-      : 'items' in message.content
+      : message.variant === 'todo'
         ? message.content.items.map((item) => item.content.json)
-        : message.content.columns.map((column) => column.content.json);
+        : message.variant === 'column'
+          ? message.content.columns.map((column) => column.content.json)
+          : message.content.rows.flatMap((row) =>
+              Object.values(row.cells).flatMap((cell) =>
+                cell?.kind === 'richText' ? [cell.content.json] : [],
+              ),
+            );
   const byId = new Map(
     documents
       .flatMap((json) => collectPendingSecretPayloads(json, hydrations))

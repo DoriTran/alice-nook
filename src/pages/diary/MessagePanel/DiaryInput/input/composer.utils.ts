@@ -6,6 +6,7 @@ import type {
   MessageVariant,
   TodoItem,
   ColumnItem,
+  TableCell,
 } from '@/store/diary/type';
 
 import {
@@ -24,6 +25,9 @@ import {
   createEmptyTodoItem,
   createEmptyColumnItem,
   createInitialColumnItems,
+  createInitialTable,
+  createEmptyTableColumn,
+  createEmptyTableRow,
   type ComposerDraft,
   type DraftAttachment,
   type LocalDraftAttachment,
@@ -61,6 +65,9 @@ export const hasDraftContent = (draft: ComposerDraft): boolean => {
   if (draft.variant === 'column') {
     return draft.columnItems.some((item) => !isRichTextEmpty(item.content));
   }
+  if (draft.variant === 'table') {
+    return draft.tableRows.some((row) => Object.keys(row.cells).length > 0);
+  }
 
   return !isRichTextEmpty(draft.content);
 };
@@ -74,19 +81,167 @@ export const draftHasVariantContent = (draft: ComposerDraft): boolean => {
     return draft.columnItems.some((item) => !isRichTextEmpty(item.content));
   }
 
+  if (draft.variant === 'table') {
+    return draft.tableRows.some((row) => Object.keys(row.cells).length > 0);
+  }
+
   return !isRichTextEmpty(draft.content);
 };
 
 export const convertDraftToVariant = (
   draft: ComposerDraft,
   nextVariant: MessageVariant,
-): Pick<ComposerDraft, 'variant' | 'content' | 'todoItems' | 'columnItems'> => {
+): Pick<
+  ComposerDraft,
+  | 'variant'
+  | 'content'
+  | 'todoItems'
+  | 'columnItems'
+  | 'tableColumns'
+  | 'tableRows'
+  | 'attachments'
+> => {
+  const emptyTable = createInitialTable();
+  const base = {
+    content: migratePlainTextToRichText(''),
+    todoItems: [createEmptyTodoItem()],
+    columnItems: createInitialColumnItems(),
+    tableColumns: emptyTable.columns,
+    tableRows: emptyTable.rows,
+    attachments: draft.attachments,
+  };
   if (draft.variant === nextVariant) {
     return {
       variant: draft.variant,
       content: draft.content,
       todoItems: draft.todoItems,
       columnItems: draft.columnItems,
+      tableColumns: draft.tableColumns,
+      tableRows: draft.tableRows,
+      attachments: draft.attachments,
+    };
+  }
+  if (nextVariant === 'table') {
+    const table = createInitialTable();
+    if (draft.variant === 'column') {
+      while (table.columns.length < draft.columnItems.length)
+        table.columns.push(createEmptyTableColumn());
+      const row = table.rows[0];
+      draft.columnItems.forEach((item, index) => {
+        if (!isRichTextEmpty(item.content))
+          row.cells[table.columns[index].id] = {
+            kind: 'richText',
+            content: item.content,
+          };
+      });
+    } else if (draft.variant === 'todo') {
+      while (table.rows.length < draft.todoItems.length)
+        table.rows.push(createEmptyTableRow());
+      const requiredColumns = Math.max(
+        3,
+        ...draft.todoItems.map((item) => 1 + item.attachments.length),
+      );
+      while (table.columns.length < requiredColumns)
+        table.columns.push(createEmptyTableColumn());
+      draft.todoItems.forEach((item, rowIndex) => {
+        const row = table.rows[rowIndex];
+        if (!isRichTextEmpty(item.content))
+          row.cells[table.columns[0].id] = {
+            kind: 'richText',
+            content: item.content,
+          };
+        item.attachments.forEach((attachment, index) => {
+          row.cells[table.columns[index + 1].id] = {
+            kind: 'attachment',
+            attachment,
+          };
+        });
+      });
+    } else if (!isRichTextEmpty(draft.content)) {
+      table.rows[0].cells[table.columns[0].id] = {
+        kind: 'richText',
+        content: draft.content,
+      };
+    }
+    return {
+      ...base,
+      variant: 'table',
+      tableColumns: table.columns,
+      tableRows: table.rows,
+    };
+  }
+
+  if (draft.variant === 'table') {
+    const cells = draft.tableRows.flatMap((row) =>
+      draft.tableColumns.flatMap((column) => {
+        const cell = row.cells[column.id];
+        return cell ? [cell] : [];
+      }),
+    );
+    const promoted = cells.flatMap((cell) =>
+      cell.kind === 'attachment' ? [cell.attachment] : [],
+    );
+    const richBlocks = (values: TableCell[]) =>
+      values.flatMap((cell) =>
+        cell.kind === 'richText' && !isRichTextEmpty(cell.content)
+          ? (cell.content.json.content ?? [])
+          : [],
+      );
+    if (nextVariant === 'todo') {
+      const items = draft.tableRows.flatMap((row) => {
+        const rowCells = draft.tableColumns.flatMap((column) => {
+          const cell = row.cells[column.id];
+          return cell ? [cell] : [];
+        });
+        if (rowCells.length === 0) return [];
+        return [
+          {
+            ...createEmptyTodoItem(),
+            content: createRichTextContent({
+              type: 'doc',
+              content: richBlocks(rowCells),
+            }),
+            attachments: rowCells.flatMap((cell) =>
+              cell.kind === 'attachment' ? [cell.attachment] : [],
+            ),
+          },
+        ];
+      });
+      return {
+        ...base,
+        variant: 'todo',
+        todoItems: items.length ? items : [createEmptyTodoItem()],
+      };
+    }
+    if (nextVariant === 'column') {
+      const columns = draft.tableColumns.map((column) => ({
+        ...createEmptyColumnItem(),
+        content: createRichTextContent({
+          type: 'doc',
+          content: richBlocks(
+            draft.tableRows.flatMap((row) => {
+              const cell = row.cells[column.id];
+              return cell ? [cell] : [];
+            }),
+          ),
+        }),
+      }));
+      while (columns.length < 2) columns.push(createEmptyColumnItem());
+      return {
+        ...base,
+        variant: 'column',
+        columnItems: columns,
+        attachments: [...draft.attachments, ...promoted],
+      };
+    }
+    return {
+      ...base,
+      variant: nextVariant,
+      content: createRichTextContent({
+        type: 'doc',
+        content: richBlocks(cells),
+      }),
+      attachments: [...draft.attachments, ...promoted],
     };
   }
 
@@ -104,6 +259,9 @@ export const convertDraftToVariant = (
       content: migratePlainTextToRichText(''),
       todoItems: items,
       columnItems: createInitialColumnItems(),
+      tableColumns: base.tableColumns,
+      tableRows: base.tableRows,
+      attachments: draft.attachments,
     };
   }
 
@@ -126,6 +284,9 @@ export const convertDraftToVariant = (
       content: migratePlainTextToRichText(''),
       todoItems: [createEmptyTodoItem()],
       columnItems: sourceItems,
+      tableColumns: base.tableColumns,
+      tableRows: base.tableRows,
+      attachments: draft.attachments,
     };
   }
 
@@ -139,6 +300,9 @@ export const convertDraftToVariant = (
           content: column.content,
         })),
         columnItems: createInitialColumnItems(),
+        tableColumns: base.tableColumns,
+        tableRows: base.tableRows,
+        attachments: draft.attachments,
       };
     }
     const blocks = draft.columnItems.flatMap((item) =>
@@ -149,9 +313,11 @@ export const convertDraftToVariant = (
       content: createRichTextContent({ type: 'doc', content: blocks }),
       todoItems: [createEmptyTodoItem()],
       columnItems: createInitialColumnItems(),
+      tableColumns: base.tableColumns,
+      tableRows: base.tableRows,
+      attachments: draft.attachments,
     };
   }
-
   if (draft.variant === 'todo') {
     const blocks = draft.todoItems.flatMap((item) =>
       isRichTextEmpty(item.content) ? [] : (item.content.json.content ?? []),
@@ -162,6 +328,9 @@ export const convertDraftToVariant = (
       content: createRichTextContent({ type: 'doc', content: blocks }),
       todoItems: [createEmptyTodoItem()],
       columnItems: createInitialColumnItems(),
+      tableColumns: base.tableColumns,
+      tableRows: base.tableRows,
+      attachments: draft.attachments,
     };
   }
 
@@ -170,6 +339,9 @@ export const convertDraftToVariant = (
     content: draft.content,
     todoItems: [createEmptyTodoItem()],
     columnItems: createInitialColumnItems(),
+    tableColumns: base.tableColumns,
+    tableRows: base.tableRows,
+    attachments: draft.attachments,
   };
 };
 
@@ -252,6 +424,25 @@ export const buildMessagePayload = (
     };
   }
 
+  if (draft.variant === 'table') {
+    return {
+      ...base,
+      variant: 'table',
+      content: { columns: draft.tableColumns, rows: draft.tableRows },
+      tagIds: Array.from(
+        new Set(
+          draft.tableRows.flatMap((row) =>
+            Object.values(row.cells).flatMap((cell) =>
+              cell?.kind === 'richText'
+                ? collectContentTagIds(cell.content.json)
+                : [],
+            ),
+          ),
+        ),
+      ),
+    };
+  }
+
   if (draft.variant === 'ai') {
     return {
       ...base,
@@ -268,6 +459,7 @@ export const buildMessagePayload = (
 };
 
 export const buildDraftFromMessage = (message: Message): ComposerDraft => {
+  const initialTable = createInitialTable();
   const base: ComposerDraft = {
     variant: message.variant,
     decorators: message.decorators,
@@ -275,6 +467,8 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     content: migratePlainTextToRichText(''),
     todoItems: [createEmptyTodoItem()],
     columnItems: createInitialColumnItems(),
+    tableColumns: initialTable.columns,
+    tableRows: initialTable.rows,
     focused: false,
     replyToMessageId: message.replyToMessageId,
     linkPreview: null,
@@ -300,6 +494,14 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     return {
       ...base,
       columnItems: message.content.columns,
+    };
+  }
+
+  if (message.variant === 'table') {
+    return {
+      ...base,
+      tableColumns: message.content.columns,
+      tableRows: message.content.rows,
     };
   }
 
@@ -394,6 +596,11 @@ export const revokeDraftObjectUrls = (draft: ComposerDraft): void => {
   revokeDraftAttachmentUrls([
     ...draft.attachments,
     ...draft.todoItems.flatMap((item) => item.attachments),
+    ...draft.tableRows.flatMap((row) =>
+      Object.values(row.cells).flatMap((cell) =>
+        cell?.kind === 'attachment' ? [cell.attachment] : [],
+      ),
+    ),
   ]);
 };
 

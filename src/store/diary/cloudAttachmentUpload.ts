@@ -48,6 +48,13 @@ const attachmentsFrom = (payload: CloudMessagePayload) => {
       attachments.push(...item.attachments),
     );
   }
+  if (payload.variant === 'table') {
+    payload.content.rows.forEach((row) =>
+      Object.values(row.cells).forEach((cell) => {
+        if (cell?.kind === 'attachment') attachments.push(cell.attachment);
+      }),
+    );
+  }
   return attachments;
 };
 
@@ -71,6 +78,22 @@ export const cloneCloudDraftPreviews = (
       items: next.content.items.map((item) => ({
         ...item,
         attachments: item.attachments.map(clone),
+      })),
+    };
+  }
+  if (next.variant === 'table' && next.content) {
+    next.content = {
+      ...next.content,
+      rows: next.content.rows.map((row) => ({
+        ...row,
+        cells: Object.fromEntries(
+          Object.entries(row.cells).map(([id, cell]) => [
+            id,
+            cell?.kind === 'attachment'
+              ? { ...cell, attachment: clone(cell.attachment) }
+              : cell,
+          ]),
+        ),
       })),
     };
   }
@@ -175,6 +198,24 @@ export const materializeCloudAttachments = async (
             items: payload.content.items.map((item) => ({
               ...item,
               attachments: item.attachments.map(replace),
+            })),
+          },
+        }
+      : {}),
+    ...(payload.variant === 'table'
+      ? {
+          content: {
+            ...payload.content,
+            rows: payload.content.rows.map((row) => ({
+              ...row,
+              cells: Object.fromEntries(
+                Object.entries(row.cells).map(([id, cell]) => [
+                  id,
+                  cell?.kind === 'attachment'
+                    ? { ...cell, attachment: replace(cell.attachment) }
+                    : cell,
+                ]),
+              ),
             })),
           },
         }

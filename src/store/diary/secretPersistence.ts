@@ -8,7 +8,7 @@ import {
   type SecretAttrs,
 } from '@/packages/base/AdRichText/extensions/contentSecret';
 
-import type { Message } from './type';
+import type { Message, TableRow } from './type';
 
 const SECRET_TYPES = new Set(['secretContentInline', 'secretContentBlock']);
 
@@ -63,16 +63,42 @@ export const encryptPendingLocalSecrets = async <
     );
     return { ...message, content: { ...message.content, items } } as T;
   }
-  const columns = await Promise.all(
-    message.content.columns.map(async (column) => ({
-      ...column,
-      content: {
-        ...column.content,
-        json: await transform(column.content.json, encryptNode),
-      },
-    })),
-  );
-  return { ...message, content: { ...message.content, columns } } as T;
+  if ('rows' in message.content) {
+    const rows = await Promise.all(
+      message.content.rows.map(async (row) => ({
+        ...row,
+        cells: Object.fromEntries(
+          await Promise.all(
+            Object.entries(row.cells).map(async ([id, cell]) => [
+              id,
+              cell?.kind === 'richText'
+                ? {
+                    ...cell,
+                    content: {
+                      ...cell.content,
+                      json: await transform(cell.content.json, encryptNode),
+                    },
+                  }
+                : cell,
+            ]),
+          ),
+        ) as TableRow['cells'],
+      })),
+    );
+    return { ...message, content: { ...message.content, rows } } as T;
+  }
+  {
+    const columns = await Promise.all(
+      message.content.columns.map(async (column) => ({
+        ...column,
+        content: {
+          ...column.content,
+          json: await transform(column.content.json, encryptNode),
+        },
+      })),
+    );
+    return { ...message, content: { ...message.content, columns } } as T;
+  }
 };
 
 export const hydrateLocalSecrets = async (
@@ -95,12 +121,18 @@ export const hydrateLocalSecrets = async (
     node.content?.forEach(visit);
   };
   Object.values(messages).forEach((message) => {
-    if ('json' in message.content) {
+    if (message.variant === 'text' || message.variant === 'ai') {
       visit(message.content.json);
-    } else if ('items' in message.content) {
+    } else if (message.variant === 'todo') {
       message.content.items.forEach((item) => visit(item.content.json));
-    } else {
+    } else if (message.variant === 'column') {
       message.content.columns.forEach((column) => visit(column.content.json));
+    } else {
+      message.content.rows.forEach((row) =>
+        Object.values(row.cells).forEach((cell) => {
+          if (cell?.kind === 'richText') visit(cell.content.json);
+        }),
+      );
     }
   });
   await Promise.all(jobs);

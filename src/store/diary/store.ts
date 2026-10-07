@@ -45,11 +45,20 @@ export const mergeLiveContentTagIds = (
         ? content.items
             .flatMap((item) => collectContentTagIds(item.content.json))
             .filter((id) => Boolean(tags[id]))
-        : content && 'columns' in content
-          ? content.columns
-              .flatMap((column) => collectContentTagIds(column.content.json))
+        : content && 'rows' in content
+          ? content.rows
+              .flatMap((row) => Object.values(row.cells))
+              .flatMap((cell) =>
+                cell?.kind === 'richText'
+                  ? collectContentTagIds(cell.content.json)
+                  : [],
+              )
               .filter((id) => Boolean(tags[id]))
-          : [];
+          : content && 'columns' in content
+            ? content.columns
+                .flatMap((column) => collectContentTagIds(column.content.json))
+                .filter((id) => Boolean(tags[id]))
+            : [];
   return [...new Set([...tagIds, ...inlineIds])];
 };
 

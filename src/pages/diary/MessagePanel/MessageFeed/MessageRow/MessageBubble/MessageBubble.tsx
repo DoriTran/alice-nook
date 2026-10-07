@@ -49,7 +49,9 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const styles = isAssistant ? assistantStyles : userStyles;
   const time = formatMessageTime(message.createdAt);
   const isStructured =
-    message.variant === 'todo' || message.variant === 'column';
+    message.variant === 'todo' ||
+    message.variant === 'column' ||
+    message.variant === 'table';
   const captionText = isStructured ? '' : message.content.preview.trim();
   const previewLinks = isStructured
     ? []

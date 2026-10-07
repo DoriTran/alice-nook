@@ -350,7 +350,12 @@ export type HeadingDecorator = {
 // #endregion
 
 // #region Message Variants
-export type Message = TextMessage | TodoMessage | AIMessage | ColumnMessage;
+export type Message =
+  | TextMessage
+  | TodoMessage
+  | AIMessage
+  | ColumnMessage
+  | TableMessage;
 export type CloudMessagePayload = Message extends infer Item
   ? Item extends Message
     ? Omit<Item, 'edited' | 'createdAt' | 'updatedAt'> & {
@@ -433,6 +438,29 @@ export type ColumnMessage = MessageBase & {
 export type ColumnItem = {
   id: string;
   content: RichTextContent;
+};
+
+export type TableColumnId = `table-column:${string}`;
+export type TableRowId = `table-row:${string}`;
+
+export type TableColumn = {
+  id: TableColumnId;
+  width: number;
+};
+
+export type TableCell =
+  | { kind: 'richText'; content: RichTextContent }
+  | { kind: 'attachment'; attachment: Attachment };
+
+export type TableRow = {
+  id: TableRowId;
+  minHeight: number;
+  cells: Partial<Record<TableColumnId, TableCell>>;
+};
+
+export type TableMessage = MessageBase & {
+  variant: 'table';
+  content: { columns: TableColumn[]; rows: TableRow[] };
 };
 
 export type TodoItem = {

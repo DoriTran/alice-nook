@@ -19,6 +19,14 @@ type MessageLike = {
           content?: LegacyTextContent | MigratedContent;
           [key: string]: unknown;
         }>;
+      }
+    | {
+        rows?: Array<{
+          cells?: Record<
+            string,
+            { kind?: string; content?: LegacyTextContent | MigratedContent }
+          >;
+        }>;
       };
   [key: string]: unknown;
 };
@@ -65,6 +73,35 @@ const migrateMessage = <T extends MessageLike>(message: T): T => {
         columns: columnContent.columns.map((column) => ({
           ...column,
           content: migrateContentField(column.content),
+        })),
+      },
+    };
+  }
+
+  if (message.variant === 'table') {
+    const table = message.content as {
+      rows?: Array<{
+        cells?: Record<
+          string,
+          { kind?: string; content?: LegacyTextContent | MigratedContent }
+        >;
+      }>;
+    };
+    if (!table.rows) return message;
+    return {
+      ...message,
+      content: {
+        ...table,
+        rows: table.rows.map((row) => ({
+          ...row,
+          cells: Object.fromEntries(
+            Object.entries(row.cells ?? {}).map(([id, cell]) => [
+              id,
+              cell.kind === 'richText'
+                ? { ...cell, content: migrateContentField(cell.content) }
+                : cell,
+            ]),
+          ),
         })),
       },
     };

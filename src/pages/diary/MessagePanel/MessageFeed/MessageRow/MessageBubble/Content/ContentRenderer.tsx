@@ -124,6 +124,44 @@ const ContentRenderer: FC<ContentRendererProps> = ({
     );
   }
 
+  if (message.variant === 'table') {
+    return (
+      <div className={styles.tableViewport}>
+        <div
+          className={styles.tableGrid}
+          style={{
+            gridTemplateColumns: message.content.columns
+              .map((column) => `${column.width}px`)
+              .join(' '),
+          }}
+        >
+          {message.content.rows.flatMap((row) =>
+            message.content.columns.map((column) => {
+              const cell = row.cells[column.id];
+              return (
+                <div
+                  key={`${row.id}:${column.id}`}
+                  className={styles.tableCell}
+                  style={{ minHeight: row.minHeight }}
+                >
+                  {cell?.kind === 'richText' ? (
+                    <AdRichTextViewer value={cell.content} linkPreviewOnHover />
+                  ) : null}
+                  {cell?.kind === 'attachment' ? (
+                    <AttachmentList
+                      attachments={[cell.attachment]}
+                      align={align}
+                    />
+                  ) : null}
+                </div>
+              );
+            }),
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (isRichTextEmpty(message.content)) {
     return null;
   }

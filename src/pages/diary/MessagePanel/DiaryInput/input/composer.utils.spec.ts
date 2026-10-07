@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ColumnMessage, TodoMessage } from '@/store/diary/type';
+import type {
+  ColumnMessage,
+  TableMessage,
+  TodoMessage,
+} from '@/store/diary/type';
 
 import { createRichTextContent } from '@/packages/base/AdRichText/richtext';
 
@@ -165,5 +169,53 @@ describe('Column RichContent composer conversion', () => {
     expect(restored.todoItems.map((item) => item.content.json)).toEqual(
       todo.todoItems.map((item) => item.content.json),
     );
+  });
+});
+
+describe('Table Variant composer conversion', () => {
+  it('persists sparse cells and restores their stable structure', () => {
+    const converted = convertDraftToVariant(
+      { ...createInitialDraft(), content: rich },
+      'table',
+    );
+    expect(converted.tableRows).toHaveLength(3);
+    expect(converted.tableColumns).toHaveLength(3);
+    expect(Object.keys(converted.tableRows[0]?.cells ?? {})).toHaveLength(1);
+    const payload = buildMessagePayload(
+      { ...createInitialDraft(), ...converted },
+      'chatbox:1',
+    );
+    if (!payload || payload.variant !== 'table')
+      throw new Error('Expected Table payload');
+    expect(payload.tagIds).toEqual(['tag:one']);
+    const message = {
+      ...payload,
+      id: 'message:table',
+      edited: false,
+      createdAt: '2026-10-08T00:00:00.000Z',
+      updatedAt: null,
+    } as TableMessage;
+    const restored = buildDraftFromMessage(message);
+    expect(restored.tableColumns).toEqual(message.content.columns);
+    expect(restored.tableRows).toEqual(message.content.rows);
+  });
+
+  it('converts each Table column into one Column and concatenates top-to-bottom', () => {
+    const converted = convertDraftToVariant(
+      { ...createInitialDraft(), content: rich },
+      'table',
+    );
+    const firstColumn = converted.tableColumns[0];
+    converted.tableRows[1].cells[firstColumn.id] = {
+      kind: 'richText',
+      content: rich,
+    };
+    const columns = convertDraftToVariant(
+      { ...createInitialDraft(), ...converted },
+      'column',
+    );
+    expect(columns.columnItems).toHaveLength(3);
+    expect(columns.columnItems[0].content.json.content).toHaveLength(4);
+    expect(columns.columnItems[1].content.preview).toBe('');
   });
 });

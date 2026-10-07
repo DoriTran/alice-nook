@@ -19,6 +19,7 @@ import {
   partitionAttachmentFiles,
   type OversizedAttachmentFile,
 } from '@/api/upload/attachmentSize';
+import { showAdNotification } from '@/packages/base';
 import { removeSecretHydration } from '@/packages/base/AdRichText/extensions/contentSecret';
 import { migratePlainTextToRichText } from '@/packages/base/AdRichText/richtext';
 import { useDiaryStore } from '@/store';
@@ -33,6 +34,8 @@ import {
   type DraftAttachment,
   type DraftTodoItem,
   type DraftColumnItem,
+  type DraftTableRow,
+  type DraftTableColumn,
   type PendingVariantSwitch,
 } from './composer.types';
 import {
@@ -118,6 +121,26 @@ const materializeDraft = async (
       attachments: await Promise.all(
         item.attachments.map(materializeDraftAttachment),
       ),
+    })),
+  ),
+  tableRows: await Promise.all(
+    draft.tableRows.map(async (row) => ({
+      ...row,
+      cells: Object.fromEntries(
+        await Promise.all(
+          Object.entries(row.cells).map(async ([id, cell]) => [
+            id,
+            cell?.kind === 'attachment'
+              ? {
+                  ...cell,
+                  attachment: await materializeDraftAttachment(
+                    cell.attachment as DraftAttachment,
+                  ),
+                }
+              : cell,
+          ]),
+        ),
+      ) as DraftTableRow['cells'],
     })),
   ),
 });
@@ -260,12 +283,6 @@ export const useComposerDraft = (
   const applyVariantSwitch = useCallback(
     (nextVariant: MessageVariant) => {
       setDraft((current) => {
-        if (current.variant === 'todo' && nextVariant !== 'todo') {
-          revokeDraftAttachmentUrls(
-            current.todoItems.flatMap((item) => item.attachments),
-          );
-        }
-
         return {
           ...current,
           ...convertDraftToVariant(current, nextVariant),
@@ -605,12 +622,64 @@ export const useComposerDraft = (
     [setDraft],
   );
 
+  const updateTable = useCallback(
+    (rows: DraftTableRow[], columns?: DraftTableColumn[]) => {
+      setDraft((current) => ({
+        ...current,
+        tableRows: rows,
+        tableColumns: columns ?? current.tableColumns,
+        linkPreview: null,
+      }));
+    },
+    [setDraft],
+  );
+
+  const addTableCellFiles = useCallback(
+    (rowId: string, columnId: string, files: FileList | File[]) => {
+      const { acceptedFiles, oversizedFiles: rejectedFiles } =
+        partitionAttachmentFiles(files);
+      setOversizedFiles(rejectedFiles);
+      const file = acceptedFiles[0];
+      if (!file) return;
+      if (acceptedFiles.length > 1) {
+        showAdNotification({
+          title: 'One attachment per table cell',
+          message: `${acceptedFiles.length - 1} additional file${acceptedFiles.length === 2 ? '' : 's'} were not added.`,
+          color: 'yellow',
+        });
+      }
+      const blobUrl = URL.createObjectURL(file);
+      const attachment = createTempAttachment(
+        file,
+        fileToAttachmentType(file, 'file'),
+        `att:${uuidv4()}`,
+        blobUrl,
+      );
+      setDraft((current) => ({
+        ...current,
+        tableRows: current.tableRows.map((row) =>
+          row.id === rowId
+            ? {
+                ...row,
+                cells: {
+                  ...row.cells,
+                  [columnId]: { kind: 'attachment', attachment },
+                },
+              }
+            : row,
+        ),
+      }));
+    },
+    [setDraft],
+  );
+
   const send = useCallback(
     async (
       contentOverride?:
         | RichTextContent
         | { todoItems: DraftTodoItem[] }
-        | { columnItems: DraftColumnItem[] },
+        | { columnItems: DraftColumnItem[] }
+        | { tableRows: DraftTableRow[]; tableColumns: DraftTableColumn[] },
     ) => {
       const draftToSend =
         contentOverride && 'json' in contentOverride && draft.variant === 'text'
@@ -623,7 +692,15 @@ export const useComposerDraft = (
                 'columnItems' in contentOverride &&
                 draft.variant === 'column'
               ? { ...draft, columnItems: contentOverride.columnItems }
-              : draft;
+              : contentOverride &&
+                  'tableRows' in contentOverride &&
+                  draft.variant === 'table'
+                ? {
+                    ...draft,
+                    tableRows: contentOverride.tableRows,
+                    tableColumns: contentOverride.tableColumns,
+                  }
+                : draft;
       if (!hasDraftContent(draftToSend) || sending) {
         return;
       }
@@ -775,6 +852,8 @@ export const useComposerDraft = (
     reorderTodoRow,
     addTodoRowFiles,
     removeTodoRowAttachment,
+    updateTable,
+    addTableCellFiles,
     send,
     insertReactionIcon,
     canClear: hasDraftContent(draft),

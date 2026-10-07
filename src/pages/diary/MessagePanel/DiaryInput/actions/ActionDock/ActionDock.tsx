@@ -16,6 +16,7 @@ import {
   TimerReset,
   TextInitial,
   TextCursorInput,
+  Table2,
   Video,
   type LucideIcon,
 } from 'lucide-react';
@@ -293,6 +294,13 @@ const ActionDock: FC<ActionDockProps> = ({
         icon: Columns3,
         selected: variant === 'column',
       },
+      {
+        value: 'table',
+        label: 'Table',
+        description: 'Organize rich content and attachments in a table.',
+        icon: Table2,
+        selected: variant === 'table',
+      },
     ],
     [variant],
   );
@@ -415,6 +423,28 @@ const ActionDock: FC<ActionDockProps> = ({
                 onClick={() => handleVariantSelect('column')}
               >
                 <AdIcon icon={Columns3} source="lucide" size={16} />
+              </button>
+            </AdTooltip>
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="Table"
+                  description="Organize rich content and attachments in a table."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${variant === 'table' ? styles.btnActive : ''}`}
+                aria-label="Table variant"
+                aria-pressed={variant === 'table'}
+                onClick={() => handleVariantSelect('table')}
+              >
+                <AdIcon icon={Table2} source="lucide" size={16} />
               </button>
             </AdTooltip>
           </div>

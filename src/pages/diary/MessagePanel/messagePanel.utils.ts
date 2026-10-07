@@ -35,6 +35,20 @@ export const getMessagePreviewText = (message: Message | undefined): string => {
       : first.content.preview.trim();
   }
 
+  if (message.variant === 'table') {
+    const values = message.content.rows.flatMap((row) =>
+      message.content.columns.flatMap((column) => {
+        const cell = row.cells[column.id];
+        return cell?.kind === 'richText' && cell.content.preview.trim()
+          ? [cell.content.preview.trim()]
+          : [];
+      }),
+    );
+    return values.length
+      ? `${values[0]}${values.length > 1 ? ` (+${values.length - 1})` : ''}`
+      : 'Table';
+  }
+
   if (message.content.preview.trim()) {
     return message.content.preview.trim();
   }
@@ -100,6 +114,16 @@ export const messageMatchesSearch = (
   if (message.variant === 'column') {
     return message.content.columns.some((column) =>
       column.content.preview.toLowerCase().includes(normalized),
+    );
+  }
+
+  if (message.variant === 'table') {
+    return message.content.rows.some((row) =>
+      Object.values(row.cells).some(
+        (cell) =>
+          cell?.kind === 'richText' &&
+          cell.content.preview.toLowerCase().includes(normalized),
+      ),
     );
   }
 
