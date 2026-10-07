@@ -302,19 +302,8 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.5rem;
-}
-.attachment span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.attachment button {
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
 }
 
 @media (hover: none), (pointer: coarse) {

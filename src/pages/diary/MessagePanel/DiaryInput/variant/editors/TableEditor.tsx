@@ -24,6 +24,7 @@ import {
 } from '@/packages/base';
 import { createEmptyRichTextContent } from '@/packages/base/AdRichText/richtext';
 
+import AttachmentCard from '../../attachment/AttachmentTray/AttachmentCard';
 import {
   TABLE_DEFAULT_COLUMN_WIDTH,
   TABLE_DEFAULT_ROW_MIN_HEIGHT,
@@ -774,17 +775,11 @@ const TableEditor = forwardRef<TableEditorHandle, Props>((props, ref) => {
                     <AdRichTextViewer value={cell.content} />
                   ) : cell?.kind === 'attachment' ? (
                     <div className={styles.attachment}>
-                      <span>{cell.attachment.name ?? 'Attachment'}</span>
-                      <button
-                        type="button"
-                        aria-label="Remove cell attachment"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          patchCell(point, undefined);
-                        }}
-                      >
-                        ×
-                      </button>
+                      <AttachmentCard
+                        attachment={cell.attachment}
+                        variant="tray"
+                        onRemove={() => patchCell(point, undefined)}
+                      />
                     </div>
                   ) : null}
                 </div>
