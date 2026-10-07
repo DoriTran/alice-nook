@@ -121,9 +121,10 @@ export const authResponsiveConfig = {
         display: 'block',
         width: '100%',
         height: 'auto',
-        opacity: 'var(--decor-opacity, 1)',
+        opacity: 'var(--reveal-opacity, 0)',
         filter: 'blur(var(--decor-blur, 0px))',
-        transform: 'rotate(var(--decor-rotate, 0deg))',
+        transform:
+          'rotate(var(--decor-rotate, 0deg)) scale(var(--reveal-scale, 0.4))',
       },
       desk: {
         position: 'absolute',
@@ -150,12 +151,13 @@ export const authResponsiveConfig = {
       },
       mascot: {
         position: 'absolute',
-        opacity: 'var(--decor-opacity, 1)',
+        opacity: 'var(--reveal-opacity, 0)',
         filter: 'blur(var(--decor-blur, 0px))',
         left: '47.5%',
         bottom: '25%',
         width: '47.5vh',
-        transform: 'translateX(-50%) rotate(0deg)',
+        transform:
+          'translateX(-50%) rotate(0deg) scale(var(--reveal-scale, 0.4))',
       },
       bookstackWrap: {
         position: 'absolute',
