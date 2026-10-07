@@ -33,7 +33,7 @@ import { migrateDiaryRichTextState } from '../migrateRichText';
 import shallow from '../shallow';
 import { diaryDummyState, diaryInitialState } from './constants';
 
-const mergeLiveContentTagIds = (
+export const mergeLiveContentTagIds = (
   tagIds: string[],
   content: Message['content'],
   tags: DiaryStore['tags'],
@@ -45,7 +45,11 @@ const mergeLiveContentTagIds = (
         ? content.items
             .flatMap((item) => collectContentTagIds(item.content.json))
             .filter((id) => Boolean(tags[id]))
-        : [];
+        : content && 'columns' in content
+          ? content.columns
+              .flatMap((column) => collectContentTagIds(column.content.json))
+              .filter((id) => Boolean(tags[id]))
+          : [];
   return [...new Set([...tagIds, ...inlineIds])];
 };
 
