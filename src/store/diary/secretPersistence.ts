@@ -51,16 +51,28 @@ export const encryptPendingLocalSecrets = async <
     const json = await transform(message.content.json, encryptNode);
     return { ...message, content: { ...message.content, json } } as T;
   }
-  const items = await Promise.all(
-    message.content.items.map(async (item) => ({
-      ...item,
+  if ('items' in message.content) {
+    const items = await Promise.all(
+      message.content.items.map(async (item) => ({
+        ...item,
+        content: {
+          ...item.content,
+          json: await transform(item.content.json, encryptNode),
+        },
+      })),
+    );
+    return { ...message, content: { ...message.content, items } } as T;
+  }
+  const columns = await Promise.all(
+    message.content.columns.map(async (column) => ({
+      ...column,
       content: {
-        ...item.content,
-        json: await transform(item.content.json, encryptNode),
+        ...column.content,
+        json: await transform(column.content.json, encryptNode),
       },
     })),
   );
-  return { ...message, content: { ...message.content, items } } as T;
+  return { ...message, content: { ...message.content, columns } } as T;
 };
 
 export const hydrateLocalSecrets = async (
@@ -85,8 +97,10 @@ export const hydrateLocalSecrets = async (
   Object.values(messages).forEach((message) => {
     if ('json' in message.content) {
       visit(message.content.json);
-    } else {
+    } else if ('items' in message.content) {
       message.content.items.forEach((item) => visit(item.content.json));
+    } else {
+      message.content.columns.forEach((column) => visit(column.content.json));
     }
   });
   await Promise.all(jobs);

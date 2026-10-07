@@ -5,6 +5,7 @@ import type {
   MessageDecorator,
   MessageVariant,
   TodoItem,
+  ColumnItem,
 } from '@/store/diary/type';
 
 import {
@@ -21,6 +22,8 @@ import {
 } from '../decorator/timer/timer.utils';
 import {
   createEmptyTodoItem,
+  createEmptyColumnItem,
+  createInitialColumnItems,
   type ComposerDraft,
   type DraftAttachment,
   type LocalDraftAttachment,
@@ -55,6 +58,10 @@ export const hasDraftContent = (draft: ComposerDraft): boolean => {
     );
   }
 
+  if (draft.variant === 'column') {
+    return draft.columnItems.some((item) => !isRichTextEmpty(item.content));
+  }
+
   return !isRichTextEmpty(draft.content);
 };
 
@@ -63,22 +70,27 @@ export const draftHasVariantContent = (draft: ComposerDraft): boolean => {
     return draft.todoItems.some((item) => !isRichTextEmpty(item.content));
   }
 
+  if (draft.variant === 'column') {
+    return draft.columnItems.some((item) => !isRichTextEmpty(item.content));
+  }
+
   return !isRichTextEmpty(draft.content);
 };
 
 export const convertDraftToVariant = (
   draft: ComposerDraft,
   nextVariant: MessageVariant,
-): Pick<ComposerDraft, 'variant' | 'content' | 'todoItems'> => {
+): Pick<ComposerDraft, 'variant' | 'content' | 'todoItems' | 'columnItems'> => {
   if (draft.variant === nextVariant) {
     return {
       variant: draft.variant,
       content: draft.content,
       todoItems: draft.todoItems,
+      columnItems: draft.columnItems,
     };
   }
 
-  if (nextVariant === 'todo') {
+  if (nextVariant === 'todo' && draft.variant !== 'column') {
     const blocks = draft.content.json.content ?? [];
     const items = blocks.length
       ? blocks.map((block) => ({
@@ -91,6 +103,52 @@ export const convertDraftToVariant = (
       variant: 'todo',
       content: migratePlainTextToRichText(''),
       todoItems: items,
+      columnItems: createInitialColumnItems(),
+    };
+  }
+
+  if (nextVariant === 'column') {
+    const sourceItems =
+      draft.variant === 'todo'
+        ? draft.todoItems.map((item) => ({
+            ...createEmptyColumnItem(),
+            content: item.content,
+          }))
+        : [
+            {
+              ...createEmptyColumnItem(),
+              content: draft.content,
+            },
+          ];
+    while (sourceItems.length < 2) sourceItems.push(createEmptyColumnItem());
+    return {
+      variant: 'column',
+      content: migratePlainTextToRichText(''),
+      todoItems: [createEmptyTodoItem()],
+      columnItems: sourceItems,
+    };
+  }
+
+  if (draft.variant === 'column') {
+    if (nextVariant === 'todo') {
+      return {
+        variant: 'todo',
+        content: migratePlainTextToRichText(''),
+        todoItems: draft.columnItems.map((column) => ({
+          ...createEmptyTodoItem(),
+          content: column.content,
+        })),
+        columnItems: createInitialColumnItems(),
+      };
+    }
+    const blocks = draft.columnItems.flatMap((item) =>
+      isRichTextEmpty(item.content) ? [] : (item.content.json.content ?? []),
+    );
+    return {
+      variant: nextVariant,
+      content: createRichTextContent({ type: 'doc', content: blocks }),
+      todoItems: [createEmptyTodoItem()],
+      columnItems: createInitialColumnItems(),
     };
   }
 
@@ -103,6 +161,7 @@ export const convertDraftToVariant = (
       variant: nextVariant,
       content: createRichTextContent({ type: 'doc', content: blocks }),
       todoItems: [createEmptyTodoItem()],
+      columnItems: createInitialColumnItems(),
     };
   }
 
@@ -110,6 +169,7 @@ export const convertDraftToVariant = (
     variant: nextVariant,
     content: draft.content,
     todoItems: [createEmptyTodoItem()],
+    columnItems: createInitialColumnItems(),
   };
 };
 
@@ -175,6 +235,22 @@ export const buildMessagePayload = (
       content: { items },
     };
   }
+  if (draft.variant === 'column') {
+    const columns: ColumnItem[] = draft.columnItems.map((item) => ({
+      id: item.id,
+      content: item.content,
+    }));
+    return {
+      ...base,
+      variant: 'column',
+      content: { columns },
+      tagIds: Array.from(
+        new Set(
+          columns.flatMap((item) => collectContentTagIds(item.content.json)),
+        ),
+      ),
+    };
+  }
 
   if (draft.variant === 'ai') {
     return {
@@ -198,6 +274,7 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     attachments: message.attachments,
     content: migratePlainTextToRichText(''),
     todoItems: [createEmptyTodoItem()],
+    columnItems: createInitialColumnItems(),
     focused: false,
     replyToMessageId: message.replyToMessageId,
     linkPreview: null,
@@ -219,10 +296,18 @@ export const buildDraftFromMessage = (message: Message): ComposerDraft => {
     return draft;
   }
 
+  if (message.variant === 'column') {
+    return {
+      ...base,
+      columnItems: message.content.columns,
+    };
+  }
+
   const draft = {
     ...base,
     content: message.content,
     todoItems: [createEmptyTodoItem()],
+    columnItems: createInitialColumnItems(),
   };
   return draft;
 };

@@ -88,7 +88,9 @@ const collectMessageSecretPayloads = (message: Message) => {
   const documents =
     'json' in message.content
       ? [message.content.json]
-      : message.content.items.map((item) => item.content.json);
+      : 'items' in message.content
+        ? message.content.items.map((item) => item.content.json)
+        : message.content.columns.map((column) => column.content.json);
   const byId = new Map(
     documents
       .flatMap((json) => collectPendingSecretPayloads(json, hydrations))

@@ -186,6 +186,12 @@ export const getMessagePreview = (
 
       return first ? `Todo: ${first.content.preview}` : 'Todo list';
     }
+    case 'column': {
+      const first = message.content.columns.find((column) =>
+        column.content.preview.trim(),
+      );
+      return first ? `Columns: ${first.content.preview.trim()}` : 'Columns';
+    }
     default:
       return '';
   }

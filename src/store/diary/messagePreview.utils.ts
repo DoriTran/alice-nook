@@ -214,6 +214,13 @@ export const resolveMessageTitle = (message: Message): string => {
     return first ? `Todo: ${first.content.preview}` : 'Todo list';
   }
 
+  if (message.variant === 'column') {
+    const first = message.content.columns.find((column) =>
+      column.content.preview.trim(),
+    );
+    return first ? `Columns: ${first.content.preview.trim()}` : 'Columns';
+  }
+
   const heading = message.decorators.find((item) => item.type === 'heading');
 
   if (heading?.type === 'heading' && heading.title.trim()) {
@@ -325,6 +332,13 @@ export const resolveMessagePreview = (
     return withAttachments(message, {
       source: 'variant',
       ...PREVIEW_STYLES.ai,
+    });
+  }
+
+  if (message.variant === 'column') {
+    return withAttachments(message, {
+      source: 'variant',
+      ...PREVIEW_STYLES.column,
     });
   }
 

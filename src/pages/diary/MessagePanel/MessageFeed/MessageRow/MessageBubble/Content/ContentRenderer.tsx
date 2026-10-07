@@ -102,6 +102,28 @@ const ContentRenderer: FC<ContentRendererProps> = ({
     );
   }
 
+  if (message.variant === 'column') {
+    return (
+      <div className={styles.columnGrid}>
+        {message.content.columns.map((column) => {
+          const hasText = !isRichTextEmpty(column.content);
+          return (
+            <section key={column.id} className={styles.columnItem}>
+              {hasText ? (
+                <AdRichTextViewer value={column.content} linkPreviewOnHover />
+              ) : null}
+              <LinkContentPreviews
+                content={column.content}
+                attached={hasText}
+                disabled={disabled}
+              />
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
+
   if (isRichTextEmpty(message.content)) {
     return null;
   }

@@ -74,6 +74,11 @@
   padding-bottom: calc(var(--reaction-chip-size) * 0.65);
 }
 
+.columnBodyStack {
+  width: fit-content;
+  max-width: 100%;
+}
+
 .footer {
   display: flex;
   flex-direction: column;

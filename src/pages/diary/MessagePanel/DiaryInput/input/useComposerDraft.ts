@@ -26,11 +26,13 @@ import { getDiaryDataSource } from '@/store/settings/store';
 
 import {
   createInitialDraft,
+  createEmptyColumnItem,
   createEmptyTodoItem,
   type ComposerDraft,
   type ComposerEditorRef,
   type DraftAttachment,
   type DraftTodoItem,
+  type DraftColumnItem,
   type PendingVariantSwitch,
 } from './composer.types';
 import {
@@ -427,6 +429,69 @@ export const useComposerDraft = (
     [setDraft],
   );
 
+  const addColumn = useCallback(() => {
+    const nextItem = createEmptyColumnItem();
+    setDraft((current) => ({
+      ...current,
+      columnItems: [...current.columnItems, nextItem],
+    }));
+    return nextItem.id;
+  }, [setDraft]);
+
+  const updateColumn = useCallback(
+    (columnId: string, patch: Partial<DraftColumnItem>) => {
+      setDraft((current) => ({
+        ...current,
+        columnItems: current.columnItems.map((item) =>
+          item.id === columnId ? { ...item, ...patch } : item,
+        ),
+        linkPreview: null,
+      }));
+    },
+    [setDraft],
+  );
+
+  const removeColumn = useCallback(
+    (columnId: string) => {
+      setDraft((current) => {
+        if (current.columnItems.length <= 2) return current;
+        const removed = current.columnItems.find(
+          (item) => item.id === columnId,
+        );
+        if (removed) removeContentSecretHydrations(removed.content);
+        return {
+          ...current,
+          columnItems: current.columnItems.filter(
+            (item) => item.id !== columnId,
+          ),
+          linkPreview: null,
+        };
+      });
+    },
+    [setDraft],
+  );
+
+  const reorderColumn = useCallback(
+    (current: number, previous: number) => {
+      if (current === previous) return;
+      setDraft((draftState) => {
+        const items = draftState.columnItems;
+        if (
+          current < 0 ||
+          previous < 0 ||
+          current >= items.length ||
+          previous >= items.length
+        ) {
+          return draftState;
+        }
+        const next = items.slice();
+        [next[current], next[previous]] = [next[previous], next[current]];
+        return { ...draftState, columnItems: next, linkPreview: null };
+      });
+    },
+    [setDraft],
+  );
+
   const removeTodoRow = useCallback(
     (itemId: string) => {
       setDraft((current) => {
@@ -542,7 +607,10 @@ export const useComposerDraft = (
 
   const send = useCallback(
     async (
-      contentOverride?: RichTextContent | { todoItems: DraftTodoItem[] },
+      contentOverride?:
+        | RichTextContent
+        | { todoItems: DraftTodoItem[] }
+        | { columnItems: DraftColumnItem[] },
     ) => {
       const draftToSend =
         contentOverride && 'json' in contentOverride && draft.variant === 'text'
@@ -551,7 +619,11 @@ export const useComposerDraft = (
               'todoItems' in contentOverride &&
               draft.variant === 'todo'
             ? { ...draft, todoItems: contentOverride.todoItems }
-            : draft;
+            : contentOverride &&
+                'columnItems' in contentOverride &&
+                draft.variant === 'column'
+              ? { ...draft, columnItems: contentOverride.columnItems }
+              : draft;
       if (!hasDraftContent(draftToSend) || sending) {
         return;
       }
@@ -695,6 +767,10 @@ export const useComposerDraft = (
     addTodoRow,
     insertTodoRowAfter,
     updateTodoItem,
+    addColumn,
+    updateColumn,
+    removeColumn,
+    reorderColumn,
     removeTodoRow,
     reorderTodoRow,
     addTodoRowFiles,

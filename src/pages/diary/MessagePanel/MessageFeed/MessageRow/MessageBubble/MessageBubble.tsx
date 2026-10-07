@@ -48,21 +48,21 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   const isAssistant = (message.sender ?? 'user') === 'assistant';
   const styles = isAssistant ? assistantStyles : userStyles;
   const time = formatMessageTime(message.createdAt);
-  const captionText =
-    message.variant === 'todo' ? '' : message.content.preview.trim();
-  const previewLinks =
-    message.variant === 'todo'
-      ? []
-      : collectPreviewLinkContent(message.content.json);
+  const isStructured =
+    message.variant === 'todo' || message.variant === 'column';
+  const captionText = isStructured ? '' : message.content.preview.trim();
+  const previewLinks = isStructured
+    ? []
+    : collectPreviewLinkContent(message.content.json);
   const hasLinkPreview = previewLinks.length > 0;
   const hideLinkOnlyText =
     hasLinkPreview &&
     previewLinks.length === 1 &&
-    message.variant !== 'todo' &&
+    !isStructured &&
     normalizeContentLinkUrl(captionText) === previewLinks[0]?.normalizedUrl;
   // Only render a body bubble when there is real content (not attachment-only empties).
   const showBody =
-    message.variant === 'todo' || (captionText.length > 0 && !hideLinkOnlyText);
+    isStructured || (captionText.length > 0 && !hideLinkOnlyText);
   const hasAttachments =
     !message.sourceMessageId && message.attachments.length > 0;
   const hasDecorators =
@@ -177,7 +177,7 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   ) : null;
 
   const previewContent =
-    hasLinkPreview && message.variant !== 'todo' ? (
+    hasLinkPreview && !isStructured ? (
       <LinkContentPreviews
         content={message.content}
         attached={Boolean(body)}
@@ -214,7 +214,12 @@ const MessageBubble: FC<MessageBubbleProps> = ({
 
   const bodyStack =
     bubbleRow || hasReactions ? (
-      <div className={hasReactions ? styles.bodyStack : undefined}>
+      <div
+        className={clsx(
+          hasReactions && styles.bodyStack,
+          message.variant === 'column' && styles.columnBodyStack,
+        )}
+      >
         {bubbleRow}
         {reactionBar}
       </div>
@@ -278,7 +283,10 @@ const MessageBubble: FC<MessageBubbleProps> = ({
 
   if (isAssistant) {
     return (
-      <article className={assistantStyles.root}>
+      <article
+        className={assistantStyles.root}
+        data-column={message.variant === 'column' || undefined}
+      >
         <span className={assistantStyles.avatar} aria-hidden>
           🐱
         </span>
@@ -292,7 +300,10 @@ const MessageBubble: FC<MessageBubbleProps> = ({
   }
 
   return (
-    <article className={userStyles.root}>
+    <article
+      className={userStyles.root}
+      data-column={message.variant === 'column' || undefined}
+    >
       <div className={userStyles.content}>
         {core}
         {footer}

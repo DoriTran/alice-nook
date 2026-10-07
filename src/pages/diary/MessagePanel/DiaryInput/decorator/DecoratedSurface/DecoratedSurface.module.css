@@ -61,7 +61,11 @@
 }
 
 .surfacePassThrough {
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
   min-width: 0;
+  overflow: visible;
 }
 
 /* Feed: same role as surfaceCard, themed via --message-surface-bg (charms may override container). */

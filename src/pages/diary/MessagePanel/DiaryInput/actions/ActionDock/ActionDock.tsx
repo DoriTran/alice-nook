@@ -1,6 +1,7 @@
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import {
   CircleSlash,
+  Columns3,
   ChevronUp,
   ClipboardPaste,
   ClipboardX,
@@ -285,6 +286,13 @@ const ActionDock: FC<ActionDockProps> = ({
         icon: Sparkles,
         selected: variant === 'ai',
       },
+      {
+        value: 'column',
+        label: 'Column',
+        description: 'Arrange rich content in responsive columns.',
+        icon: Columns3,
+        selected: variant === 'column',
+      },
     ],
     [variant],
   );
@@ -385,6 +393,28 @@ const ActionDock: FC<ActionDockProps> = ({
                 onClick={() => handleVariantSelect('ai')}
               >
                 <AdIcon icon={Sparkles} source="lucide" size={16} />
+              </button>
+            </AdTooltip>
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="Column"
+                  description="Arrange rich content in responsive columns."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <button
+                type="button"
+                className={`${styles.btn} ${variant === 'column' ? styles.btnActive : ''}`}
+                aria-label="Column variant"
+                aria-pressed={variant === 'column'}
+                onClick={() => handleVariantSelect('column')}
+              >
+                <AdIcon icon={Columns3} source="lucide" size={16} />
               </button>
             </AdTooltip>
           </div>

@@ -19,6 +19,8 @@ export type DecoratedSurfaceProps = {
   draft: ComposerDraft;
   composing: boolean;
   borderless?: boolean;
+  /** Composer: keep decorator plumbing without drawing an outer card. */
+  bare?: boolean;
   /** Feed: shrink top-right radius when attachments sit above the body. */
   attached?: boolean;
   /** Feed: participate in jump-to highlight (off for attachment-only shells). */
@@ -49,6 +51,7 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
   draft,
   composing,
   borderless = false,
+  bare = false,
   attached = false,
   messageSurface = true,
   children,
@@ -74,8 +77,12 @@ const DecoratedSurface: FC<DecoratedSurfaceProps> = ({
   });
 
   const surfaceClass = clsx(
-    composing ? styles.surfaceCard : styles.surfaceFeed,
-    composing && borderless && styles.surfaceCardBorderless,
+    composing
+      ? bare
+        ? styles.surfacePassThrough
+        : styles.surfaceCard
+      : styles.surfaceFeed,
+    composing && !bare && borderless && styles.surfaceCardBorderless,
     !composing && attached && styles.surfaceFeedAttached,
     hasOutsideBottom && styles.surfaceBottomAttached,
   );

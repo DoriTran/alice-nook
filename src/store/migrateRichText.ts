@@ -13,6 +13,12 @@ type MessageLike = {
           content?: LegacyTextContent | MigratedContent;
           [key: string]: unknown;
         }>;
+      }
+    | {
+        columns?: Array<{
+          content?: LegacyTextContent | MigratedContent;
+          [key: string]: unknown;
+        }>;
       };
   [key: string]: unknown;
 };
@@ -42,6 +48,23 @@ const migrateMessage = <T extends MessageLike>(message: T): T => {
         items: todoContent.items.map((item) => ({
           ...item,
           content: migrateContentField(item.content),
+        })),
+      },
+    };
+  }
+
+  if (message.variant === 'column') {
+    const columnContent = message.content as {
+      columns?: Array<{ content?: LegacyTextContent | MigratedContent }>;
+    };
+    if (!columnContent.columns) return message;
+    return {
+      ...message,
+      content: {
+        ...columnContent,
+        columns: columnContent.columns.map((column) => ({
+          ...column,
+          content: migrateContentField(column.content),
         })),
       },
     };

@@ -49,3 +49,24 @@
   opacity: 0.3;
   filter: blur(0.4px);
 }
+
+.columnGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.columnItem {
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 38%, transparent);
+}

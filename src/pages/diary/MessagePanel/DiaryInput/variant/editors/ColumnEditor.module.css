@@ -1,0 +1,130 @@
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.65rem;
+  width: 100%;
+  max-height: 50vh;
+  min-width: 0;
+  padding-right: 0.15rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.column {
+  position: relative;
+  flex: 1 1 14rem;
+  min-width: 0;
+  overflow: visible;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.column[data-dragging] {
+  z-index: 2;
+  opacity: 0.72;
+  box-shadow: var(--shadow-md);
+}
+
+.dragHandle,
+.removeButton {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-soft);
+  background: transparent;
+}
+
+.dragHandle {
+  top: 0;
+  left: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.grabDots {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow:
+    5px 0 currentColor,
+    0 5px currentColor,
+    5px 5px currentColor;
+  opacity: 0.7;
+  transform: translate(-2.5px, -2.5px);
+}
+
+.removeButton {
+  top: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.removeButton:hover:not(:disabled) {
+  color: var(--danger);
+  background: var(--field-bg-hover-strong);
+}
+
+.removeButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.editor {
+  min-width: 0;
+  padding: 0.65rem 1.5rem 0.6rem;
+}
+
+.addCard {
+  display: flex;
+  flex: 0 0 4.5rem;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: 0;
+  border: 1px dashed color-mix(in srgb, var(--primary) 32%, var(--border-soft));
+  border-radius: var(--radius-md);
+  color: var(--text-soft);
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.addCard:hover,
+.addCard:focus-visible {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 58%, var(--border-soft));
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+@media (max-width: 639px) {
+  .dragHandle,
+  .removeButton {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .dragHandle,
+  .removeButton {
+    color: color-mix(in srgb, var(--text) 68%, transparent);
+  }
+
+  .editor :global(.ad-richtext-prose) {
+    font-size: 16px;
+  }
+}

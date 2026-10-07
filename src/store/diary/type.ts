@@ -350,7 +350,7 @@ export type HeadingDecorator = {
 // #endregion
 
 // #region Message Variants
-export type Message = TextMessage | TodoMessage | AIMessage;
+export type Message = TextMessage | TodoMessage | AIMessage | ColumnMessage;
 export type CloudMessagePayload = Message extends infer Item
   ? Item extends Message
     ? Omit<Item, 'edited' | 'createdAt' | 'updatedAt'> & {
@@ -421,6 +421,18 @@ export type TodoMessage = MessageBase & {
   content: {
     items: TodoItem[];
   };
+};
+
+export type ColumnMessage = MessageBase & {
+  variant: 'column';
+  content: {
+    columns: ColumnItem[];
+  };
+};
+
+export type ColumnItem = {
+  id: string;
+  content: RichTextContent;
 };
 
 export type TodoItem = {

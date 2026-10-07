@@ -28,6 +28,11 @@ export type DraftTodoItem = {
   attachments: DraftAttachment[];
 };
 
+export type DraftColumnItem = {
+  id: string;
+  content: RichTextContent;
+};
+
 export type ComposerDraft = {
   variant: MessageVariant;
   decorators: MessageDecorator[];
@@ -35,6 +40,7 @@ export type ComposerDraft = {
   /** TipTap content for text / AI variants. */
   content: RichTextContent;
   todoItems: DraftTodoItem[];
+  columnItems: DraftColumnItem[];
   focused: boolean;
   replyToMessageId: string | null;
   linkPreview: LinkPreviewState | null;
@@ -49,12 +55,23 @@ export const createEmptyTodoItem = (): DraftTodoItem => ({
   attachments: [],
 });
 
+export const createEmptyColumnItem = (): DraftColumnItem => ({
+  id: `column:${uuidv4()}`,
+  content: createEmptyRichTextContent(),
+});
+
+export const createInitialColumnItems = (): DraftColumnItem[] => [
+  createEmptyColumnItem(),
+  createEmptyColumnItem(),
+];
+
 export const createInitialDraft = (): ComposerDraft => ({
   variant: 'text',
   decorators: [],
   attachments: [],
   content: createEmptyRichTextContent(),
   todoItems: [createEmptyTodoItem()],
+  columnItems: createInitialColumnItems(),
   focused: false,
   replyToMessageId: null,
   linkPreview: null,

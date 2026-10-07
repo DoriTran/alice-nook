@@ -28,6 +28,9 @@ import styles from './DiaryInput.module.css';
 import ReplyPreviewInput from './input/ReplyPreviewInput';
 import { useComposerDraft } from './input/useComposerDraft';
 import AIEditor from './variant/editors/AIEditor';
+import ColumnEditor, {
+  type ColumnEditorHandle,
+} from './variant/editors/ColumnEditor';
 import TextEditor from './variant/editors/TextEditor';
 import TodoEditor, {
   type TodoEditorHandle,
@@ -71,6 +74,7 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
     const enterKeyBehavior = preferences.composer.enterKeyBehavior;
     const todoEnterKeyBehavior = preferences.decorations.todo.enterKeyBehavior;
     const todoEditorRef = useRef<TodoEditorHandle>(null);
+    const columnEditorRef = useRef<ColumnEditorHandle>(null);
     const activeEditorRef = useRef<AdRichTextHandle | null>(null);
     const [contentShelfOpen, setContentShelfOpen] = useState(false);
     const [contentFeatureState, setContentFeatureState] =
@@ -152,6 +156,10 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
       updateTodoItem,
       removeTodoRow,
       reorderTodoRow,
+      addColumn,
+      updateColumn,
+      removeColumn,
+      reorderColumn,
       addTodoRowFiles,
       removeTodoRowAttachment,
       send,
@@ -184,7 +192,13 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
                 todoItems:
                   todoEditorRef.current?.finalizeItems() ?? draft.todoItems,
               }
-            : undefined;
+            : draft.variant === 'column'
+              ? {
+                  columnItems:
+                    columnEditorRef.current?.finalizeItems() ??
+                    draft.columnItems,
+                }
+              : undefined;
       activeEditorRef.current = null;
       setContentFeatureState({});
       void send(finalizedContent);
@@ -313,6 +327,35 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
         );
       }
 
+      if (draft.variant === 'column') {
+        return (
+          <ColumnEditor
+            key={chatboxId}
+            ref={columnEditorRef}
+            items={draft.columnItems}
+            onUpdateItem={updateColumn}
+            onRemoveItem={removeColumn}
+            onAddItem={addColumn}
+            onReorderItem={reorderColumn}
+            onSubmit={handleSubmit}
+            enterKeyBehavior={enterKeyBehavior}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onActiveEditorChange={(_id, editor) => {
+              activeEditorRef.current = editor;
+              setContentFeatureState(editor?.getContentFeatureState() ?? {});
+            }}
+            onContentFeatureStateChange={setContentFeatureState}
+            onContentLinkEditorOpenChange={(open) => {
+              setLinkEditorOpen(open);
+              if (open) setContentShelfOpen(true);
+            }}
+            contentInspectorTarget={contentInspectorTarget}
+            onContentContactEditorOpenChange={setContactEditorFeature}
+          />
+        );
+      }
+
       return (
         <TextEditor
           key={chatboxId}
@@ -345,6 +388,11 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
     const handleInsertReactionIcon = (icon: string) => {
       if (draft.variant === 'todo') {
         todoEditorRef.current?.insertAtLatestInput(icon);
+        return;
+      }
+
+      if (draft.variant === 'column') {
+        columnEditorRef.current?.insertAtLatestInput(icon);
         return;
       }
 
@@ -404,6 +452,7 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
               draft={draft}
               composing
               borderless
+              bare={draft.variant === 'column'}
               updateDecorator={updateDecorator}
               updateDraft={updateDraft}
             >

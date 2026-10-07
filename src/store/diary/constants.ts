@@ -558,6 +558,11 @@ const softPreviewBg = (token: string) =>
   `color-mix(in srgb, ${token} 28%, var(--surface))`;
 
 export const PREVIEW_STYLES = {
+  column: {
+    icon: 'Columns3',
+    iconBg: softPreviewBg('var(--primary)'),
+    iconColor: 'var(--primary-dark)',
+  },
   todo: {
     icon: 'ListTodo',
     iconBg: softPreviewBg('var(--secondary)'),

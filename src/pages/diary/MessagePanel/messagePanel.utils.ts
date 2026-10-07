@@ -24,6 +24,17 @@ export const getMessagePreviewText = (message: Message | undefined): string => {
       : firstItem.content.preview;
   }
 
+  if (message.variant === 'column') {
+    const nonEmpty = message.content.columns.filter(
+      (column) => column.content.preview.trim().length > 0,
+    );
+    const first = nonEmpty[0];
+    if (!first) return 'Columns';
+    return nonEmpty.length > 1
+      ? `${first.content.preview.trim()} (+${nonEmpty.length - 1})`
+      : first.content.preview.trim();
+  }
+
   if (message.content.preview.trim()) {
     return message.content.preview.trim();
   }
@@ -83,6 +94,12 @@ export const messageMatchesSearch = (
   if (message.variant === 'todo') {
     return message.content.items.some((item) =>
       item.content.preview.toLowerCase().includes(normalized),
+    );
+  }
+
+  if (message.variant === 'column') {
+    return message.content.columns.some((column) =>
+      column.content.preview.toLowerCase().includes(normalized),
     );
   }
 

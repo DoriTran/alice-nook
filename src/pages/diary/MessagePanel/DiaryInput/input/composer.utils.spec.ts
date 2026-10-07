@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TodoMessage } from '@/store/diary/type';
+import type { ColumnMessage, TodoMessage } from '@/store/diary/type';
 
 import { createRichTextContent } from '@/packages/base/AdRichText/richtext';
 
@@ -96,6 +96,74 @@ describe('Todo RichContent composer conversion', () => {
 
     expect(buildDraftFromMessage(message).todoItems[0]?.content.json).toEqual(
       (payload as TodoMessage).content.items[0]?.content.json,
+    );
+  });
+});
+
+describe('Column RichContent composer conversion', () => {
+  it('creates two stable columns and preserves blocks through a text round trip', () => {
+    const converted = convertDraftToVariant(
+      { ...createInitialDraft(), content: rich },
+      'column',
+    );
+    expect(converted.columnItems).toHaveLength(2);
+    expect(new Set(converted.columnItems.map((item) => item.id)).size).toBe(2);
+    expect(converted.columnItems[0]?.content.json).toEqual(rich.json);
+
+    const restored = convertDraftToVariant(
+      { ...createInitialDraft(), ...converted },
+      'text',
+    );
+    expect(restored.content.json).toEqual(rich.json);
+  });
+
+  it('persists empty columns, order, ids, and inline tags', () => {
+    const converted = convertDraftToVariant(
+      { ...createInitialDraft(), content: rich },
+      'column',
+    );
+    const reversed = [...converted.columnItems].reverse();
+    const payload = buildMessagePayload(
+      { ...createInitialDraft(), ...converted, columnItems: reversed },
+      'chatbox:1',
+    );
+    expect(payload?.variant).toBe('column');
+    if (!payload || payload.variant !== 'column' || !payload.content) {
+      throw new Error('Expected Column payload');
+    }
+    expect(payload.content.columns.map((item) => item.id)).toEqual(
+      reversed.map((item) => item.id),
+    );
+    expect(payload.content.columns).toHaveLength(2);
+    expect(payload.tagIds).toEqual(['tag:one']);
+
+    const message = {
+      ...payload,
+      id: 'message:column',
+      edited: false,
+      createdAt: '2026-10-06T00:00:00.000Z',
+      updatedAt: null,
+    } as ColumnMessage;
+    expect(buildDraftFromMessage(message).columnItems).toEqual(
+      payload.content.columns,
+    );
+  });
+
+  it('maps Todo rows to columns and columns back to Todo in order', () => {
+    const todo = convertDraftToVariant(
+      { ...createInitialDraft(), content: rich },
+      'todo',
+    );
+    const columns = convertDraftToVariant(
+      { ...createInitialDraft(), ...todo },
+      'column',
+    );
+    const restored = convertDraftToVariant(
+      { ...createInitialDraft(), ...columns },
+      'todo',
+    );
+    expect(restored.todoItems.map((item) => item.content.json)).toEqual(
+      todo.todoItems.map((item) => item.content.json),
     );
   });
 });
