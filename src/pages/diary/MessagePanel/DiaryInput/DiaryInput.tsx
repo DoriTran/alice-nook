@@ -10,8 +10,8 @@ import {
 
 import type {
   AdRichTextHandle,
-  ContentFeatureAnchor,
   ContentFeatureId,
+  ContentFeatureInvocation,
   ContentFeatureState,
 } from '@/packages/base';
 
@@ -222,9 +222,9 @@ const DiaryInput = forwardRef<DiaryInputHandle, DiaryInputProps>(
 
     const handleRunContentFeature = (
       id: ContentFeatureId,
-      anchor?: ContentFeatureAnchor,
+      invocation?: ContentFeatureInvocation,
     ) => {
-      activeEditorRef.current?.runContentFeature(id, anchor);
+      activeEditorRef.current?.runContentFeature(id, invocation);
     };
 
     const handleClear = () => {

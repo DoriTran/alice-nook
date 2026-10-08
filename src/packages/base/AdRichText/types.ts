@@ -23,12 +23,17 @@ export type ContentFeatureAnchor = {
   left: number;
 };
 
+export type ContentFeatureInvocation = {
+  anchor?: ContentFeatureAnchor;
+  value?: string;
+};
+
 export type AdRichTextHandle = {
   focus: (position?: 'start' | 'end') => void;
   insertAtCursor: (value: string) => void;
   runContentFeature: (
     id: ContentFeatureId,
-    anchor?: ContentFeatureAnchor,
+    invocation?: ContentFeatureInvocation,
   ) => boolean;
   getContentFeatureState: () => ContentFeatureState;
   setContentLinkPreviewEnabled: (url: string, enabled: boolean) => boolean;

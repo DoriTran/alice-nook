@@ -7,11 +7,17 @@ export {
   runContentFeature,
   type ContentFeature,
   type ContentFeatureActionState,
+  type ContentFeatureChoice,
+  type ContentFeatureControlBehavior,
   type ContentFeatureContext,
   type ContentFeatureGroup,
   type ContentFeatureId,
+  type ContentFeaturePresentationGroup,
+  type ContentFeatureScope,
   type ContentFeatureState,
   type ContentFeatureStatus,
+  type ContentFeatureValue,
+  type AlignmentValue,
   type ContentTriggerSpec,
 } from './contentFeatureRegistry';
 export {

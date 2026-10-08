@@ -9,6 +9,7 @@ import {
   getContentContactEditorState,
 } from '../extensions/contentContact';
 import { getContentLinkEditorState } from '../extensions/contentLink';
+import { useSecretRuntime } from '../extensions/contentSecret';
 import { getContentTagSuggestionState } from '../extensions/contentTag';
 import { createRichTextContent } from '../richtext/createRichTextContent';
 import {
@@ -29,6 +30,8 @@ type TestJsonNode = {
 };
 const getTestJsonNodes = (editor: Editor) =>
   (editor.getJSON() as unknown as TestJsonNode).content?.[0]?.content ?? [];
+const getParagraphAlignments = (nodes?: TestJsonNode[]) =>
+  nodes?.map((node) => node.attrs?.['textAlign'] ?? null);
 
 const createEditor = () => {
   const editor = new Editor({
@@ -85,6 +88,7 @@ describe('Content feature registry', () => {
       'italic',
       'underline',
       'strike',
+      'alignment',
       'tag',
       'reference',
       'link',
@@ -94,6 +98,11 @@ describe('Content feature registry', () => {
       'copy',
       'clear-content',
     ]);
+    expect(
+      CONTENT_FEATURES.filter((feature) => feature.scope === 'block').map(
+        (feature) => feature.id,
+      ),
+    ).toEqual(['alignment']);
     expect(
       CONTENT_FEATURES.filter((feature) => feature.group === 'entities').map(
         (feature) => feature.id,
@@ -138,6 +147,166 @@ describe('Content feature registry', () => {
       expect(createRichTextContent(rehydrated.getJSON()).preview).toBe('hello');
     },
   );
+
+  it('aligns the current paragraph at a collapsed caret', () => {
+    const editor = createEditor();
+    editor.commands.setContent({
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'one' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'two' }] },
+      ],
+    });
+    editor.commands.setTextSelection(7);
+
+    expect(runContentFeature(editor, 'alignment', { value: 'center' })).toBe(
+      true,
+    );
+    expect(
+      getParagraphAlignments((editor.getJSON() as TestJsonNode).content),
+    ).toEqual([null, 'center']);
+  });
+
+  it('aligns a whole paragraph from a partial text selection', () => {
+    const editor = createEditor();
+    editor.commands.setTextSelection({ from: 2, to: 4 });
+
+    expect(runContentFeature(editor, 'alignment', { value: 'right' })).toBe(
+      true,
+    );
+    expect(editor.getJSON().content?.[0]?.attrs?.textAlign).toBe('right');
+    expect(
+      (editor.getJSON() as TestJsonNode).content?.[0]?.content?.[0]?.text,
+    ).toBe('hello');
+  });
+
+  it('aligns every paragraph intersected by a selection and reports mixed state', () => {
+    const editor = createEditor();
+    editor.commands.setContent({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: { textAlign: 'left' },
+          content: [{ type: 'text', text: 'one' }],
+        },
+        {
+          type: 'paragraph',
+          attrs: { textAlign: 'right' },
+          content: [{ type: 'text', text: 'two' }],
+        },
+        { type: 'paragraph', content: [{ type: 'text', text: 'three' }] },
+      ],
+    });
+    editor.commands.setTextSelection({ from: 2, to: 10 });
+    expect(getContentFeatureState(editor).alignment).toEqual({
+      enabled: true,
+      active: true,
+      value: 'mixed',
+    });
+
+    expect(runContentFeature(editor, 'alignment', { value: 'center' })).toBe(
+      true,
+    );
+    expect(
+      getParagraphAlignments((editor.getJSON() as TestJsonNode).content),
+    ).toEqual(['center', 'center', null]);
+  });
+
+  it.each(['left', 'center', 'right'] as const)(
+    'persists %s alignment through JSON rehydration without changing preview',
+    (alignment) => {
+      const editor = createEditor();
+      expect(runContentFeature(editor, 'alignment', { value: alignment })).toBe(
+        true,
+      );
+      const content = createRichTextContent(editor.getJSON());
+      expect(content.json.content?.[0]?.attrs?.textAlign).toBe(alignment);
+      expect(content.preview).toBe('hello');
+
+      const rehydrated = new Editor({
+        extensions: createAdRichTextExtensions(),
+        content: content.json,
+      });
+      editors.push(rehydrated);
+      expect(rehydrated.getJSON()).toEqual(content.json);
+      expect(rehydrated.getHTML()).toContain(`text-align: ${alignment}`);
+    },
+  );
+
+  it('preserves an Entity node and its attributes while aligning its paragraph', () => {
+    const editor = createEditor();
+    editor.commands.setContent({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Call ' },
+            {
+              type: 'contentTag',
+              attrs: { tagId: 'tag:1', label: 'Alice', colorId: 'blush' },
+            },
+            { type: 'text', text: ' today' },
+          ],
+        },
+      ],
+    });
+    editor.commands.setTextSelection({ from: 3, to: 8 });
+    const entityBefore = editor.getJSON().content?.[0]?.content?.[1];
+
+    expect(runContentFeature(editor, 'alignment', { value: 'center' })).toBe(
+      true,
+    );
+    expect(editor.getJSON().content?.[0]?.content?.[1]).toEqual(entityBefore);
+  });
+
+  it('preserves Copy and Secret wrappers with aligned paragraph content', () => {
+    const editor = createEditor();
+    editor.commands.setContent({
+      type: 'doc',
+      content: [
+        {
+          type: 'contentCopyBlock',
+          attrs: { copyId: 'copy:1' },
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'one' }],
+            },
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'two' }],
+            },
+          ],
+        },
+      ],
+    });
+    editor.commands.setTextSelection({ from: 2, to: 10 });
+    expect(runContentFeature(editor, 'alignment', { value: 'right' })).toBe(
+      true,
+    );
+    const copy = editor.getJSON().content?.[0];
+    expect(copy?.type).toBe('contentCopyBlock');
+    expect(copy?.attrs?.copyId).toBe('copy:1');
+    expect(getParagraphAlignments(copy?.content)).toEqual(['right', 'right']);
+
+    editor.commands.setTextSelection({ from: 2, to: 10 });
+    expect(runContentFeature(editor, 'secret')).toBe(true);
+    const secret = (editor.getJSON() as TestJsonNode).content?.[0];
+    expect(secret?.type).toBe('contentCopyBlock');
+    const secretNode: TestJsonNode | undefined = secret?.content?.[0];
+    expect(secretNode?.type).toBe('secretContentBlock');
+    const secretId = secretNode?.attrs?.['secretId'];
+    expect(typeof secretId).toBe('string');
+    const hydration =
+      useSecretRuntime.getState().hydrations[
+        typeof secretId === 'string' ? secretId : ''
+      ];
+    expect(
+      getParagraphAlignments(hydration?.content as TestJsonNode[] | undefined),
+    ).toEqual(['right', 'right']);
+  });
 
   it('applies Secret Content to a selected range with a safe preview', () => {
     const editor = createEditor();

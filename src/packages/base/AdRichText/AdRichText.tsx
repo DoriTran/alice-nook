@@ -1,3 +1,4 @@
+import { splitBlock } from '@tiptap/pm/commands';
 import { NodeSelection } from '@tiptap/pm/state';
 import { EditorContent } from '@tiptap/react';
 import {
@@ -171,6 +172,10 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
         onContentFeatureStateChangeRef.current?.(getContentFeatureState(next));
       },
       onSelectionUpdate: (next) => {
+        selectionRef.current = {
+          from: next.state.selection.from,
+          to: next.state.selection.to,
+        };
         onContentFeatureStateChangeRef.current?.(getContentFeatureState(next));
       },
       onFocus: () => {
@@ -180,7 +185,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
         onBlurRef.current?.();
       },
       editorProps: {
-        handleKeyDown: (_view, event) => {
+        handleKeyDown: (view, event) => {
           if (onKeyDownRef.current?.(event)) {
             return true;
           }
@@ -200,6 +205,14 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
             event.preventDefault();
             onSubmitRef.current();
             return true;
+          }
+
+          // In an enter-to-send composer, Shift+Enter is the newline action.
+          // Create a real paragraph block instead of a hardBreak so block
+          // formatting such as Alignment can target each visual line.
+          if (event.shiftKey) {
+            event.preventDefault();
+            return splitBlock(view.state, view.dispatch);
           }
 
           return false;
@@ -328,7 +341,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
             to: editor.state.selection.to,
           };
         },
-        runContentFeature: (id, anchor) => {
+        runContentFeature: (id, invocation) => {
           if (!editor || editor.isDestroyed || !contentEditor) {
             return false;
           }
@@ -351,7 +364,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
                 NodeSelection.create(editor.state.doc, secretPosition),
               ),
             );
-            const applied = runContentFeature(editor, id, anchor);
+            const applied = runContentFeature(editor, id, invocation);
             onContentFeatureStateChangeRef.current?.(
               getContentFeatureState(editor),
             );
@@ -367,7 +380,7 @@ const AdRichText = forwardRef<AdRichTextHandle, AdRichTextProps>(
           if (id === 'phone' || id === 'email')
             contentEditor.commands.closeContentLinkEditor();
 
-          const applied = runContentFeature(contentEditor, id, anchor);
+          const applied = runContentFeature(contentEditor, id, invocation);
           if (contentEditor === editor) saveSelection();
           onContentFeatureStateChangeRef.current?.(resolveContentState());
           return applied;

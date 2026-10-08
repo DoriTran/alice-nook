@@ -38,6 +38,7 @@ import {
   AdTooltip,
   CONTENT_FEATURES,
   type ContentFeatureId,
+  type ContentFeatureInvocation,
   type ContentFeatureState,
 } from '@/packages/base';
 
@@ -61,7 +62,10 @@ export type ActionDockProps = {
   contentAvailable: boolean;
   contentFeatureState: ContentFeatureState;
   onContentShelfOpenChange: (opened: boolean) => void;
-  onRunContentFeature: (id: ContentFeatureId) => void;
+  onRunContentFeature: (
+    id: ContentFeatureId,
+    invocation?: ContentFeatureInvocation,
+  ) => void;
   reactionPicker?: ReactNode;
   onSend: () => void;
   onCancelEdit?: () => void;

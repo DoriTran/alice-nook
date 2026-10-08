@@ -4,9 +4,13 @@ import {
   type Editor,
   type JSONContent,
 } from '@tiptap/core';
-import { Fragment } from '@tiptap/pm/model';
+import TextAlign from '@tiptap/extension-text-align';
+import { Fragment, type Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { NodeSelection } from '@tiptap/pm/state';
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   AtSign,
   Bold,
   Copy,
@@ -22,7 +26,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import type { ContentFeatureAnchor } from '../types';
+import type { ContentFeatureAnchor, ContentFeatureInvocation } from '../types';
 
 import {
   ContentContactControlsExtension,
@@ -63,6 +67,7 @@ export type ContentFeatureId =
   | 'italic'
   | 'underline'
   | 'strike'
+  | 'alignment'
   | 'tag'
   | 'reference'
   | 'link'
@@ -78,9 +83,18 @@ export type ContentFeatureGroup =
   | 'special'
   | 'clear';
 export type ContentFeatureStatus = 'enabled' | 'planned';
+export type ContentFeatureScope = 'inline' | 'block';
+export type ContentFeatureControlBehavior = 'toggle' | 'action' | 'choice';
+export type ContentFeaturePresentationGroup = ContentFeatureGroup | 'alignment';
+
+export type ContentFeatureChoice = {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+};
 
 export type ContentFeatureContext = {
-  variant: 'text' | 'todo' | 'ai';
+  variant: 'text' | 'todo' | 'column' | 'table' | 'ai';
 };
 
 export type ContentTriggerSpec = {
@@ -96,9 +110,13 @@ export type ContentFeature = {
   description: string;
   icon: LucideIcon;
   status: ContentFeatureStatus;
+  scope?: ContentFeatureScope;
+  controlBehavior: ContentFeatureControlBehavior;
+  presentationGroup?: ContentFeaturePresentationGroup;
+  choices?: readonly ContentFeatureChoice[];
   quickAction?: boolean;
   isAvailable?: (context: ContentFeatureContext) => boolean;
-  run?: (editor: Editor, anchor?: ContentFeatureAnchor) => boolean;
+  run?: (editor: Editor, invocation?: ContentFeatureInvocation) => boolean;
   isActive?: (editor: Editor) => boolean;
   extensions?: () => AnyExtension[];
   trigger?: ContentTriggerSpec;
@@ -108,6 +126,61 @@ export type ContentFeature = {
   clearableMark?: string;
   requiresApplicableState?: boolean;
   getState?: (editor: Editor) => ContentFeatureActionState;
+};
+
+export type AlignmentValue = 'left' | 'center' | 'right';
+export type ContentFeatureValue = string;
+
+const ALIGNMENT_VALUES = ['left', 'center', 'right'] as const;
+
+const getTargetParagraphAlignments = (editor: Editor): AlignmentValue[] => {
+  const { doc, selection } = editor.state;
+  const values: AlignmentValue[] = [];
+  const addParagraph = (node: ProseMirrorNode) => {
+    if (node.type.name !== 'paragraph') return;
+    const alignment: unknown = node.attrs.textAlign;
+    values.push(
+      ALIGNMENT_VALUES.includes(alignment as AlignmentValue)
+        ? (alignment as AlignmentValue)
+        : 'left',
+    );
+  };
+
+  if (selection.empty) {
+    for (let depth = selection.$from.depth; depth >= 0; depth -= 1) {
+      const node = selection.$from.node(depth);
+      if (node.type.name === 'paragraph') {
+        addParagraph(node);
+        break;
+      }
+    }
+    return values;
+  }
+
+  doc.nodesBetween(selection.from, selection.to, addParagraph);
+  return values;
+};
+
+const getAlignmentState = (editor: Editor): ContentFeatureActionState => {
+  const values = getTargetParagraphAlignments(editor);
+  if (!values.length) return { enabled: false, active: false };
+  const value = values.every((candidate) => candidate === values[0])
+    ? values[0]
+    : 'mixed';
+  return { enabled: true, active: value !== 'left', value };
+};
+
+const setAlignment = (editor: Editor, value: string | undefined): boolean => {
+  if (!ALIGNMENT_VALUES.includes(value as AlignmentValue)) return false;
+  const state = getAlignmentState(editor);
+  if (!state.enabled || (state.value === value && value !== 'left')) {
+    return true;
+  }
+  return editor
+    .chain()
+    .focus()
+    .setTextAlign(value as AlignmentValue)
+    .run();
 };
 
 const FORMATTING_MARKS = [
@@ -257,6 +330,8 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'bold',
     group: 'formatting',
+    scope: 'inline',
+    controlBehavior: 'toggle',
     label: 'Bold',
     description: 'Make the selected text bold.',
     icon: Bold,
@@ -267,6 +342,8 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'italic',
     group: 'formatting',
+    scope: 'inline',
+    controlBehavior: 'toggle',
     label: 'Italic',
     description: 'Italicize the selected text.',
     icon: Italic,
@@ -277,6 +354,8 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'underline',
     group: 'formatting',
+    scope: 'inline',
+    controlBehavior: 'toggle',
     label: 'Underline',
     description: 'Underline the selected text.',
     icon: Underline,
@@ -287,6 +366,8 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'strike',
     group: 'formatting',
+    scope: 'inline',
+    controlBehavior: 'toggle',
     label: 'Strikethrough',
     description: 'Strike through the selected text.',
     icon: Strikethrough,
@@ -295,8 +376,33 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
     getState: (editor) => getFormattingState(editor, 'strike'),
   },
   {
+    id: 'alignment',
+    group: 'formatting',
+    presentationGroup: 'alignment',
+    scope: 'block',
+    controlBehavior: 'choice',
+    label: 'Alignment',
+    description: 'Align the current or selected paragraphs.',
+    icon: AlignLeft,
+    status: 'enabled',
+    choices: [
+      { value: 'left', label: 'Align Left', icon: AlignLeft },
+      { value: 'center', label: 'Align Center', icon: AlignCenter },
+      { value: 'right', label: 'Align Right', icon: AlignRight },
+    ],
+    run: (editor, invocation) => setAlignment(editor, invocation?.value),
+    extensions: () => [
+      TextAlign.configure({
+        types: ['paragraph'],
+        alignments: [...ALIGNMENT_VALUES],
+      }),
+    ],
+    getState: getAlignmentState,
+  },
+  {
     id: 'tag',
     group: 'entities',
+    controlBehavior: 'toggle',
     label: 'Tag',
     description: 'Insert a tag into your message.',
     icon: Hash,
@@ -316,6 +422,7 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'reference',
     group: 'entities',
+    controlBehavior: 'toggle',
     label: 'Reference',
     description: 'Reference a Chatbox or Message.',
     icon: AtSign,
@@ -337,11 +444,13 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'link',
     group: 'entities',
+    controlBehavior: 'toggle',
     label: 'Link',
     description: 'Create or edit a named link and its rich preview.',
     icon: Link2,
     status: 'enabled',
-    run: (editor, anchor) => runEntityAction(editor, 'link', anchor),
+    run: (editor, invocation) =>
+      runEntityAction(editor, 'link', invocation?.anchor),
     isActive: (editor) => editor.isActive('link'),
     extensions: () => [ContentLinkExtension, ContentLinkControlsExtension],
     clearableMark: 'link',
@@ -349,12 +458,14 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'phone',
     group: 'entities',
+    controlBehavior: 'toggle',
     label: 'Phone',
     description: 'Convert a selected phone number to Phone Content.',
     icon: Phone,
     status: 'enabled',
     requiresApplicableState: true,
-    run: (editor, anchor) => runEntityAction(editor, 'phone', anchor),
+    run: (editor, invocation) =>
+      runEntityAction(editor, 'phone', invocation?.anchor),
     isActive: (editor) => editor.isActive('contentPhone'),
     extensions: () => [
       ContentPhoneExtension,
@@ -366,12 +477,14 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'email',
     group: 'entities',
+    controlBehavior: 'toggle',
     label: 'Email',
     description: 'Convert a selected email address to Email Content.',
     icon: Mail,
     status: 'enabled',
     requiresApplicableState: true,
-    run: (editor, anchor) => runEntityAction(editor, 'email', anchor),
+    run: (editor, invocation) =>
+      runEntityAction(editor, 'email', invocation?.anchor),
     isActive: (editor) => editor.isActive('contentEmail'),
     extensions: () => [ContentEmailExtension],
     clearableMark: 'contentEmail',
@@ -379,6 +492,7 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'secret',
     group: 'special',
+    controlBehavior: 'toggle',
     label: 'Secret',
     description: 'Protect the selected content as an encrypted Secret.',
     icon: Lock,
@@ -430,6 +544,7 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'copy',
     group: 'special',
+    controlBehavior: 'toggle',
     label: 'Copy',
     description: 'Make the selected content directly copyable.',
     icon: Copy,
@@ -464,6 +579,7 @@ export const CONTENT_FEATURES: readonly ContentFeature[] = [
   {
     id: 'clear-content',
     group: 'clear',
+    controlBehavior: 'action',
     label: 'Clear content',
     description: 'Remove formatting and turn selected Content into plain text.',
     icon: Eraser,
@@ -650,6 +766,7 @@ export const clearContent = (editor: Editor): boolean => {
 export type ContentFeatureActionState = {
   enabled: boolean;
   active: boolean;
+  value?: ContentFeatureValue;
 };
 
 export type ContentFeatureState = Partial<
@@ -724,12 +841,12 @@ export const getContentFeatureState = (editor: Editor): ContentFeatureState =>
 export const runContentFeature = (
   editor: Editor,
   id: ContentFeatureId,
-  anchor?: ContentFeatureAnchor,
+  invocation?: ContentFeatureInvocation,
 ): boolean => {
   const feature = getContentFeature(id);
   if (!feature || feature.status !== 'enabled' || !feature.run) {
     return false;
   }
 
-  return feature.run(editor, anchor);
+  return feature.run(editor, invocation);
 };
