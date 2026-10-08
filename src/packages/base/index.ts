@@ -67,6 +67,13 @@ export {
 } from './AdActionButton';
 export { default as AdAnimation, type AdAnimationProps } from './AdAnimation';
 export {
+  AdLoading,
+  AdPageLoading,
+  type AdLoadingProps,
+  type AdPageLoadingProps,
+  type LoadingSize,
+} from './AdLoading';
+export {
   default as AdEmojiPicker,
   AdEmojiGlyph,
   AdEmojiPickerPanel,

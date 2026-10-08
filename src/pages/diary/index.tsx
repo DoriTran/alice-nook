@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useSession } from '@/auth';
 import { createAuthURL } from '@/auth/redirects';
+import { AdPageLoading } from '@/packages/base';
 import {
   useAppStore,
   useDiaryHydrated,
@@ -348,32 +349,29 @@ const Diary: FC = () => {
   const { cloudStatus, error } = useDiarySourceRuntime();
   const effectiveCloudStatus = isPending ? 'loading' : cloudStatus;
   const cloudReady = source === 'local' || effectiveCloudStatus === 'ready';
+  const cloudOpening =
+    effectiveCloudStatus === 'idle' || effectiveCloudStatus === 'loading';
 
   return (
     <div className={styles.sourceFrame}>
-      {cloudReady ? (
+      {cloudOpening ? (
+        <AdPageLoading message="Opening your diary" />
+      ) : cloudReady ? (
         <DiaryContent />
       ) : (
-        <main
-          className={styles.sourceGate}
-          aria-busy={effectiveCloudStatus === 'loading'}
-        >
+        <main className={styles.sourceGate}>
           <div className={styles.sourceGateCard}>
             <span className={styles.sourceGateEyebrow}>Cloud Diary</span>
             <h1>
               {effectiveCloudStatus === 'auth-required'
                 ? 'Sign in to open your cloud'
-                : effectiveCloudStatus === 'error'
-                  ? 'Your cloud is taking a little nap'
-                  : 'Opening your cloud…'}
+                : 'Your cloud is taking a little nap'}
             </h1>
             <p>
               {effectiveCloudStatus === 'auth-required'
                 ? 'Your Local Diary is still safe on this device. Sign in, or change the active source in Settings.'
-                : effectiveCloudStatus === 'error'
-                  ? error ||
-                    'Cloud Diary could not be loaded. Your Local Diary was not changed.'
-                  : 'Fetching the Diary saved with your Alice Nook account.'}
+                : error ||
+                  'Cloud Diary could not be loaded. Your Local Diary was not changed.'}
             </p>
             <div className={styles.sourceGateActions}>
               {effectiveCloudStatus === 'auth-required' && !session ? (

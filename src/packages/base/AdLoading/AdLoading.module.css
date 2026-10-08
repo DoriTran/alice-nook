@@ -1,0 +1,417 @@
+.loading,
+.pageLoading {
+  --loading-paper: color-mix(in srgb, var(--surface) 92%, #fff5dc);
+  --loading-cover: color-mix(in srgb, var(--secondary) 72%, var(--surface));
+  --loading-outline: color-mix(in srgb, var(--text) 76%, var(--border));
+  --loading-accent: var(--secondary-dark);
+  --loading-flower-petal: color-mix(
+    in srgb,
+    var(--surface) 82%,
+    var(--secondary-light)
+  );
+  --loading-flower-outline: color-mix(
+    in srgb,
+    var(--secondary-dark) 72%,
+    var(--loading-outline)
+  );
+  --loading-flower-center: var(--accent-yellow);
+  --loading-ear-inner: color-mix(
+    in srgb,
+    var(--secondary) 58%,
+    var(--loading-paper)
+  );
+  --loading-bookmark: color-mix(
+    in srgb,
+    var(--accent-purple) 76%,
+    var(--surface)
+  );
+  --loading-page-line: color-mix(
+    in srgb,
+    var(--primary) 32%,
+    var(--loading-paper)
+  );
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  font: inherit;
+  gap: 0.45em;
+  vertical-align: middle;
+}
+
+.loading[data-size='xs'] {
+  --loading-size: 1rem;
+}
+
+.loading[data-size='sm'] {
+  --loading-size: 1.25rem;
+}
+
+.loading[data-size='md'] {
+  --loading-size: 1.75rem;
+}
+
+.loading[data-size='lg'] {
+  --loading-size: 2.5rem;
+}
+
+.notebook {
+  display: block;
+  width: 1em;
+  height: 0.75em;
+  overflow: visible;
+  font-size: var(--loading-size, 1em);
+}
+
+.cover {
+  fill: var(--loading-cover);
+  stroke: var(--loading-outline);
+  stroke-linejoin: round;
+  stroke-width: 2.7;
+}
+
+.bunnyEars {
+  fill: var(--loading-paper);
+  stroke: var(--loading-outline);
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.bunnyEarInner {
+  fill: var(--loading-ear-inner);
+  stroke: var(--loading-flower-outline);
+  stroke-width: 1.15;
+}
+
+.leftPage,
+.rightPage,
+.flipPage {
+  fill: var(--loading-paper);
+  stroke: var(--loading-outline);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.pageLine {
+  fill: none;
+  stroke: var(--loading-page-line);
+  stroke-width: 1.8;
+}
+
+.bookmark {
+  fill: var(--loading-bookmark);
+  stroke: var(--loading-outline);
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+
+.heart {
+  fill: var(--loading-accent);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mascotFlower {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mascotFlowerPetals {
+  fill: var(--loading-flower-petal);
+  stroke: var(--loading-flower-outline);
+  stroke-width: 1.15;
+}
+
+.mascotFlowerCenter {
+  fill: var(--loading-flower-center);
+  stroke: var(--loading-flower-outline);
+  stroke-width: 0.9;
+}
+
+.sparkle {
+  fill: var(--primary);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.spine {
+  fill: none;
+  stroke: var(--loading-outline);
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+.notebook[data-variant='inline'] .flipPage,
+.notebook[data-variant='inline'] .bunnyEars,
+.notebook[data-variant='inline'] .mascotFlower,
+.notebook[data-variant='inline'] .sparkle {
+  display: none;
+}
+
+.notebook[data-variant='page'] .heart {
+  display: none;
+}
+
+.notebook[data-variant='inline'] .heart {
+  animation: loading-heart 1.6s ease-in-out infinite;
+}
+
+.inlineMessage {
+  line-height: 1.4;
+}
+
+.pageLoading {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-content: center;
+  justify-items: center;
+  box-sizing: border-box;
+  padding: 2rem;
+  background: var(--surface, #fffaf4);
+  color: var(--text-muted, #745f52);
+  font: 500 1rem/1.5 system-ui, sans-serif;
+  gap: 1rem;
+  text-align: center;
+}
+
+.pageNotebook {
+  --loading-size: 6.875rem;
+
+  display: block;
+  animation: loading-notebook 1.6s ease-in-out infinite;
+}
+
+.notebook[data-variant='page'] .flipPage {
+  animation: loading-page-flip 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.notebook[data-variant='page'] .bookmark {
+  animation: loading-bookmark 1.6s ease-in-out infinite;
+}
+
+.notebook[data-variant='page'] .heart {
+  animation: loading-heart 1.6s ease-in-out infinite;
+}
+
+.notebook[data-variant='page'] .mascotFlower {
+  animation: loading-flower-pulse 1.6s ease-in-out infinite;
+}
+
+.notebook[data-variant='page'] .sparkle {
+  animation: loading-sparkle 1.6s ease-in-out infinite;
+}
+
+.pageMessage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.01em;
+}
+
+.activityFlowers {
+  display: inline-flex;
+  align-items: center;
+  width: 2.25em;
+  margin-left: 0.32em;
+  gap: 0.12em;
+}
+
+.activityFlower {
+  width: 0.66em;
+  height: 0.66em;
+  overflow: visible;
+  animation: loading-activity-flower 1.6s ease-in-out infinite;
+  opacity: 0.38;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.activityFlower:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.activityFlower:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.activityFlowerPetals {
+  fill: var(--loading-flower-petal);
+  stroke: var(--loading-flower-outline);
+  stroke-width: 1;
+}
+
+.activityFlowerCenter {
+  fill: var(--loading-flower-center);
+  stroke: var(--loading-flower-outline);
+  stroke-width: 0.7;
+}
+
+@keyframes loading-notebook {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  45% {
+    transform: rotate(-0.8deg) translateY(-1px);
+  }
+
+  70% {
+    transform: rotate(0.5deg) translateY(0);
+  }
+}
+
+@keyframes loading-page-flip {
+  0%,
+  12% {
+    opacity: 0;
+    transform: perspective(160px) rotateY(0deg);
+  }
+
+  16% {
+    opacity: 1;
+    transform: perspective(160px) rotateY(0deg);
+  }
+
+  62% {
+    opacity: 1;
+    transform: perspective(160px) rotateY(-178deg);
+  }
+
+  70% {
+    opacity: 0;
+    transform: perspective(160px) rotateY(-180deg);
+  }
+
+  71%,
+  100% {
+    opacity: 0;
+    transform: perspective(160px) rotateY(0deg);
+  }
+}
+
+@keyframes loading-bookmark {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  48% {
+    transform: translateY(2.5px);
+  }
+}
+
+@keyframes loading-heart {
+  0%,
+  30%,
+  100% {
+    transform: scale(1);
+  }
+
+  48% {
+    transform: scale(1.12);
+  }
+
+  64% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes loading-flower-pulse {
+  0%,
+  30%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(8deg) scale(1.1);
+  }
+
+  66% {
+    transform: rotate(-3deg) scale(0.98);
+  }
+}
+
+@keyframes loading-activity-flower {
+  0%,
+  18%,
+  72%,
+  100% {
+    opacity: 0.32;
+    transform: rotate(0deg) scale(0.76);
+  }
+
+  38% {
+    opacity: 1;
+    transform: rotate(180deg) scale(1.08);
+  }
+
+  55% {
+    opacity: 0.72;
+    transform: rotate(270deg) scale(0.92);
+  }
+}
+
+@keyframes loading-sparkle {
+  0%,
+  38%,
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-8deg);
+  }
+
+  54% {
+    opacity: 0.85;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pageNotebook,
+  .notebook[data-variant='page'] .flipPage,
+  .notebook[data-variant='page'] .bookmark,
+  .notebook[data-variant='page'] .heart,
+  .notebook[data-variant='page'] .mascotFlower,
+  .notebook[data-variant='page'] .sparkle {
+    animation: none;
+  }
+
+  .activityFlower {
+    animation: none;
+    opacity: 0.72;
+    transform: none;
+  }
+
+  .notebook[data-variant='inline'] .heart {
+    animation: loading-reduced-pulse 2.4s ease-in-out infinite;
+  }
+
+  .notebook[data-variant='page'] .sparkle {
+    opacity: 0.55;
+  }
+}
+
+@keyframes loading-reduced-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}

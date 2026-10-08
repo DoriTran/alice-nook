@@ -2,10 +2,10 @@ import type { FC, PropsWithChildren } from 'react';
 
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { AdPageLoading } from '@/packages/base';
 import { useSettingsStore } from '@/store/settings/store';
 
 import { useSession } from './auth-client';
-import styles from './AuthGuards.module.css';
 import {
   DEFAULT_AUTH_DESTINATION,
   createAuthURL,
@@ -13,11 +13,7 @@ import {
   getRequestedPath,
 } from './redirects';
 
-const SessionLoading: FC = () => (
-  <main aria-busy="true" aria-live="polite" className={styles.loading}>
-    Opening your nook…
-  </main>
-);
+const SessionLoading: FC = () => <AdPageLoading message="Opening your nook" />;
 
 export const ProtectedRoute: FC<PropsWithChildren> = ({ children }) => {
   const location = useLocation();
