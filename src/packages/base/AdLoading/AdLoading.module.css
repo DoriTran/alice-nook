@@ -224,6 +224,7 @@
   display: inline-flex;
   align-items: center;
   width: 2.25em;
+  margin-top: 3px;
   margin-left: 0.32em;
   gap: 0.12em;
 }

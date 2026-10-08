@@ -350,14 +350,15 @@ const Diary: FC = () => {
   const effectiveCloudStatus = isPending ? 'loading' : cloudStatus;
   const cloudReady = source === 'local' || effectiveCloudStatus === 'ready';
   const cloudOpening =
-    effectiveCloudStatus === 'idle' || effectiveCloudStatus === 'loading';
+    source === 'cloud' &&
+    (effectiveCloudStatus === 'idle' || effectiveCloudStatus === 'loading');
 
   return (
     <div className={styles.sourceFrame}>
-      {cloudOpening ? (
-        <AdPageLoading message="Opening your diary" />
-      ) : cloudReady ? (
+      {cloudReady ? (
         <DiaryContent />
+      ) : cloudOpening ? (
+        <AdPageLoading message="Opening your diary" />
       ) : (
         <main className={styles.sourceGate}>
           <div className={styles.sourceGateCard}>
