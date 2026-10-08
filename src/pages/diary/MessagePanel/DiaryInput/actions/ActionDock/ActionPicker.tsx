@@ -11,6 +11,7 @@ export type ActionPickerOption = {
   description: string;
   icon: LucideIcon;
   selected: boolean;
+  disabled?: boolean;
 };
 
 export type ActionPickerProps = {
@@ -168,9 +169,12 @@ const ActionPicker: FC<ActionPickerProps> = ({
               type="button"
               role="option"
               aria-selected={option.selected}
+              aria-disabled={option.disabled || undefined}
               className={styles.pickerOption}
               data-selected={option.selected || undefined}
+              data-disabled={option.disabled || undefined}
               onClick={() => {
+                if (option.disabled) return;
                 onSelect(option.value);
                 if (!multiple) onOpenChange(false);
               }}

@@ -285,13 +285,6 @@ const ActionDock: FC<ActionDockProps> = ({
         selected: variant === 'todo',
       },
       {
-        value: 'ai',
-        label: 'AI',
-        description: 'Ask AI to help write your message.',
-        icon: Sparkles,
-        selected: variant === 'ai',
-      },
-      {
         value: 'column',
         label: 'Column',
         description: 'Arrange rich content in responsive columns.',
@@ -304,6 +297,15 @@ const ActionDock: FC<ActionDockProps> = ({
         description: 'Organize rich content and attachments in a table.',
         icon: Table2,
         selected: variant === 'table',
+      },
+      {
+        value: 'ai',
+        label: 'AI',
+        description:
+          'Coming Soon — AI writing assistance is not available yet.',
+        icon: Sparkles,
+        selected: variant === 'ai',
+        disabled: true,
       },
     ],
     [variant],
@@ -388,28 +390,6 @@ const ActionDock: FC<ActionDockProps> = ({
             <AdTooltip
               label={
                 <RichTooltip
-                  name="AI"
-                  description="Ask AI to help write your message."
-                />
-              }
-              position="top"
-              withArrow={false}
-              multiline
-              classNames={{ tooltip: styles.tooltip }}
-            >
-              <button
-                type="button"
-                className={`${styles.btn} ${variant === 'ai' ? styles.btnActive : ''}`}
-                aria-label="AI variant"
-                aria-pressed={variant === 'ai'}
-                onClick={() => handleVariantSelect('ai')}
-              >
-                <AdIcon icon={Sparkles} source="lucide" size={16} />
-              </button>
-            </AdTooltip>
-            <AdTooltip
-              label={
-                <RichTooltip
                   name="Column"
                   description="Arrange rich content in responsive columns."
                 />
@@ -450,6 +430,30 @@ const ActionDock: FC<ActionDockProps> = ({
               >
                 <AdIcon icon={Table2} source="lucide" size={16} />
               </button>
+            </AdTooltip>
+            <AdTooltip
+              label={
+                <RichTooltip
+                  name="AI"
+                  description="Coming Soon — AI writing assistance is not available yet."
+                />
+              }
+              position="top"
+              withArrow={false}
+              multiline
+              classNames={{ tooltip: styles.tooltip }}
+            >
+              <span>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${variant === 'ai' ? styles.btnActive : ''}`}
+                  aria-label="AI variant (Coming Soon)"
+                  aria-pressed={variant === 'ai'}
+                  disabled
+                >
+                  <AdIcon icon={Sparkles} source="lucide" size={16} />
+                </button>
+              </span>
             </AdTooltip>
           </div>
 

@@ -89,6 +89,23 @@ type StructuralMenu =
   | { type: 'column'; id: TableColumnId }
   | null;
 
+const TABLE_SELECTION_PRESERVE_SELECTOR = [
+  '[data-table-selection-preserve]',
+  '[data-content-shelf]',
+  '[role="dialog"]',
+  '[role="menu"]',
+  '[data-floating-ui-portal]',
+].join(', ');
+
+export const isTableInteractionPreserved = (
+  root: HTMLElement | null,
+  target: Node,
+): boolean => {
+  if (root?.contains(target)) return true;
+  const element = target instanceof Element ? target : target.parentElement;
+  return Boolean(element?.closest(TABLE_SELECTION_PRESERVE_SELECTOR));
+};
+
 const TableEditor = forwardRef<TableEditorHandle, Props>((props, ref) => {
   const { rows, columns, onChange, onAddFiles } = props;
   const [selection, setSelection] = useState<TableSelection>(null);
@@ -159,14 +176,7 @@ const TableEditor = forwardRef<TableEditorHandle, Props>((props, ref) => {
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (rootRef.current?.contains(target)) return;
-      const element = target instanceof Element ? target : target.parentElement;
-      if (
-        element?.closest(
-          '[data-table-selection-preserve], [role="dialog"], [role="menu"], [data-floating-ui-portal]',
-        )
-      )
-        return;
+      if (isTableInteractionPreserved(rootRef.current, target)) return;
       setSelection(null);
       setEditing(null);
       setOpenMenu(null);

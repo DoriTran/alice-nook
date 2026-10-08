@@ -268,6 +268,16 @@
   background: color-mix(in srgb, var(--primary) 14%, var(--surface));
 }
 
+.pickerOption[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pickerOption[data-disabled]:hover {
+  color: var(--text-muted);
+  background: transparent;
+}
+
 .pickerOptionLabel {
   min-width: 0;
   overflow: hidden;
